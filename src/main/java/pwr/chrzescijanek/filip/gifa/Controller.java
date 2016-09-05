@@ -1,15 +1,16 @@
 package pwr.chrzescijanek.filip.gifa;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public class Controller {
 
 	@FXML
-	private Label label;
+	private ImageView view;
 
-	public void setLabel( String text ) {
-		label.setText(text);
+	public void setImage( Image img ) {
+		view.setImage(img);
 	}
 
 }
