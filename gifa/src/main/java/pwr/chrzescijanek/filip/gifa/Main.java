@@ -11,20 +11,19 @@ import javafx.stage.Stage;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.video.Video;
 
 import java.nio.ByteBuffer;
 
 public class Main extends Application {
 
-	static {
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-	}
-
 	private static final int BLUE = 0;
 	private static final int GREEN = 1;
 	private static final int RED = 2;
 	private static final int ALPHA = 3;
+
+	static {
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+	}
 
 	public static void main( String[] args ) {
 		launch(args);
@@ -41,6 +40,18 @@ public class Main extends Application {
 		primaryStage.show();
 	}
 
+	private void doSample( Controller c ) {
+		Mat[] images = new Mat[3];
+		images[0] = Imgcodecs.imread("src/main/resources/tri.jpg", Imgcodecs.CV_LOAD_IMAGE_ANYCOLOR);
+		images[1] = Imgcodecs.imread("src/main/resources/tri-aff.jpg", Imgcodecs.CV_LOAD_IMAGE_ANYCOLOR);
+				images[2] = Imgcodecs.imread("src/main/resources/tri-new.jpg", Imgcodecs.CV_LOAD_IMAGE_ANYCOLOR);
+		MatOfPoint2f[] points = new MatOfPoint2f[3];
+		points[0] = new MatOfPoint2f(new Point(58, 10), new Point(13, 97), new Point(103, 97));
+		points[1] = new MatOfPoint2f(new Point(70, 10), new Point(25, 97), new Point(115, 97));
+				points[2] = new MatOfPoint2f(new Point(127, 57), new Point(40, 12), new Point(40, 102));
+		performTransformations(images, points, c);
+	}
+
 	private void performTransformations( Mat[] images, MatOfPoint2f[] points, Controller c ) {
 		final int noOfImages = images.length;
 		assert ( noOfImages == points.length );
@@ -49,8 +60,8 @@ public class Main extends Application {
 			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2BGRA);
 
 		for ( int i = 1; i < noOfImages; i++ ) {
-//			Mat warpMat = Imgproc.getAffineTransform(points[i], points[0]);
-			Mat warpMat = Video.estimateRigidTransform(images[i], images[0], true);
+						Mat warpMat = Imgproc.getAffineTransform(points[i], points[0]);
+//			Mat warpMat = Video.estimateRigidTransform(images[i], images[0], true);
 			Imgproc.warpAffine(images[i], images[i], warpMat, images[0].size(),
 					Imgproc.INTER_NEAREST, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
 		}
@@ -91,33 +102,24 @@ public class Main extends Application {
 				images[0].channels());
 		c.setImage(img);
 
-//		for ( int i = 0; i < mask.length; i++ ) {
-//			if ( mask[i] ) {
-//				for ( Mat m : images ) {
-//					m.put(i / m.width(), i % m.width(), new double[] { 0, 0, 255, 255 });
-//				}
-//			}
-//		}
+		//		for ( int i = 0; i < mask.length; i++ ) {
+		//			if ( mask[i] ) {
+		//				for ( Mat m : images ) {
+		//					m.put(i / m.width(), i % m.width(), new double[] { 0, 0, 255, 255 });
+		//				}
+		//			}
+		//		}
 
 		for ( Mat m : images )
 			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGRA2BGR);
 
-//		for ( int i = 0; i < noOfImages; i++ ) {
-//			Imgcodecs.imwrite("src/main/resources/image" + i + ".png", images[i]);
-//		}
+		//		for ( int i = 0; i < noOfImages; i++ ) {
+		//			Imgcodecs.imwrite("src/main/resources/image" + i + ".png", images[i]);
+		//		}
 
-		new StatisticsCalculator(images, mask).calculateMeanHue();
-	}
-
-	private void doSample( Controller c ) {
-		Mat[] images = new Mat[2];
-		images[0] = Imgcodecs.imread("src/main/resources/tri.jpg", Imgcodecs.CV_LOAD_IMAGE_ANYCOLOR);
-		images[1] = Imgcodecs.imread("src/main/resources/tri-aff.jpg", Imgcodecs.CV_LOAD_IMAGE_ANYCOLOR);
-//		images[2] = Imgcodecs.imread("src/main/resources/tri-new.jpg", Imgcodecs.CV_LOAD_IMAGE_ANYCOLOR);
-		MatOfPoint2f[] points = new MatOfPoint2f[2];
-		points[0] = new MatOfPoint2f(new Point(58, 10), new Point(13, 97), new Point(103, 97));
-		points[1] = new MatOfPoint2f(new Point(70, 10), new Point(25, 97), new Point(115, 97));
-//		points[2] = new MatOfPoint2f(new Point(127, 57), new Point(40, 12), new Point(40, 102));
-		performTransformations(images, points, c);
+		StatisticsCalculator sc = new StatisticsCalculator(images, mask);
+		sc.injectFunction(new MeanValue());
+		sc.injectFunction(new StdDeviationValue());
+		sc.calculateStatistics();
 	}
 }
