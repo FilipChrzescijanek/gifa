@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa;
+package pwr.chrzescijanek.filip.gifa.core.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.image.Image;
@@ -9,7 +9,7 @@ public class Controller {
 	@FXML
 	private ImageView view;
 
-	public void setImage( Image img ) {
+	public void setImage( final Image img ) {
 		view.setImage(img);
 	}
 
