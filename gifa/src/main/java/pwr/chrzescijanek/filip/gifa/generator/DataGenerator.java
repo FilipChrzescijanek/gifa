@@ -47,8 +47,8 @@ public enum DataGenerator {
 	}
 
 	private void injectBasicFunctions() {
-		injectFunction(new MeanValue());
-		injectFunction(new StdDeviationValue());
+		injectFunction(MeanValue.INSTANCE);
+		injectFunction(StdDeviationValue.INSTANCE);
 		injectFunction(( images, mask ) -> FunctionUtils.calculateMeans(images, mask, 2));
 	}
 

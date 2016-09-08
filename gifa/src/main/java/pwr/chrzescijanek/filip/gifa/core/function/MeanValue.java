@@ -5,7 +5,9 @@ import org.opencv.imgproc.Imgproc;
 import pwr.chrzescijanek.filip.gifa.core.utils.FunctionUtils;
 import pwr.chrzescijanek.filip.gifa.core.utils.ImageUtils;
 
-public class MeanValue implements EvaluationFunction {
+public enum MeanValue implements EvaluationFunction {
+
+	INSTANCE;
 
 	@Override
 	public double[] evaluate( final Mat[] images, final boolean[] mask ) {
