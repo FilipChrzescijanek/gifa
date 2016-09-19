@@ -5,6 +5,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.imgproc.Imgproc;
 import pwr.chrzescijanek.filip.gifa.core.controller.Controller;
+import pwr.chrzescijanek.filip.gifa.core.controller.NullController;
 import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
 import pwr.chrzescijanek.filip.gifa.core.function.MeanValue;
 import pwr.chrzescijanek.filip.gifa.core.function.StdDeviationValue;
@@ -12,55 +13,68 @@ import pwr.chrzescijanek.filip.gifa.core.utils.FunctionUtils;
 import pwr.chrzescijanek.filip.gifa.core.utils.ImageUtils;
 import pwr.chrzescijanek.filip.gifa.core.utils.ResultImage;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public enum DataGenerator {
 
 	INSTANCE;
 
-	private final List< EvaluationFunction > functions = new ArrayList<>();
+	private final Map< String, EvaluationFunction > availableFunctions = new TreeMap<>();
+	private final Map< String, EvaluationFunction > chosenFunctions = new TreeMap<>();
+	private Controller controller = new NullController();
 
-	public void generateData( final Mat[] images, final MatOfPoint2f[] points, final Controller c ) {
-		assert ( images.length == points.length );
-		ImageUtils.performAffineTransformations(images, points, true);
-		final ResultImage resultImage = ImageUtils.getResultImage(images);
-		Image image = ImageUtils.createImage(resultImage.data, resultImage.width, resultImage.height, resultImage.channels);
-		c.setImage(image);
-		ImageUtils.convertType(images, Imgproc.COLOR_BGRA2BGR);
-		performDataGeneration(images, resultImage.mask);
-	}
-
-	private void performDataGeneration( final Mat[] images, final boolean[] mask ) {
-		initializeWithBasicFunctions();
-		calculateStatistics(images, mask);
-	}
-
-	public void initializeWithBasicFunctions() {
-		clearFunctions();
+	DataGenerator() {
 		injectBasicFunctions();
 	}
 
-	public void clearFunctions() {
-		functions.clear();
+	public void injectBasicFunctions() {
+		injectFunction("Mean value", MeanValue.INSTANCE);
+		injectFunction("StdDev value", StdDeviationValue.INSTANCE);
+		injectFunction("Mean red", ( images, mask ) -> FunctionUtils.calculateMeans(images, mask, 2));
 	}
 
-	private void injectBasicFunctions() {
-		injectFunction(MeanValue.INSTANCE);
-		injectFunction(StdDeviationValue.INSTANCE);
-		injectFunction(( images, mask ) -> FunctionUtils.calculateMeans(images, mask, 2));
+	public void generateData( final Mat[] images, final MatOfPoint2f[] points ) {
+		assert ( images.length == points.length );
+//		ImageUtils.performAffineTransformations(images);
+		ImageUtils.performAffineTransformations(images, points);
+		final ResultImage resultImage = ImageUtils.getResultImage(images);
+		Image image = ImageUtils.createImage(resultImage.data, resultImage.width, resultImage.height, resultImage.channels);
+		controller.setImage(image);
+		ImageUtils.convertType(images, Imgproc.COLOR_BGRA2BGR);
+		calculateStatistics(images, resultImage.mask);
 	}
 
-	public void injectFunction( final EvaluationFunction function ) {
-		functions.add(function);
+	public void injectFunction( final String key, final EvaluationFunction function ) {
+		availableFunctions.put(key, function);
 	}
 
 	private void calculateStatistics( final Mat[] images, final boolean[] mask ) {
-		for ( EvaluationFunction f : functions ) {
-			System.out.println(Arrays.toString(
-					f.evaluate(ImageUtils.getImagesCopy(images), ImageUtils.getMaskCopy(mask))));
+		for ( Map.Entry<String, EvaluationFunction> e : chosenFunctions.entrySet() ) {
+			System.out.println(e.getKey() + ": " + Arrays.toString(
+					e.getValue().evaluate(ImageUtils.getImagesCopy(images), ImageUtils.getMaskCopy(mask))));
 		}
+	}
+
+	public void chooseFunction( final String key ) {
+		chosenFunctions.put(key, availableFunctions.get(key));
+	}
+
+	public void chooseAllAvailableFunctions() {
+		chosenFunctions.putAll(availableFunctions);
+	}
+
+	public void clearAvailableFunctions() {
+		availableFunctions.clear();
+	}
+
+	public void clearChosenFunctions() {
+		chosenFunctions.clear();
+	}
+
+	public void setController( final Controller controller ) {
+		this.controller = controller;
 	}
 
 }

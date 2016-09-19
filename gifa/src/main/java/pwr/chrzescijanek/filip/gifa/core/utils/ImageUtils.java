@@ -4,10 +4,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Scalar;
+import org.opencv.core.*;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.video.Video;
 
@@ -74,13 +72,34 @@ public final class ImageUtils {
 		return imageCopy;
 	}
 
-	public static void performAffineTransformations( final Mat[] images, final MatOfPoint2f[] points, final boolean usePoints ) {
+	public static void performAffineTransformations( final Mat[] images) {
 		final int noOfImages = images.length;
 		for ( final Mat m : images )
 			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2BGRA);
 		for ( int i = 1; i < noOfImages; i++ ) {
-			final Mat warpMat = usePoints ?
-					Imgproc.getAffineTransform(points[i], points[0]) : Video.estimateRigidTransform(images[i], images[0], true);
+			images[i] = transformToSize(images[i], images[0]);
+//			Imgcodecs.imwrite("lol.png", images[i]);
+			final Mat warpMat = Video.estimateRigidTransform(images[i], images[0], false);
+			Imgproc.warpAffine(images[i], images[i], warpMat, images[0].size(),
+					Imgproc.INTER_NEAREST, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
+		}
+	}
+
+	public static Mat transformToSize( final Mat src, final Mat dst ) {
+		final MatOfPoint2f srcPoints = new MatOfPoint2f(new Point(src.width(), 0), new Point(src.width(), 115), new Point(20, 0));
+		final MatOfPoint2f dstPoints = new MatOfPoint2f(new Point(0, 0), new Point(dst.width(), 0), new Point(0, dst.height()));
+		final Mat warpMat = Imgproc.getAffineTransform(srcPoints, dstPoints);
+		final Mat result = new Mat(dst.size(), dst.type());
+		Imgproc.warpAffine(src, result, warpMat, result.size(), Imgproc.INTER_NEAREST, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
+		return result;
+	}
+
+	public static void performAffineTransformations( final Mat[] images, final MatOfPoint2f[] points) {
+		final int noOfImages = images.length;
+		for ( final Mat m : images )
+			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2BGRA);
+		for ( int i = 1; i < noOfImages; i++ ) {
+			final Mat warpMat = Imgproc.getAffineTransform(points[i], points[0]);
 			Imgproc.warpAffine(images[i], images[i], warpMat, images[0].size(),
 					Imgproc.INTER_NEAREST, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
 		}
