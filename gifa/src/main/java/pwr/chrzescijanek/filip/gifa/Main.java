@@ -12,9 +12,11 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
+import pwr.chrzescijanek.filip.gifa.core.controller.Controller;
 import pwr.chrzescijanek.filip.gifa.generator.DataGenerator;
 
 import java.util.ArrayList;
+import java.util.prefs.Preferences;
 
 public class Main extends Application {
 
@@ -30,10 +32,21 @@ public class Main extends Application {
 	public void start( final Stage primaryStage ) throws Exception {
 		final FXMLLoader loader = new FXMLLoader(getClass().getResource("/sample.fxml"));
 		final Parent root = loader.load();
-		DataGenerator.INSTANCE.setController(loader.getController());
+		final Controller controller = loader.getController();
+		DataGenerator.INSTANCE.setController(controller);
 		doSample();
-		primaryStage.setTitle("Hello World");
-		primaryStage.setScene(new Scene(root, 640, 480));
+		primaryStage.setTitle("gifa");
+		Scene scene = new Scene(root, root.minWidth(-1), root.minHeight(-1));
+		Preferences prefs = Preferences.userNodeForPackage(Main.class);
+		String theme = prefs.get(Controller.THEME_PREFERENCE_KEY, Controller.THEME_LIGHT);
+		if (theme.equals(Controller.THEME_LIGHT)) {
+			controller.getThemeToggleGroup().selectToggle(controller.getLightThemeToggle());
+			scene.getStylesheets().add(Controller.THEME_LIGHT);
+		} else {
+			controller.getThemeToggleGroup().selectToggle(controller.getDarkThemeToggle());
+			scene.getStylesheets().add(Controller.THEME_DARK);
+		}
+		primaryStage.setScene(scene);
 		primaryStage.show();
 	}
 
