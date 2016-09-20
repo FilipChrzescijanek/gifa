@@ -1,0 +1,19 @@
+.label {
+    -fx-text-fill: #222;
+}
+
+.menu-item .label {
+    -fx-text-fill: #222;
+}
+
+.tab-label {
+    -fx-text-fill: #222;
+}
+
+.button {
+    -fx-text-fill: #222;
+}
+
+.scroll-pane {
+    -fx-background-color:transparent;
+}

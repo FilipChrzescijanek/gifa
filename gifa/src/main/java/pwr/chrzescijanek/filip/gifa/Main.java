@@ -30,7 +30,7 @@ public class Main extends Application {
 
 	@Override
 	public void start( final Stage primaryStage ) throws Exception {
-		final FXMLLoader loader = new FXMLLoader(getClass().getResource("/sample.fxml"));
+		final FXMLLoader loader = new FXMLLoader(getClass().getResource("/gifa-gui.fxml"));
 		final Parent root = loader.load();
 		final Controller controller = loader.getController();
 		DataGenerator.INSTANCE.setController(controller);

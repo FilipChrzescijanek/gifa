@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="root" styleClass="root" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pwr.chrzescijanek.filip.gifa.core.controller.Controller">
+   <children>
+      <MenuBar fx:id="menuBar">
+        <menus>
+          <Menu fx:id="fileMenu" text="_File">
+            <items>
+              <MenuItem fx:id="fileMenuLoadImages" onAction="#loadImages" text="_Load images" />
+                  <MenuItem fx:id="fileMenuExportToCsv" onAction="#exportToCsv" text="_Export to CSV" />
+                  <MenuItem fx:id="fileMenuExit" onAction="#exit" text="E_xit" />
+            </items>
+          </Menu>
+          <Menu fx:id="optionsMenu" text="_Options">
+            <items>
+                  <Menu fx:id="optionsMenuTheme" text="_Theme">
+                     <items>
+                        <RadioMenuItem fx:id="optionsMenuThemeLight" onAction="#applyLightTheme" text="_Light">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="theme" />
+                           </toggleGroup>
+                        </RadioMenuItem>
+                        <RadioMenuItem fx:id="optionsMenuThemeDark" onAction="#applyDarkTheme" text="_Dark" toggleGroup="$theme" />
+                     </items>
+                  </Menu>
+            </items>
+          </Menu>
+          <Menu fx:id="helpMenu" text="_Help">
+            <items>
+              <MenuItem fx:id="helpMenuAbout" onAction="#about" text="_About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+         <tabs>
+            <Tab fx:id="imagesTab" closable="false" text="Images">
+               <content>
+                  <GridPane fx:id="imagesMainPane">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="20.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="60.0" prefWidth="100.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="20.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <GridPane fx:id="imagesListGrid" alignment="CENTER">
+                           <columnConstraints>
+                              <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <ListView fx:id="imagesList" />
+                              <Button fx:id="loadImagesButton" mnemonicParsing="false" onAction="#loadImages" text="Load images" />
+                           </children>
+                           <padding>
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                           </padding>
+                        </GridPane>
+                        <BorderPane fx:id="centerBorderPane" GridPane.columnIndex="1">
+                           <center>
+                              <ScrollPane fx:id="imageScrollPane">
+                                 <content>
+                                    <AnchorPane fx:id="imageViewAnchor">
+                                       <children>
+                                          <ImageView fx:id="imageView" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </ScrollPane>
+                           </center>
+                           <bottom>
+                              <HBox fx:id="centerVBoxHBox" alignment="CENTER_RIGHT" minHeight="40.0" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <Label fx:id="scaleLabel" text="Scale">
+                                       <HBox.margin>
+                                          <Insets right="25.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                    <Label fx:id="mousePositionLabel" text="Position">
+                                       <HBox.margin>
+                                          <Insets right="5.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                           </bottom>
+                        </BorderPane>
+                        <VBox fx:id="rightVBox" alignment="CENTER" GridPane.columnIndex="2">
+                           <children>
+                              <TabPane fx:id="rightVBoxTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="SOMETIMES">
+                                 <tabs>
+                                    <Tab fx:id="toolboxTab" text="Toolbox">
+                                       <content>
+                                          <VBox fx:id="toolboxVBox" alignment="CENTER_LEFT" spacing="3.0">
+                                             <children>
+                                                <HBox fx:id="methodHBox" alignment="CENTER" spacing="25.0">
+                                                   <children>
+                                                      <RadioButton fx:id="triangleRadioButton" mnemonicParsing="false" onAction="#showTriangle" text="Triangle">
+                                                         <toggleGroup>
+                                                            <ToggleGroup fx:id="method" />
+                                                         </toggleGroup>
+                                                      </RadioButton>
+                                                      <RadioButton fx:id="rectangleRadioButton" mnemonicParsing="false" onAction="#showRectangle" text="Rectangle" toggleGroup="$method" />
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets bottom="5.0" top="5.0" />
+                                                   </VBox.margin>
+                                                </HBox>
+                                                <StackPane fx:id="toolboxStackPane">
+                                                   <children>
+                                                      <GridPane fx:id="triangleGroupGrid" hgap="10.0" vgap="2.0">
+                                                         <columnConstraints>
+                                                            <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
+                                                            <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
+                                                            <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
+                                                            <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
+                                                         </columnConstraints>
+                                                         <rowConstraints>
+                                                            <RowConstraints percentHeight="25.0" vgrow="SOMETIMES" />
+                                                            <RowConstraints percentHeight="25.0" vgrow="SOMETIMES" />
+                                                            <RowConstraints percentHeight="25.0" vgrow="SOMETIMES" />
+                                                            <RowConstraints percentHeight="25.0" vgrow="SOMETIMES" />
+                                                         </rowConstraints>
+                                                         <children>
+                                                            <Label fx:id="triangleGroupLabel" text="Triangle" GridPane.columnSpan="4" />
+                                                            <Label fx:id="firstPointXLabel" text="X₁" GridPane.rowIndex="1" />
+                                                            <Label fx:id="secondPointXLabel" text="X₂" GridPane.rowIndex="2" />
+                                                            <Label fx:id="thirdPointXLabel" text="X₃" GridPane.rowIndex="3" />
+                                                            <Label fx:id="firstPointYLabel" text="Y₁" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                                            <Label fx:id="secondPointYLabel" text="Y₂" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                                            <Label fx:id="thirdPointYLabel" text="Y₃" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                                                            <TextField fx:id="firstPointXTextField" onAction="#firstPointXChanged" text="10" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                            <TextField fx:id="firstPointYTextField" onAction="#firstPointYChanged" text="10" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                                            <TextField fx:id="secondPointXTextField" onAction="#secondPointXChanged" text="10" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                            <TextField fx:id="secondPointYTextField" onAction="#secondPointYChanged" text="10" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                                            <TextField fx:id="thirdPointXTextField" onAction="#thirdPointXChanged" text="10" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                                            <TextField fx:id="thirdPointYTextField" onAction="#thirdPointYChanged" text="10" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                                                         </children>
+                                                      </GridPane>
+                                                      <GridPane fx:id="rectangleGroupGrid" hgap="10.0" vgap="2.0" visible="false">
+                                                         <columnConstraints>
+                                                            <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
+                                                            <ColumnConstraints hgrow="SOMETIMES" minWidth="1.0" percentWidth="25.0" />
+                                                            <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
+                                                            <ColumnConstraints hgrow="SOMETIMES" percentWidth="25.0" />
+                                                         </columnConstraints>
+                                                         <rowConstraints>
+                                                            <RowConstraints percentHeight="33.0" vgrow="ALWAYS" />
+                                                            <RowConstraints percentHeight="33.0" vgrow="ALWAYS" />
+                                                            <RowConstraints percentHeight="33.0" vgrow="ALWAYS" />
+                                                         </rowConstraints>
+                                                         <children>
+                                                            <Label fx:id="rectangleGroupLabel" text="ROI" GridPane.columnSpan="4" />
+                                                            <Label fx:id="rectangleXLabel" text="X" GridPane.rowIndex="1" />
+                                                            <Label fx:id="rectangleWidthLabel" text="Width" GridPane.rowIndex="2" />
+                                                            <Label fx:id="rectangleYLabel" text="Y" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                                            <Label fx:id="rectangleHeightLabel" text="Height" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                                            <TextField fx:id="rectangleXTextField" onAction="#rectangleXChanged" text="10" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                            <TextField fx:id="rectangleYTextField" onAction="#rectangleYChanged" text="10" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                                            <TextField fx:id="rectangleWidthTextField" onAction="#rectangleWidthChanged" text="10" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                            <TextField fx:id="rectangleHeightTexfField" onAction="#rectangleHeightChanged" text="10" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                                         </children>
+                                                      </GridPane>
+                                                   </children>
+                                                </StackPane>
+                                                <Label fx:id="flipLabel" text="Flip">
+                                                   <VBox.margin>
+                                                      <Insets top="10.0" />
+                                                   </VBox.margin></Label>
+                                                <ToolBar fx:id="flipToolbar" orientation="VERTICAL">
+                                                   <items>
+                                                      <Button fx:id="verticalFlipButton" mnemonicParsing="false" onAction="#flipVertical" text="Vertical" />
+                                                      <Button fx:id="horizontalFlipButton" mnemonicParsing="false" onAction="#flipHorizontal" text="Horizontal" />
+                                                   </items>
+                                                </ToolBar>
+                                                <Label fx:id="rotateLabel" text="Rotate">
+                                                   <VBox.margin>
+                                                      <Insets top="10.0" />
+                                                   </VBox.margin></Label>
+                                                <ToolBar fx:id="rotateToolbar" orientation="VERTICAL">
+                                                   <items>
+                                                      <Button fx:id="rotateLeftButton" mnemonicParsing="false" onAction="#rotateLeft" text="Left 90°" />
+                                                      <Button fx:id="rotateRightButton" mnemonicParsing="false" onAction="#rotateRight" text="Right 90°" />
+                                                   </items>
+                                                </ToolBar>
+                                             </children>
+                                             <padding>
+                                                <Insets left="15.0" right="15.0" />
+                                             </padding>
+                                          </VBox>
+                                       </content>
+                                    </Tab>
+                                    <Tab fx:id="featuresTab" text="Features">
+                                       <content>
+                                          <BorderPane fx:id="featuresBorderPane">
+                                             <center>
+                                                <ScrollPane fx:id="featuresScrollPane" fitToWidth="true">
+                                                   <content>
+                                                      <VBox fx:id="featuresVBox" />
+                                                   </content>
+                                                </ScrollPane>
+                                             </center>
+                                             <bottom>
+                                                <HBox fx:id="selectionButtonsHBox" alignment="CENTER" minHeight="40.0" BorderPane.alignment="CENTER">
+                                                   <children>
+                                                      <Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAllFunctions" text="Select all">
+                                                         <HBox.margin>
+                                                            <Insets right="20.0" />
+                                                         </HBox.margin>
+                                                      </Button>
+                                                      <Button fx:id="deselectAllButton" mnemonicParsing="false" onAction="#deselectAllFunctions" text="Deselect all">
+                                                         <HBox.margin>
+                                                            <Insets left="20.0" />
+                                                         </HBox.margin>
+                                                      </Button>
+                                                   </children>
+                                                </HBox>
+                                             </bottom>
+                                          </BorderPane>
+                                       </content>
+                                    </Tab>
+                                 </tabs>
+                              </TabPane>
+                              <Button fx:id="resultsButton" mnemonicParsing="false" onAction="#getResults" text="Get results">
+                                 <VBox.margin>
+                                    <Insets bottom="25.0" top="25.0" />
+                                 </VBox.margin></Button>
+                           </children>
+                        </VBox>
+                     </children>
+                  </GridPane>
+               </content>
+            </Tab>
+            <Tab fx:id="resultsTab" closable="false" text="Results">
+               <content>
+                  <BorderPane fx:id="resultsMainPane">
+                     <center>
+                        <ScrollPane fx:id="resultsScrollPane" fitToWidth="true" BorderPane.alignment="CENTER">
+                           <content>
+                              <GridPane fx:id="resultsGrid">
+                                 <columnConstraints>
+                                    <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" />
+                                    <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                              </GridPane>
+                           </content>
+                        </ScrollPane>
+                     </center>
+                     <bottom>
+                        <HBox fx:id="resultsControls" alignment="CENTER_LEFT" minHeight="40.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <Label fx:id="resultsColumnsLabel" text="Number of columns">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin></Label>
+                              <TextField fx:id="resultsColumnsTextField" alignment="CENTER" onAction="#columnsChanged" prefWidth="50.0" text="2">
+                                 <HBox.margin>
+                                    <Insets left="20.0" />
+                                 </HBox.margin></TextField>
+                           </children>
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                           <BorderPane.margin>
+                              <Insets left="50.0" />
+                           </BorderPane.margin>
+                        </HBox>
+                     </bottom>
+                  </BorderPane>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </children>
+</VBox>
