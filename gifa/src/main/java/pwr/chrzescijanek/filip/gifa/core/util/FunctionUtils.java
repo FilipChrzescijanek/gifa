@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.core.utils;
+package pwr.chrzescijanek.filip.gifa.core.util;
 
 import org.opencv.core.Mat;
 

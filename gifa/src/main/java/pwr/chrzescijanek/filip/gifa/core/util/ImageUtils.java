@@ -1,11 +1,10 @@
-package pwr.chrzescijanek.filip.gifa.core.utils;
+package pwr.chrzescijanek.filip.gifa.core.util;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import org.opencv.core.*;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.video.Video;
 
@@ -105,10 +104,10 @@ public final class ImageUtils {
 		}
 	}
 
-	public static Image createImage( final byte[] data, final int width, final int height, final int noOfChannels ) {
+	public static Image createImage( final byte[] data, final int width, final int height, final int noOfChannels, final PixelFormat format ) {
 		final WritableImage img = new WritableImage(width, height);
 		final PixelWriter pw = img.getPixelWriter();
-		pw.setPixels(0, 0, width, height, PixelFormat.getByteBgraPreInstance(), ByteBuffer.wrap(data),
+		pw.setPixels(0, 0, width, height, format, ByteBuffer.wrap(data),
 				width * noOfChannels);
 		return img;
 	}

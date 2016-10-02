@@ -2,8 +2,8 @@ package pwr.chrzescijanek.filip.gifa.core.function;
 
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import pwr.chrzescijanek.filip.gifa.core.utils.FunctionUtils;
-import pwr.chrzescijanek.filip.gifa.core.utils.ImageUtils;
+import pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils;
+import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
 
 public enum StdDeviationValue implements EvaluationFunction {
 
