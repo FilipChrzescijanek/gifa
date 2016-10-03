@@ -16,6 +16,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
@@ -96,7 +97,7 @@
                                     <AnchorPane fx:id="imageViewAnchor">
                                        <children>
                                           <ImageView fx:id="imageView" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                          <Triangle fx:id="triangle" points="0, 0, 0, 0, 0, 0" />
+                                          <Triangle fx:id="triangle" points="0,0,0,0,0,0" />
                                           <RectangleOfInterest fx:id="rectangle" />
                                        </children>
                                     </AnchorPane>
@@ -210,10 +211,38 @@
                                                 </StackPane>
                                                 <ToolBar fx:id="toolbar" orientation="HORIZONTAL">
                                                    <items>
-                                                      <Button fx:id="verticalFlipButton" mnemonicParsing="false" onAction="#flipVertical" text="Vertical" />
-                                                      <Button fx:id="horizontalFlipButton" mnemonicParsing="false" onAction="#flipHorizontal" text="Horizontal" />
-                                                      <Button fx:id="rotateLeftButton" mnemonicParsing="false" onAction="#rotateLeft" text="Left 90°" />
-                                                      <Button fx:id="rotateRightButton" mnemonicParsing="false" onAction="#rotateRight" text="Right 90°" />
+                                                      <Button fx:id="verticalFlipButton" mnemonicParsing="false" onAction="#flipVertical">
+                                                         <graphic>
+                                                            <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                                               <image>
+                                                                  <Image url="@vertical-flip.png" />
+                                                               </image>
+                                                            </ImageView>
+                                                         </graphic></Button>
+                                                      <Button fx:id="horizontalFlipButton" mnemonicParsing="false" onAction="#flipHorizontal">
+                                                         <graphic>
+                                                            <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                                               <image>
+                                                                  <Image url="@horizontal-flip.png" />
+                                                               </image>
+                                                            </ImageView>
+                                                         </graphic></Button>
+                                                      <Button fx:id="rotateLeftButton" mnemonicParsing="false" onAction="#rotateLeft">
+                                                         <graphic>
+                                                            <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                                               <image>
+                                                                  <Image url="@undo.png" />
+                                                               </image>
+                                                            </ImageView>
+                                                         </graphic></Button>
+                                                      <Button fx:id="rotateRightButton" mnemonicParsing="false" onAction="#rotateRight">
+                                                         <graphic>
+                                                            <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                                               <image>
+                                                                  <Image url="@redo.png" />
+                                                               </image>
+                                                            </ImageView>
+                                                         </graphic></Button>
                                                    </items>
                                                 </ToolBar>
                                              </children>

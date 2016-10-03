@@ -22,6 +22,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -31,6 +32,7 @@ import pwr.chrzescijanek.filip.gifa.generator.DataGenerator;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -367,7 +369,7 @@ public class Controller {
 
 	@FXML
 	void columnsChanged( ActionEvent event ) {
-
+		placeCharts();
 	}
 
 	@FXML
@@ -400,12 +402,30 @@ public class Controller {
 
 	@FXML
 	void flipHorizontal( ActionEvent event ) {
-
+		String imageName = imagesList.getSelectionModel().getSelectedItem();
+		ImageData img = State.INSTANCE.images.get(imageName);
+		Core.flip(img.imageData, img.imageData, 1);
+		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(img.imageData), img.imageData.width(), img.imageData.height(),
+				img.imageData.channels(), PixelFormat.getByteRgbInstance());
+		final ImageData newImageData = new ImageData(fxImage, img.imageData);
+		newImageData.triangle.copy(triangle);
+		newImageData.rectangle.copy(rectangle);
+		State.INSTANCE.images.put(imageName, newImageData);
+		imageView.setImage(fxImage);
 	}
 
 	@FXML
 	void flipVertical( ActionEvent event ) {
-
+		String imageName = imagesList.getSelectionModel().getSelectedItem();
+		ImageData img = State.INSTANCE.images.get(imageName);
+		Core.flip(img.imageData, img.imageData, 0);
+		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(img.imageData), img.imageData.width(), img.imageData.height(),
+				img.imageData.channels(), PixelFormat.getByteRgbInstance());
+		final ImageData newImageData = new ImageData(fxImage, img.imageData);
+		newImageData.triangle.copy(triangle);
+		newImageData.rectangle.copy(rectangle);
+		State.INSTANCE.images.put(imageName, newImageData);
+		imageView.setImage(fxImage);
 	}
 
 	@FXML
@@ -426,9 +446,37 @@ public class Controller {
 		points[2] = State.INSTANCE.images.get("tri-new.jpg").triangle.getMatOfPoints();
 		State.INSTANCE.result.setValue(DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images), points));
 		resultsImageView.setImage(State.INSTANCE.result.getValue().resultImage);
+		State.INSTANCE.charts.setValue(generateCharts());
+		placeCharts();
+	}
 
-		Map<String, double[]> results = State.INSTANCE.result.getValue().results;
+	private void placeCharts() {
+		List<BarChart<String, Number>> charts = State.INSTANCE.charts.get();
+		if (charts != null) {
+			resultsGrid.getChildren().clear();
+			resultsGrid.getColumnConstraints().clear();
+			resultsGrid.getRowConstraints().clear();
+			final int noOfColumns = Integer.parseInt(resultsColumnsTextField.getText());
+			for (int i = 0; i < noOfColumns; i++) {
+				final ColumnConstraints columnConstraints = new ColumnConstraints();
+				columnConstraints.setPercentWidth(100.0 / noOfColumns);
+				resultsGrid.getColumnConstraints().add(columnConstraints);
+			}
+			final int noOfRows = charts.size() / noOfColumns + 1;
+			for (int i = 0; i < noOfRows; i++) {
+				List<BarChart<String, Number>> chartsInRow = new ArrayList<>();
+				int n = 0;
+				while (i * noOfColumns + n < charts.size() && n < noOfColumns) {
+					chartsInRow.add(charts.get(i * noOfColumns + n));
+					n++;
+				}
+				resultsGrid.addRow(i, chartsInRow.toArray(new BarChart[0]));
+			}
+		}
+	}
 
+	private List<BarChart<String, Number>> generateCharts() {Map<String, double[]> results = State.INSTANCE.result.getValue().results;
+		List<BarChart<String, Number>> charts = new ArrayList<>();
 		for ( Map.Entry<String, double[]> e : results.entrySet()) {
 			final CategoryAxis xAxis = new CategoryAxis();
 			final NumberAxis yAxis = new NumberAxis();
@@ -444,9 +492,9 @@ public class Controller {
 
 			bc.getData().addAll(series1);
 			bc.setLegendVisible(false);
-			resultsGrid.add(bc, resultsGrid.getChildren().size(),  0);
+			charts.add(bc);
 		}
-		resultsGrid.setPrefHeight(1000.0);
+		return charts;
 	}
 
 	@FXML
@@ -515,12 +563,33 @@ public class Controller {
 
 	@FXML
 	void rotateLeft( ActionEvent event ) {
+		String imageName = imagesList.getSelectionModel().getSelectedItem();
+		ImageData img = State.INSTANCE.images.get(imageName);
+		Core.transpose(img.imageData, img.imageData);
+		Core.flip(img.imageData, img.imageData, 0);
+		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(img.imageData), img.imageData.width(), img.imageData.height(),
+				img.imageData.channels(), PixelFormat.getByteRgbInstance());
+		final ImageData newImageData = new ImageData(fxImage, img.imageData);
+		newImageData.triangle.copy(triangle);
+		newImageData.rectangle.copy(rectangle);
+		State.INSTANCE.images.put(imageName, newImageData);
+		imageView.setImage(fxImage);
 
 	}
 
 	@FXML
 	void rotateRight( ActionEvent event ) {
-
+		String imageName = imagesList.getSelectionModel().getSelectedItem();
+		ImageData img = State.INSTANCE.images.get(imageName);
+		Core.transpose(img.imageData, img.imageData);
+		Core.flip(img.imageData, img.imageData, 1);
+		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(img.imageData), img.imageData.width(), img.imageData.height(),
+				img.imageData.channels(), PixelFormat.getByteRgbInstance());
+		final ImageData newImageData = new ImageData(fxImage, img.imageData);
+		newImageData.triangle.copy(triangle);
+		newImageData.rectangle.copy(rectangle);
+		State.INSTANCE.images.put(imageName, newImageData);
+		imageView.setImage(fxImage);
 	}
 
 	@FXML
@@ -714,6 +783,7 @@ public class Controller {
 		rectangleYTextField.textProperty().bindBidirectional(rectangle.yProperty(), new NumberStringConverter());
 		rectangleWidthTextField.textProperty().bindBidirectional(rectangle.widthProperty(), new NumberStringConverter());
 		rectangleHeightTextField.textProperty().bindBidirectional(rectangle.heightProperty(), new NumberStringConverter());
+		resultsColumnsTextField.textProperty().addListener(( observable, oldValue, newValue ) -> placeCharts());
 //		Bindings.bindBidirectional(rectangleXTextField.textProperty(), rectangle.xProperty(), new NumberStringConverter());
 //		Bindings.bindBidirectional(rectangleYTextField.textProperty(), rectangle.yProperty(), new NumberStringConverter());
 //		Bindings.bindBidirectional(rectangleWidthTextField.textProperty(), rectangle.widthProperty(), new NumberStringConverter());
