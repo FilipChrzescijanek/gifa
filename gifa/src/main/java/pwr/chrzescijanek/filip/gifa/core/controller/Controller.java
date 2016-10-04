@@ -4,10 +4,10 @@ import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -117,13 +117,19 @@ public class Controller {
 	private AnchorPane imageViewAnchor;
 
 	@FXML
+	private AnchorPane resultsImageViewAnchor;
+
+	@FXML
+	private Group imageViewGroup;
+
+	@FXML
 	private ImageView imageView;
 
 	@FXML
 	private HBox centerVBoxHBox;
 
 	@FXML
-	private Label scaleLabel;
+	private ComboBox<String> scaleCombo;
 
 	@FXML
 	private Label mousePositionLabel;
@@ -297,13 +303,16 @@ public class Controller {
 	private BorderPane resultsMainPane;
 
 	@FXML
-	private StackPane resultsStackPane;
-
-	@FXML
 	private ImageView resultsImageView;
 
 	@FXML
-	private ScrollPane resultsScrollPane;
+	private Group resultsImageViewGroup;
+
+	@FXML
+	private ScrollPane resultsGridScrollPane;
+
+	@FXML
+	private ScrollPane resultsImageScrollPane;
 
 	@FXML
 	private GridPane resultsGrid;
@@ -325,6 +334,12 @@ public class Controller {
 
 	@FXML
 	private TextField resultsColumnsTextField;
+
+	@FXML
+	private ComboBox<String> resultsScaleCombo;
+
+	@FXML
+	private Label resultsMousePositionLabel;
 
 	@FXML
 	private Triangle triangle;
@@ -482,7 +497,6 @@ public class Controller {
 			final NumberAxis yAxis = new NumberAxis();
 			final BarChart< String, Number > bc = new BarChart<>(xAxis, yAxis);
 			bc.setTitle(e.getKey());
-			xAxis.setLabel("Image");
 			yAxis.setLabel("Value");
 
 			XYChart.Series series1 = new XYChart.Series();
@@ -676,7 +690,7 @@ public class Controller {
 		assert imageViewAnchor != null : "fx:id=\"imageViewAnchor\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert imageView != null : "fx:id=\"imageView\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert centerVBoxHBox != null : "fx:id=\"centerVBoxHBox\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert scaleLabel != null : "fx:id=\"scaleLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert scaleCombo != null : "fx:id=\"scaleCombo\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert mousePositionLabel != null : "fx:id=\"mousePositionLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert rightVBox != null : "fx:id=\"rightVBox\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert rightVBoxTabPane != null : "fx:id=\"rightVBoxTabPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
@@ -740,20 +754,30 @@ public class Controller {
 		assert graphsRadioButton != null : "fx:id=\"graphsRadioButton\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert resultsColumnsLabel != null : "fx:id=\"resultsColumnsLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert resultsColumnsTextField != null : "fx:id=\"resultsColumnsTextField\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert resultsScrollPane != null : "fx:id=\"resultsScrollPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert resultsStackPane != null : "fx:id=\"resultsStackPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert resultsGridScrollPane != null : "fx:id=\"resultsGridScrollPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert resultsImageScrollPane != null : "fx:id=\"resultsImageScrollPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert resultsImageView != null : "fx:id=\"resultsImageView\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert resultsGrid != null : "fx:id=\"resultsGrid\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert triangle != null : "fx:id=\"triangle\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert rectangle != null : "fx:id=\"rectangl2e\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert rectangle != null : "fx:id=\"rectangle\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert resultsImageViewAnchor != null : "fx:id=\"resultsImageViewAnchor\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert imageViewGroup != null : "fx:id=\"imageViewGroup\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert resultsImageViewGroup != null : "fx:id=\"resultsImageViewGroup\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert resultsScaleCombo != null : "fx:id=\"resultsScaleCombo\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert resultsMousePositionLabel != null : "fx:id=\"resultsMousePositionLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 
+		scaleCombo.itemsProperty().get().addAll(
+				"25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%", "250%", "500%", "1000%"
+		);
+		scaleCombo.setValue("100%");
+		resultsScaleCombo.itemsProperty().get().addAll(
+				"25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%", "250%", "500%", "1000%"
+		);
+		resultsScaleCombo.setValue("100%");
 		createCheckBoxes();
 		setVisibilityBindings();
 		setEnablementBindings();
 		setSelectionListeners();
-		scaleLabel.textProperty().bind(imageView.scaleXProperty().multiply(100).asString("%.0f%%"));
-		imageViewAnchor.setOnMouseMoved(event -> mousePositionLabel.setText(event.getX() + " : " + event.getY()));
-		imageViewAnchor.setOnMouseExited(event -> mousePositionLabel.setText("- : -"));
 		rectangleFillColor.setValue(Color.DODGERBLUE);
 		rectangleStrokeColor.setValue(Color.RED);
 		triangleFillColor.setValue(Color.DODGERBLUE);
@@ -773,6 +797,16 @@ public class Controller {
 		addNumberTextFieldListener(rectangleWidthTextField);
 		addNumberTextFieldListener(rectangleHeightTextField);
 		addNumberTextFieldListener(resultsColumnsTextField);
+		addXTextFieldListener(firstPointXTextField);
+		addXTextFieldListener(secondPointXTextField);
+		addXTextFieldListener(thirdPointXTextField);
+		addXTextFieldListener(rectangleXTextField);
+		addYTextFieldListener(firstPointYTextField);
+		addYTextFieldListener(secondPointYTextField);
+		addYTextFieldListener(thirdPointYTextField);
+		addYTextFieldListener(rectangleYTextField);
+		addWidthTextFieldListener(rectangleWidthTextField);
+		addHeightTextFieldListener(rectangleHeightTextField);
 		bindTrianglePoint(firstPointXTextField, 0);
 		bindTrianglePoint(firstPointYTextField, 1);
 		bindTrianglePoint(secondPointXTextField, 2);
@@ -783,21 +817,99 @@ public class Controller {
 		rectangleYTextField.textProperty().bindBidirectional(rectangle.yProperty(), new NumberStringConverter());
 		rectangleWidthTextField.textProperty().bindBidirectional(rectangle.widthProperty(), new NumberStringConverter());
 		rectangleHeightTextField.textProperty().bindBidirectional(rectangle.heightProperty(), new NumberStringConverter());
+		setImageViewControls(imageView, imageScrollPane, imageViewGroup, scaleCombo, mousePositionLabel);
+		setImageViewControls(resultsImageView, resultsImageScrollPane, resultsImageViewGroup, resultsScaleCombo, resultsMousePositionLabel);
 		resultsColumnsTextField.textProperty().addListener(( observable, oldValue, newValue ) -> placeCharts());
-//		Bindings.bindBidirectional(rectangleXTextField.textProperty(), rectangle.xProperty(), new NumberStringConverter());
-//		Bindings.bindBidirectional(rectangleYTextField.textProperty(), rectangle.yProperty(), new NumberStringConverter());
-//		Bindings.bindBidirectional(rectangleWidthTextField.textProperty(), rectangle.widthProperty(), new NumberStringConverter());
-//		Bindings.bindBidirectional(rectangleHeightTextField.textProperty(), rectangle.heightProperty(), new NumberStringConverter());
-		//		Bindings.bindBidirectional(resultsColumnsTextField.textProperty(), resultsGrid.property.xProperty(), new NumberStringConverter());
+		horizontalFlipButton.setTooltip(new Tooltip("Flip horizontally"));
+		verticalFlipButton.setTooltip(new Tooltip("Flip vertically"));
+		rotateLeftButton.setTooltip(new Tooltip("Rotate left by 90 degrees"));
+		rotateRightButton.setTooltip(new Tooltip("Rotate right by 90 degrees"));
+	}
+
+	private void setImageViewControls(ImageView imageView, ScrollPane imageScrollPane, Group imageViewGroup, ComboBox<String> scaleCombo, Label mousePositionLabel ) {
+		imageViewGroup.setOnMouseMoved(event -> mousePositionLabel.setText((int) event.getX() + " : " + (int) event.getY()));
+		imageViewGroup.setOnMouseExited(event -> mousePositionLabel.setText("- : -"));
+		imageViewGroup.setOnScroll(event -> {
+			if (event.isControlDown()) {
+				double deltaY = event.getDeltaY();
+				if (deltaY > 0) {
+					imageView.setScaleX(imageView.getScaleX() * 1.05);
+				} else {
+					imageView.setScaleX(imageView.getScaleX() * 0.95);
+				}
+			}
+		});
+		imageScrollPane.setOnScroll(event -> {
+			if (event.isControlDown()) {
+				double deltaY = event.getDeltaY();
+				if (deltaY > 0) {
+					imageView.setScaleX(imageView.getScaleX() * 1.05);
+				} else {
+					imageView.setScaleX(imageView.getScaleX() * 0.95);
+				}
+			}
+		});
+		imageView.scaleXProperty().addListener(( observable, oldValue, newValue ) -> {
+			String asString = String.format("%.0f%%", newValue.doubleValue() * 100);
+			if (!scaleCombo.getValue().equals(asString))
+				scaleCombo.setValue(asString);
+		});
+		scaleCombo.valueProperty().addListener(( observable, oldValue, newValue ) -> {
+			if (!newValue.matches("\\d+%"))
+				scaleCombo.setValue(oldValue);
+			else {
+				double scale = Double.parseDouble(newValue.substring(0, newValue.length() - 1)) / 100.0;
+				imageView.setScaleX(scale);
+				imageView.setScaleY(scale);
+					imageView.setTranslateX(imageView.getImage().getWidth() * (1.0 - scale) * -0.5);
+					imageView.setTranslateY(imageView.getImage().getHeight() * (1.0 - scale) * -0.5);
+			}
+		});
 	}
 
 	private void bindTrianglePoint( TextField textField, final int index ) {
-		Bindings.bindBidirectional(textField.textProperty(), triangle.points[index], new NumberStringConverter());
+		Bindings.bindBidirectional(textField.textProperty(), triangle.pointsProperty[index], new NumberStringConverter());
 	}
 
 	private void addNumberTextFieldListener(TextField textField) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			if (!newValue.matches("\\d+(\\.\\d+)?")) textField.setText(oldValue);
+		});
+	}
+
+	private void addXTextFieldListener(TextField textField) {
+		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
+			try {
+				final Image image = imageView.getImage();
+				if (image != null && Double.parseDouble(newValue) > image.getWidth()) textField.setText(oldValue);
+			} catch (NumberFormatException e) {}
+		});
+	}
+
+	private void addYTextFieldListener(TextField textField) {
+		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
+			try {
+				final Image image = imageView.getImage();
+				if (image != null && Double.parseDouble(newValue) > image.getHeight()) textField.setText(oldValue);
+			} catch (NumberFormatException e) {}
+		});
+	}
+
+	private void addWidthTextFieldListener(TextField textField) {
+		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
+			try {
+				final Image image = imageView.getImage();
+				if (image != null && Double.parseDouble(newValue) + rectangle.getX() > image.getWidth()) textField.setText(oldValue);
+			} catch (NumberFormatException e) {}
+		});
+	}
+
+	private void addHeightTextFieldListener(TextField textField) {
+		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
+			try {
+				final Image image = imageView.getImage();
+				if (image != null && Double.parseDouble(newValue) + rectangle.getY() > image.getHeight()) textField.setText(oldValue);
+			} catch (NumberFormatException e) {}
 		});
 	}
 
@@ -818,18 +930,19 @@ public class Controller {
 		imageListProperty.bind(imagesList.itemsProperty());
 		imageViewAnchor.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		loadImagesButton.visibleProperty().bind(imageListProperty.emptyProperty());
-		scaleLabel.visibleProperty().bind(imageView.imageProperty().isNotNull());
+		scaleCombo.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		mousePositionLabel.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		rightVBox.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		triangle.visibleProperty().bind(triangleRadioButton.selectedProperty());
 		triangleGroupGrid.visibleProperty().bind(triangleRadioButton.selectedProperty());
 		rectangle.visibleProperty().bind(rectangleRadioButton.selectedProperty());
 		rectangleGroupGrid.visibleProperty().bind(rectangleRadioButton.selectedProperty());
-		resultsImageView.visibleProperty().bind(resultImageRadioButton.selectedProperty());
-		resultsGrid.visibleProperty().bind(graphsRadioButton.selectedProperty());
+		resultsImageScrollPane.visibleProperty().bind(resultImageRadioButton.selectedProperty());
+		resultsScaleCombo.visibleProperty().bind(resultImageRadioButton.selectedProperty());
+		resultsMousePositionLabel.visibleProperty().bind(resultImageRadioButton.selectedProperty());
+		resultsGridScrollPane.visibleProperty().bind(graphsRadioButton.selectedProperty());
 		resultsColumnsLabel.visibleProperty().bind(graphsRadioButton.selectedProperty());
 		resultsColumnsTextField.visibleProperty().bind(graphsRadioButton.selectedProperty());
-		resultsScrollPane.fitToWidthProperty().bind(graphsRadioButton.selectedProperty());
 	}
 
 	private void setEnablementBindings() {
