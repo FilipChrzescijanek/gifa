@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 
+import static java.lang.Math.min;
+
 public class Controller {
 
 	public static final String THEME_PREFERENCE_KEY = "gifa.theme";
@@ -126,7 +128,10 @@ public class Controller {
 	private ImageView imageView;
 
 	@FXML
-	private HBox centerVBoxHBox;
+	private GridPane bottomGrid;
+
+	@FXML
+	private Label imageSizeLabel;
 
 	@FXML
 	private ComboBox<String> scaleCombo;
@@ -517,17 +522,19 @@ public class Controller {
 		fileChooser.setTitle("Open Resource File");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.bmp"));
 		List< File > selectedFiles = fileChooser.showOpenMultipleDialog((Stage) root.getScene().getWindow());
-		for (File f : selectedFiles) {
-			String filePath = f.getAbsolutePath();
-			String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
-			Mat image = Imgcodecs.imread(filePath, Imgcodecs.CV_LOAD_IMAGE_ANYCOLOR);
-			Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(image), image.width(), image.height(),
-					image.channels(), PixelFormat.getByteRgbInstance());
-			State.INSTANCE.images.put(fileName, new ImageData(fxImage, image));
-			imagesList.getItems().add(fileName);
+		if (selectedFiles != null) {
+			for ( File f : selectedFiles ) {
+				String filePath = f.getAbsolutePath();
+				String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+				Mat image = Imgcodecs.imread(filePath, Imgcodecs.CV_LOAD_IMAGE_ANYCOLOR);
+				Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(image), image.width(), image.height(),
+						image.channels(), PixelFormat.getByteRgbInstance());
+				State.INSTANCE.images.put(fileName, new ImageData(fxImage, image));
+				imagesList.getItems().add(fileName);
+			}
+			loadSample();
+			imagesList.getSelectionModel().selectFirst();
 		}
-		loadSample();
-		imagesList.getSelectionModel().selectFirst();
 	}
 
 	private void loadSample() {
@@ -689,7 +696,7 @@ public class Controller {
 		assert imageScrollPane != null : "fx:id=\"imageScrollPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert imageViewAnchor != null : "fx:id=\"imageViewAnchor\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert imageView != null : "fx:id=\"imageView\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert centerVBoxHBox != null : "fx:id=\"centerVBoxHBox\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert bottomGrid != null : "fx:id=\"bottomGrid\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert scaleCombo != null : "fx:id=\"scaleCombo\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert mousePositionLabel != null : "fx:id=\"mousePositionLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert rightVBox != null : "fx:id=\"rightVBox\" was not injected: check your FXML file 'gifa-gui.fxml'.";
@@ -765,6 +772,7 @@ public class Controller {
 		assert resultsImageViewGroup != null : "fx:id=\"resultsImageViewGroup\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert resultsScaleCombo != null : "fx:id=\"resultsScaleCombo\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert resultsMousePositionLabel != null : "fx:id=\"resultsMousePositionLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert imageSizeLabel != null : "fx:id=\"imageSizeLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 
 		scaleCombo.itemsProperty().get().addAll(
 				"25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%", "250%", "500%", "1000%"
@@ -800,11 +808,11 @@ public class Controller {
 		addXTextFieldListener(firstPointXTextField);
 		addXTextFieldListener(secondPointXTextField);
 		addXTextFieldListener(thirdPointXTextField);
-		addXTextFieldListener(rectangleXTextField);
 		addYTextFieldListener(firstPointYTextField);
 		addYTextFieldListener(secondPointYTextField);
 		addYTextFieldListener(thirdPointYTextField);
-		addYTextFieldListener(rectangleYTextField);
+		addRectangleXTextFieldListener(rectangleXTextField);
+		addRectangleYTextFieldListener(rectangleYTextField);
 		addWidthTextFieldListener(rectangleWidthTextField);
 		addHeightTextFieldListener(rectangleHeightTextField);
 		bindTrianglePoint(firstPointXTextField, 0);
@@ -824,10 +832,29 @@ public class Controller {
 		verticalFlipButton.setTooltip(new Tooltip("Flip vertically"));
 		rotateLeftButton.setTooltip(new Tooltip("Rotate left by 90 degrees"));
 		rotateRightButton.setTooltip(new Tooltip("Rotate right by 90 degrees"));
+		imageView.scaleYProperty().addListener(( observable, oldValue, newValue ) -> {
+			final double scale = newValue.doubleValue();
+			triangle.setScaleX(scale);
+			triangle.setScaleY(scale);
+			rectangle.setScaleX(scale);
+			rectangle.setScaleY(scale);
+			recalculateTranslates(scale);
+		});
+	}
+
+	private void recalculateTranslates( final double scale ) {
+		triangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (scale - 1.0)) -
+				(imageView.getImage().getWidth() * 0.5 - getTriangleMiddleX()) * (scale - 1.0) );
+		triangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (scale - 1.0)) -
+				(imageView.getImage().getHeight() * 0.5 - getTriangleMiddleY()) * (scale - 1.0) );
+		rectangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (scale - 1.0)) -
+				(imageView.getImage().getWidth() * 0.5 - (rectangle.getX() + rectangle.getWidth() * 0.5)) * (scale - 1.0) );
+		rectangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (scale - 1.0)) -
+				(imageView.getImage().getHeight() * 0.5 - (rectangle.getY() + rectangle.getHeight() * 0.5)) * (scale - 1.0) );
 	}
 
 	private void setImageViewControls(ImageView imageView, ScrollPane imageScrollPane, Group imageViewGroup, ComboBox<String> scaleCombo, Label mousePositionLabel ) {
-		imageViewGroup.setOnMouseMoved(event -> mousePositionLabel.setText((int) event.getX() + " : " + (int) event.getY()));
+		imageViewGroup.setOnMouseMoved(event -> mousePositionLabel.setText((int) ((event.getX() / imageView.getScaleX())) + " : " + (int) ((event.getY() / imageView.getScaleY()))));
 		imageViewGroup.setOnMouseExited(event -> mousePositionLabel.setText("- : -"));
 		imageViewGroup.setOnScroll(event -> {
 			if (event.isControlDown()) {
@@ -861,8 +888,8 @@ public class Controller {
 				double scale = Double.parseDouble(newValue.substring(0, newValue.length() - 1)) / 100.0;
 				imageView.setScaleX(scale);
 				imageView.setScaleY(scale);
-					imageView.setTranslateX(imageView.getImage().getWidth() * (1.0 - scale) * -0.5);
-					imageView.setTranslateY(imageView.getImage().getHeight() * (1.0 - scale) * -0.5);
+				imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * (scale - 1.0) );
+				imageView.setTranslateY(imageView.getImage().getHeight()* 0.5 * (scale - 1.0) );
 			}
 		});
 	}
@@ -877,11 +904,33 @@ public class Controller {
 		});
 	}
 
+	private double getTriangleMiddleX() {
+		double firstPointX = Double.parseDouble(firstPointXTextField.getText());
+		double secondPointX = Double.parseDouble(secondPointXTextField.getText());
+		double thirdPointX = Double.parseDouble(thirdPointXTextField.getText());
+		double minX = Math.min(firstPointX, Math.min(secondPointX, thirdPointX));
+		double maxX = Math.max(firstPointX, Math.max(secondPointX, thirdPointX));
+		return (maxX - minX) / 2.0 + minX;
+	}
+
+	private double getTriangleMiddleY() {
+		double firstPointY = Double.parseDouble(firstPointYTextField.getText());
+		double secondPointY = Double.parseDouble(secondPointYTextField.getText());
+		double thirdPointY = Double.parseDouble(thirdPointYTextField.getText());
+		double minY = Math.min(firstPointY, Math.min(secondPointY, thirdPointY));
+		double maxY = Math.max(firstPointY, Math.max(secondPointY, thirdPointY));
+		return (maxY - minY) / 2.0 + minY;
+	}
+
 	private void addXTextFieldListener(TextField textField) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if (image != null && Double.parseDouble(newValue) > image.getWidth()) textField.setText(oldValue);
+				if (image != null && Double.parseDouble(newValue) > image.getWidth())
+					textField.setText(oldValue);
+				else if (image != null)
+					triangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (triangle.getScaleX() - 1.0)) -
+						(imageView.getImage().getWidth() * 0.5 - getTriangleMiddleX()) * (triangle.getScaleX() - 1.0) );
 			} catch (NumberFormatException e) {}
 		});
 	}
@@ -890,7 +939,36 @@ public class Controller {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if (image != null && Double.parseDouble(newValue) > image.getHeight()) textField.setText(oldValue);
+				if (image != null && Double.parseDouble(newValue) > image.getHeight())
+					textField.setText(oldValue);
+				else if (image != null)
+					triangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (triangle.getScaleY() - 1.0)) -
+							(imageView.getImage().getHeight() * 0.5 - getTriangleMiddleY()) * (triangle.getScaleY() - 1.0) );
+			} catch (NumberFormatException e) {}
+		});
+	}
+
+	private void addRectangleXTextFieldListener(TextField textField) {
+		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
+			try {
+				final Image image = imageView.getImage();
+				if (image != null && Double.parseDouble(newValue) + rectangle.getWidth() > image.getWidth())
+					textField.setText(oldValue);
+				else if (image != null)
+					rectangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (rectangle.getScaleX() - 1.0)) -
+						(imageView.getImage().getWidth() * 0.5 - (Double.parseDouble(newValue) + rectangle.getWidth() * 0.5)) * (rectangle.getScaleX() - 1.0) );
+			} catch (NumberFormatException e) {}
+		});
+	}
+
+	private void addRectangleYTextFieldListener(TextField textField) {
+		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
+			try {
+				final Image image = imageView.getImage();
+				if (image != null && Double.parseDouble(newValue) + rectangle.getHeight() > image.getHeight()) textField.setText(oldValue);
+				else if (image != null)
+					rectangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (rectangle.getScaleY() - 1.0)) -
+						(imageView.getImage().getHeight() * 0.5 - (Double.parseDouble(newValue) + rectangle.getHeight() * 0.5)) * (rectangle.getScaleY() - 1.0) );
 			} catch (NumberFormatException e) {}
 		});
 	}
@@ -900,6 +978,9 @@ public class Controller {
 			try {
 				final Image image = imageView.getImage();
 				if (image != null && Double.parseDouble(newValue) + rectangle.getX() > image.getWidth()) textField.setText(oldValue);
+				else if (image != null)
+					rectangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (rectangle.getScaleX() - 1.0)) -
+							(imageView.getImage().getWidth() * 0.5 - (rectangle.getX() + Double.parseDouble(newValue) * 0.5)) * (rectangle.getScaleX() - 1.0) );
 			} catch (NumberFormatException e) {}
 		});
 	}
@@ -909,6 +990,9 @@ public class Controller {
 			try {
 				final Image image = imageView.getImage();
 				if (image != null && Double.parseDouble(newValue) + rectangle.getY() > image.getHeight()) textField.setText(oldValue);
+				else if (image != null)
+					rectangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (rectangle.getScaleY() - 1.0)) -
+							(imageView.getImage().getHeight() * 0.5 - (rectangle.getY() + Double.parseDouble(newValue) * 0.5)) * (rectangle.getScaleY() - 1.0) );
 			} catch (NumberFormatException e) {}
 		});
 	}
@@ -929,7 +1013,6 @@ public class Controller {
 		SimpleListProperty imageListProperty = new SimpleListProperty();
 		imageListProperty.bind(imagesList.itemsProperty());
 		imageViewAnchor.visibleProperty().bind(imageView.imageProperty().isNotNull());
-		loadImagesButton.visibleProperty().bind(imageListProperty.emptyProperty());
 		scaleCombo.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		mousePositionLabel.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		rightVBox.visibleProperty().bind(imageView.imageProperty().isNotNull());
@@ -972,8 +1055,13 @@ public class Controller {
 						imageView.setImage(img.image);
 						triangle.copy(img.triangle);
 						rectangle.copy(img.rectangle);
+						imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * (imageView.getScaleX() - 1.0) );
+						imageView.setTranslateY(imageView.getImage().getHeight()* 0.5 * (imageView.getScaleY() - 1.0) );
+						recalculateTranslates(imageView.getScaleX());
+						imageSizeLabel.setText((int) img.image.getWidth() + "x" + (int) img.image.getHeight());
 					} else {
 						imageView.setImage(null);
+						imageSizeLabel.setText("");
 					}
 				}
 		);
