@@ -3,7 +3,9 @@ package pwr.chrzescijanek.filip.gifa.core.controller;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.*;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -30,15 +32,16 @@ import pwr.chrzescijanek.filip.gifa.Main;
 import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
 import pwr.chrzescijanek.filip.gifa.generator.DataGenerator;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
-
-import static java.lang.Math.min;
 
 public class Controller {
 
@@ -104,7 +107,7 @@ public class Controller {
 	private GridPane imagesListGrid;
 
 	@FXML
-	private ListView<String> imagesList;
+	private ListView< String > imagesList;
 
 	@FXML
 	private Button loadImagesButton;
@@ -134,7 +137,7 @@ public class Controller {
 	private Label imageSizeLabel;
 
 	@FXML
-	private ComboBox<String> scaleCombo;
+	private ComboBox< String > scaleCombo;
 
 	@FXML
 	private Label mousePositionLabel;
@@ -341,7 +344,7 @@ public class Controller {
 	private TextField resultsColumnsTextField;
 
 	@FXML
-	private ComboBox<String> resultsScaleCombo;
+	private ComboBox< String > resultsScaleCombo;
 
 	@FXML
 	private Label resultsMousePositionLabel;
@@ -354,7 +357,12 @@ public class Controller {
 
 	@FXML
 	void about( ActionEvent event ) {
-
+		Alert alert = new Alert(Alert.AlertType.INFORMATION, "Global image features analyzer\n\nCopyright © 2016 Filip Chrześcijanek", ButtonType.OK);
+		alert.setTitle("About");
+		alert.setHeaderText("gifa®");
+		alert.setGraphic(new ImageView(new Image(getClass().getResourceAsStream( "/icon-big.png" ) )));
+		((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image(getClass().getResourceAsStream( "/icon-small.png" )));
+		alert.show();
 	}
 
 	@FXML
@@ -395,7 +403,7 @@ public class Controller {
 	@FXML
 	void deselectAllFunctions( ActionEvent event ) {
 		for ( Node chb : featuresVBox.getChildren() ) {
-			((CheckBox) chb).setSelected(false);
+			( (CheckBox) chb ).setSelected(false);
 		}
 		DataGenerator.INSTANCE.clearChosenFunctions();
 	}
@@ -407,7 +415,33 @@ public class Controller {
 
 	@FXML
 	void exportToCsv( ActionEvent event ) {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Export results to CSV file");
+		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Comma-separated values", "*.csv"));
+		File csvFile = fileChooser.showSaveDialog(root.getScene().getWindow());
+		if ( csvFile != null ) {
+			try ( BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile)) ) {
+				bw.write(createCsvContents());
+			} catch ( IOException e ) {
+				e.printStackTrace();
+				Alert alert = new Alert(Alert.AlertType.ERROR, "Save failed! Check your write permissions.", ButtonType.OK);
+				alert.showAndWait();
+			}
+		}
+	}
 
+	private String createCsvContents() {
+		Map< String, double[] > results = State.INSTANCE.result.getValue().results;
+		String csvContents = "Image";
+		for ( String s : results.keySet() )
+			csvContents += ",\"" + s + "\"";
+		final ObservableList< String > images = imagesList.getItems();
+		for ( int i = 0; i < images.size(); i++ ) {
+			csvContents += "\r\n\"" + images.get(i) + "\"";
+			for ( String s : results.keySet() )
+				csvContents += ",\"" + results.get(s)[i] + "\"";
+		}
+		return csvContents;
 	}
 
 	@FXML
@@ -471,22 +505,22 @@ public class Controller {
 	}
 
 	private void placeCharts() {
-		List<BarChart<String, Number>> charts = State.INSTANCE.charts.get();
-		if (charts != null) {
+		List< BarChart< String, Number > > charts = State.INSTANCE.charts.get();
+		if ( charts != null ) {
 			resultsGrid.getChildren().clear();
 			resultsGrid.getColumnConstraints().clear();
 			resultsGrid.getRowConstraints().clear();
 			final int noOfColumns = Integer.parseInt(resultsColumnsTextField.getText());
-			for (int i = 0; i < noOfColumns; i++) {
+			for ( int i = 0; i < noOfColumns; i++ ) {
 				final ColumnConstraints columnConstraints = new ColumnConstraints();
 				columnConstraints.setPercentWidth(100.0 / noOfColumns);
 				resultsGrid.getColumnConstraints().add(columnConstraints);
 			}
 			final int noOfRows = charts.size() / noOfColumns + 1;
-			for (int i = 0; i < noOfRows; i++) {
-				List<BarChart<String, Number>> chartsInRow = new ArrayList<>();
+			for ( int i = 0; i < noOfRows; i++ ) {
+				List< BarChart< String, Number > > chartsInRow = new ArrayList<>();
 				int n = 0;
-				while (i * noOfColumns + n < charts.size() && n < noOfColumns) {
+				while ( i * noOfColumns + n < charts.size() && n < noOfColumns ) {
 					chartsInRow.add(charts.get(i * noOfColumns + n));
 					n++;
 				}
@@ -495,9 +529,10 @@ public class Controller {
 		}
 	}
 
-	private List<BarChart<String, Number>> generateCharts() {Map<String, double[]> results = State.INSTANCE.result.getValue().results;
-		List<BarChart<String, Number>> charts = new ArrayList<>();
-		for ( Map.Entry<String, double[]> e : results.entrySet()) {
+	private List< BarChart< String, Number > > generateCharts() {
+		Map< String, double[] > results = State.INSTANCE.result.getValue().results;
+		List< BarChart< String, Number > > charts = new ArrayList<>();
+		for ( Map.Entry< String, double[] > e : results.entrySet() ) {
 			final CategoryAxis xAxis = new CategoryAxis();
 			final NumberAxis yAxis = new NumberAxis();
 			final BarChart< String, Number > bc = new BarChart<>(xAxis, yAxis);
@@ -505,7 +540,7 @@ public class Controller {
 			yAxis.setLabel("Value");
 
 			XYChart.Series series1 = new XYChart.Series();
-			for (int i = 0; i < e.getValue().length; i++) {
+			for ( int i = 0; i < e.getValue().length; i++ ) {
 				series1.getData().add(new XYChart.Data(imagesList.getItems().get(i), e.getValue()[i]));
 			}
 
@@ -519,10 +554,10 @@ public class Controller {
 	@FXML
 	void loadImages( ActionEvent event ) {
 		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open Resource File");
+		fileChooser.setTitle("Load images");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.bmp"));
-		List< File > selectedFiles = fileChooser.showOpenMultipleDialog((Stage) root.getScene().getWindow());
-		if (selectedFiles != null) {
+		List< File > selectedFiles = fileChooser.showOpenMultipleDialog(root.getScene().getWindow());
+		if ( selectedFiles != null ) {
 			for ( File f : selectedFiles ) {
 				String filePath = f.getAbsolutePath();
 				String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
@@ -573,12 +608,12 @@ public class Controller {
 	}
 
 	@FXML
-	void rectangleStrokeColorChanged(ActionEvent event) {
+	void rectangleStrokeColorChanged( ActionEvent event ) {
 
 	}
 
 	@FXML
-	void rectangleFillColorChanged(ActionEvent event) {
+	void rectangleFillColorChanged( ActionEvent event ) {
 
 	}
 
@@ -626,7 +661,7 @@ public class Controller {
 	@FXML
 	void selectAllFunctions( ActionEvent event ) {
 		for ( Node chb : featuresVBox.getChildren() ) {
-			((CheckBox) chb).setSelected(true);
+			( (CheckBox) chb ).setSelected(true);
 		}
 		DataGenerator.INSTANCE.chooseAllAvailableFunctions();
 	}
@@ -662,12 +697,12 @@ public class Controller {
 	}
 
 	@FXML
-	void triangleFillColorChanged(ActionEvent event) {
+	void triangleFillColorChanged( ActionEvent event ) {
 
 	}
 
 	@FXML
-	void triangleStrokeColorChanged(ActionEvent event) {
+	void triangleStrokeColorChanged( ActionEvent event ) {
 
 	}
 
@@ -843,23 +878,25 @@ public class Controller {
 	}
 
 	private void recalculateTranslates( final double scale ) {
-		triangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (scale - 1.0)) -
-				(imageView.getImage().getWidth() * 0.5 - getTriangleMiddleX()) * (scale - 1.0) );
-		triangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (scale - 1.0)) -
-				(imageView.getImage().getHeight() * 0.5 - getTriangleMiddleY()) * (scale - 1.0) );
-		rectangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (scale - 1.0)) -
-				(imageView.getImage().getWidth() * 0.5 - (rectangle.getX() + rectangle.getWidth() * 0.5)) * (scale - 1.0) );
-		rectangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (scale - 1.0)) -
-				(imageView.getImage().getHeight() * 0.5 - (rectangle.getY() + rectangle.getHeight() * 0.5)) * (scale - 1.0) );
+		triangle.setTranslateX(( imageView.getImage().getWidth() * 0.5 * ( scale - 1.0 ) ) -
+				( imageView.getImage().getWidth() * 0.5 - getTriangleMiddleX() ) * ( scale - 1.0 ));
+		triangle.setTranslateY(( imageView.getImage().getHeight() * 0.5 * ( scale - 1.0 ) ) -
+				( imageView.getImage().getHeight() * 0.5 - getTriangleMiddleY() ) * ( scale - 1.0 ));
+		rectangle.setTranslateX(( imageView.getImage().getWidth() * 0.5 * ( scale - 1.0 ) ) -
+				( imageView.getImage().getWidth() * 0.5 - ( rectangle.getX() + rectangle.getWidth() * 0.5 ) ) * ( scale - 1.0 ));
+		rectangle.setTranslateY(( imageView.getImage().getHeight() * 0.5 * ( scale - 1.0 ) ) -
+				( imageView.getImage().getHeight() * 0.5 - ( rectangle.getY() + rectangle.getHeight() * 0.5 ) ) * ( scale - 1.0 ));
 	}
 
-	private void setImageViewControls(ImageView imageView, ScrollPane imageScrollPane, Group imageViewGroup, ComboBox<String> scaleCombo, Label mousePositionLabel ) {
-		imageViewGroup.setOnMouseMoved(event -> mousePositionLabel.setText((int) ((event.getX() / imageView.getScaleX())) + " : " + (int) ((event.getY() / imageView.getScaleY()))));
+	private void setImageViewControls( ImageView imageView, ScrollPane imageScrollPane, Group imageViewGroup, ComboBox< String > scaleCombo, Label
+			mousePositionLabel ) {
+		imageViewGroup.setOnMouseMoved(event -> mousePositionLabel.setText((int) ( ( event.getX() / imageView.getScaleX() ) ) + " : " + (int) ( ( event.getY()
+				/ imageView.getScaleY() ) )));
 		imageViewGroup.setOnMouseExited(event -> mousePositionLabel.setText("- : -"));
 		imageViewGroup.setOnScroll(event -> {
-			if (event.isControlDown()) {
+			if ( event.isControlDown() ) {
 				double deltaY = event.getDeltaY();
-				if (deltaY > 0) {
+				if ( deltaY > 0 ) {
 					imageView.setScaleX(imageView.getScaleX() * 1.05);
 				} else {
 					imageView.setScaleX(imageView.getScaleX() * 0.95);
@@ -867,9 +904,9 @@ public class Controller {
 			}
 		});
 		imageScrollPane.setOnScroll(event -> {
-			if (event.isControlDown()) {
+			if ( event.isControlDown() ) {
 				double deltaY = event.getDeltaY();
-				if (deltaY > 0) {
+				if ( deltaY > 0 ) {
 					imageView.setScaleX(imageView.getScaleX() * 1.05);
 				} else {
 					imageView.setScaleX(imageView.getScaleX() * 0.95);
@@ -878,18 +915,18 @@ public class Controller {
 		});
 		imageView.scaleXProperty().addListener(( observable, oldValue, newValue ) -> {
 			String asString = String.format("%.0f%%", newValue.doubleValue() * 100);
-			if (!scaleCombo.getValue().equals(asString))
+			if ( !scaleCombo.getValue().equals(asString) )
 				scaleCombo.setValue(asString);
 		});
 		scaleCombo.valueProperty().addListener(( observable, oldValue, newValue ) -> {
-			if (!newValue.matches("\\d+%"))
+			if ( !newValue.matches("\\d+%") )
 				scaleCombo.setValue(oldValue);
 			else {
 				double scale = Double.parseDouble(newValue.substring(0, newValue.length() - 1)) / 100.0;
 				imageView.setScaleX(scale);
 				imageView.setScaleY(scale);
-				imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * (scale - 1.0) );
-				imageView.setTranslateY(imageView.getImage().getHeight()* 0.5 * (scale - 1.0) );
+				imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * ( scale - 1.0 ));
+				imageView.setTranslateY(imageView.getImage().getHeight() * 0.5 * ( scale - 1.0 ));
 			}
 		});
 	}
@@ -898,9 +935,9 @@ public class Controller {
 		Bindings.bindBidirectional(textField.textProperty(), triangle.pointsProperty[index], new NumberStringConverter());
 	}
 
-	private void addNumberTextFieldListener(TextField textField) {
+	private void addNumberTextFieldListener( TextField textField ) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
-			if (!newValue.matches("\\d+(\\.\\d+)?")) textField.setText(oldValue);
+			if ( !newValue.matches("\\d+(\\.\\d+)?") ) textField.setText(oldValue);
 		});
 	}
 
@@ -910,7 +947,7 @@ public class Controller {
 		double thirdPointX = Double.parseDouble(thirdPointXTextField.getText());
 		double minX = Math.min(firstPointX, Math.min(secondPointX, thirdPointX));
 		double maxX = Math.max(firstPointX, Math.max(secondPointX, thirdPointX));
-		return (maxX - minX) / 2.0 + minX;
+		return ( maxX - minX ) / 2.0 + minX;
 	}
 
 	private double getTriangleMiddleY() {
@@ -919,90 +956,94 @@ public class Controller {
 		double thirdPointY = Double.parseDouble(thirdPointYTextField.getText());
 		double minY = Math.min(firstPointY, Math.min(secondPointY, thirdPointY));
 		double maxY = Math.max(firstPointY, Math.max(secondPointY, thirdPointY));
-		return (maxY - minY) / 2.0 + minY;
+		return ( maxY - minY ) / 2.0 + minY;
 	}
 
-	private void addXTextFieldListener(TextField textField) {
+	private void addXTextFieldListener( TextField textField ) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if (image != null && Double.parseDouble(newValue) > image.getWidth())
+				if ( image != null && Double.parseDouble(newValue) > image.getWidth() )
 					textField.setText(oldValue);
-				else if (image != null)
-					triangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (triangle.getScaleX() - 1.0)) -
-						(imageView.getImage().getWidth() * 0.5 - getTriangleMiddleX()) * (triangle.getScaleX() - 1.0) );
-			} catch (NumberFormatException e) {}
+				else if ( image != null )
+					triangle.setTranslateX(( imageView.getImage().getWidth() * 0.5 * ( triangle.getScaleX() - 1.0 ) ) -
+							( imageView.getImage().getWidth() * 0.5 - getTriangleMiddleX() ) * ( triangle.getScaleX() - 1.0 ));
+			} catch ( NumberFormatException e ) {}
 		});
 	}
 
-	private void addYTextFieldListener(TextField textField) {
+	private void addYTextFieldListener( TextField textField ) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if (image != null && Double.parseDouble(newValue) > image.getHeight())
+				if ( image != null && Double.parseDouble(newValue) > image.getHeight() )
 					textField.setText(oldValue);
-				else if (image != null)
-					triangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (triangle.getScaleY() - 1.0)) -
-							(imageView.getImage().getHeight() * 0.5 - getTriangleMiddleY()) * (triangle.getScaleY() - 1.0) );
-			} catch (NumberFormatException e) {}
+				else if ( image != null )
+					triangle.setTranslateY(( imageView.getImage().getHeight() * 0.5 * ( triangle.getScaleY() - 1.0 ) ) -
+							( imageView.getImage().getHeight() * 0.5 - getTriangleMiddleY() ) * ( triangle.getScaleY() - 1.0 ));
+			} catch ( NumberFormatException e ) {}
 		});
 	}
 
-	private void addRectangleXTextFieldListener(TextField textField) {
+	private void addRectangleXTextFieldListener( TextField textField ) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if (image != null && Double.parseDouble(newValue) + rectangle.getWidth() > image.getWidth())
+				if ( image != null && Double.parseDouble(newValue) + rectangle.getWidth() > image.getWidth() )
 					textField.setText(oldValue);
-				else if (image != null)
-					rectangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (rectangle.getScaleX() - 1.0)) -
-						(imageView.getImage().getWidth() * 0.5 - (Double.parseDouble(newValue) + rectangle.getWidth() * 0.5)) * (rectangle.getScaleX() - 1.0) );
-			} catch (NumberFormatException e) {}
+				else if ( image != null )
+					rectangle.setTranslateX(( imageView.getImage().getWidth() * 0.5 * ( rectangle.getScaleX() - 1.0 ) ) -
+							( imageView.getImage().getWidth() * 0.5 - ( Double.parseDouble(newValue) + rectangle.getWidth() * 0.5 ) ) * ( rectangle.getScaleX
+									() - 1.0 ));
+			} catch ( NumberFormatException e ) {}
 		});
 	}
 
-	private void addRectangleYTextFieldListener(TextField textField) {
+	private void addRectangleYTextFieldListener( TextField textField ) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if (image != null && Double.parseDouble(newValue) + rectangle.getHeight() > image.getHeight()) textField.setText(oldValue);
-				else if (image != null)
-					rectangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (rectangle.getScaleY() - 1.0)) -
-						(imageView.getImage().getHeight() * 0.5 - (Double.parseDouble(newValue) + rectangle.getHeight() * 0.5)) * (rectangle.getScaleY() - 1.0) );
-			} catch (NumberFormatException e) {}
+				if ( image != null && Double.parseDouble(newValue) + rectangle.getHeight() > image.getHeight() ) textField.setText(oldValue);
+				else if ( image != null )
+					rectangle.setTranslateY(( imageView.getImage().getHeight() * 0.5 * ( rectangle.getScaleY() - 1.0 ) ) -
+							( imageView.getImage().getHeight() * 0.5 - ( Double.parseDouble(newValue) + rectangle.getHeight() * 0.5 ) ) * ( rectangle
+									.getScaleY() - 1.0 ));
+			} catch ( NumberFormatException e ) {}
 		});
 	}
 
-	private void addWidthTextFieldListener(TextField textField) {
+	private void addWidthTextFieldListener( TextField textField ) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if (image != null && Double.parseDouble(newValue) + rectangle.getX() > image.getWidth()) textField.setText(oldValue);
-				else if (image != null)
-					rectangle.setTranslateX((imageView.getImage().getWidth() * 0.5 * (rectangle.getScaleX() - 1.0)) -
-							(imageView.getImage().getWidth() * 0.5 - (rectangle.getX() + Double.parseDouble(newValue) * 0.5)) * (rectangle.getScaleX() - 1.0) );
-			} catch (NumberFormatException e) {}
+				if ( image != null && Double.parseDouble(newValue) + rectangle.getX() > image.getWidth() ) textField.setText(oldValue);
+				else if ( image != null )
+					rectangle.setTranslateX(( imageView.getImage().getWidth() * 0.5 * ( rectangle.getScaleX() - 1.0 ) ) -
+							( imageView.getImage().getWidth() * 0.5 - ( rectangle.getX() + Double.parseDouble(newValue) * 0.5 ) ) * ( rectangle.getScaleX() -
+									1.0 ));
+			} catch ( NumberFormatException e ) {}
 		});
 	}
 
-	private void addHeightTextFieldListener(TextField textField) {
+	private void addHeightTextFieldListener( TextField textField ) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if (image != null && Double.parseDouble(newValue) + rectangle.getY() > image.getHeight()) textField.setText(oldValue);
-				else if (image != null)
-					rectangle.setTranslateY((imageView.getImage().getHeight() * 0.5 * (rectangle.getScaleY() - 1.0)) -
-							(imageView.getImage().getHeight() * 0.5 - (rectangle.getY() + Double.parseDouble(newValue) * 0.5)) * (rectangle.getScaleY() - 1.0) );
-			} catch (NumberFormatException e) {}
+				if ( image != null && Double.parseDouble(newValue) + rectangle.getY() > image.getHeight() ) textField.setText(oldValue);
+				else if ( image != null )
+					rectangle.setTranslateY(( imageView.getImage().getHeight() * 0.5 * ( rectangle.getScaleY() - 1.0 ) ) -
+							( imageView.getImage().getHeight() * 0.5 - ( rectangle.getY() + Double.parseDouble(newValue) * 0.5 ) ) * ( rectangle.getScaleY() -
+									1.0 ));
+			} catch ( NumberFormatException e ) {}
 		});
 	}
 
 	private void createCheckBoxes() {
-		for (String s : DataGenerator.INSTANCE.getAllAvailableFunctions()) {
+		for ( String s : DataGenerator.INSTANCE.getAllAvailableFunctions() ) {
 			final CheckBox checkBox = new CheckBox(s);
 			featuresVBox.getChildren().add(checkBox);
 			checkBox.selectedProperty().addListener(( observable, oldValue, newValue ) -> {
-				if (newValue) DataGenerator.INSTANCE.chooseFunction(s);
+				if ( newValue ) DataGenerator.INSTANCE.chooseFunction(s);
 				else DataGenerator.INSTANCE.deselectFunction(s);
 			});
 			checkBox.setSelected(true);
@@ -1045,18 +1086,18 @@ public class Controller {
 	private void setSelectionListeners() {
 		imagesList.getSelectionModel().selectedItemProperty().addListener(
 				( observable, oldValue, newValue ) -> {
-					if (oldValue != null && !oldValue.isEmpty()) {
+					if ( oldValue != null && !oldValue.isEmpty() ) {
 						ImageData img = State.INSTANCE.images.get(oldValue);
 						img.triangle.copy(triangle);
 						img.rectangle.copy(rectangle);
 					}
-					if (newValue != null) {
+					if ( newValue != null ) {
 						ImageData img = State.INSTANCE.images.get(newValue);
 						imageView.setImage(img.image);
 						triangle.copy(img.triangle);
 						rectangle.copy(img.rectangle);
-						imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * (imageView.getScaleX() - 1.0) );
-						imageView.setTranslateY(imageView.getImage().getHeight()* 0.5 * (imageView.getScaleY() - 1.0) );
+						imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * ( imageView.getScaleX() - 1.0 ));
+						imageView.setTranslateY(imageView.getImage().getHeight() * 0.5 * ( imageView.getScaleY() - 1.0 ));
 						recalculateTranslates(imageView.getScaleX());
 						imageSizeLabel.setText((int) img.image.getWidth() + "x" + (int) img.image.getHeight());
 					} else {

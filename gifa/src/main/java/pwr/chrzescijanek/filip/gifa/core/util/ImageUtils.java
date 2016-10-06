@@ -77,7 +77,6 @@ public final class ImageUtils {
 			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2BGRA);
 		for ( int i = 1; i < noOfImages; i++ ) {
 			images[i] = transformToSize(images[i], images[0]);
-//			Imgcodecs.imwrite("lol.png", images[i]);
 			final Mat warpMat = Video.estimateRigidTransform(images[i], images[0], false);
 			Imgproc.warpAffine(images[i], images[i], warpMat, images[0].size(),
 					Imgproc.INTER_NEAREST, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
