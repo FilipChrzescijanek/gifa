@@ -24,6 +24,69 @@
     -fx-border-color: #888;
 }
 
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-background-color: linear-gradient(#db5903 0%, #cf3f03 25%, #c93e12 75%, #bf2a0d 100%);
+    -fx-text-fill: white;
+}
+
+.list-cell {
+    -fx-background-color: #888;
+    -fx-text-fill: white;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #ff6a28;
+}
+
+.combo-box-base {
+     -fx-background-color: #888;
+ }
+
+.color-picker .arrow {
+    -fx-background-color: white;
+}
+
+.color-picker .arrow-button {
+    -fx-padding: 0px 3px 0px 3px;
+}
+
+.combo-box .arrow {
+    -fx-background-color: white;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: #444;
+}
+
+.combo-box-base .scroll-bar {
+    -fx-background-color: #444;
+}
+
+.combo-box-base .scroll-bar .decrement-arrow {
+    -fx-background-color: white;
+}
+
+.combo-box-base .scroll-bar .increment-arrow {
+    -fx-background-color: white;
+}
+
+.combo-box-base .scroll-bar .decrement-button  {
+    -fx-background-color: #444;
+}
+
+.combo-box-base .scroll-bar .increment-button {
+    -fx-background-color: #444;
+}
+
+.combo-box-base .scroll-bar .thumb {
+    -fx-background-color: white;
+}
+
+.combo-box .text-field {
+    -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, #888;
+    -fx-text-fill: white;
+}
+
 .tab-pane {
     -fx-background: #444;
 }

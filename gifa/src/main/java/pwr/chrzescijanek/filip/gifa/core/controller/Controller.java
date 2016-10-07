@@ -1099,7 +1099,7 @@ public class Controller {
 						imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * ( imageView.getScaleX() - 1.0 ));
 						imageView.setTranslateY(imageView.getImage().getHeight() * 0.5 * ( imageView.getScaleY() - 1.0 ));
 						recalculateTranslates(imageView.getScaleX());
-						imageSizeLabel.setText((int) img.image.getWidth() + "x" + (int) img.image.getHeight());
+						imageSizeLabel.setText((int) img.image.getWidth() + "x" + (int) img.image.getHeight() + " px");
 					} else {
 						imageView.setImage(null);
 						imageSizeLabel.setText("");
