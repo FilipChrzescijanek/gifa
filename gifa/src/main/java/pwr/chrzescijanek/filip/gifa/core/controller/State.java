@@ -19,7 +19,7 @@ public enum State {
 	public final ObjectProperty<Result> result = new SimpleObjectProperty<>(null);
 	public final ObjectProperty<List<BarChart<String, Number>>> charts = new SimpleObjectProperty<>(null);
 	private TriangleSelection triangleSelection = NONE;
-	public double x,y;
+	public long x,y;
 
 	public TriangleSelection getTriangleSelection() {
 		return triangleSelection;

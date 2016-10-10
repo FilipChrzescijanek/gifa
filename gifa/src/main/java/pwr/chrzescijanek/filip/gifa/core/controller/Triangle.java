@@ -9,8 +9,6 @@ import org.opencv.core.Point;
 public class Triangle extends Polygon {
 
 	public final DoubleProperty[] pointsProperty;
-	public double xBound = Double.POSITIVE_INFINITY;
-	public double yBound = Double.POSITIVE_INFINITY;
 
 	public Triangle() {
 		super();
@@ -29,21 +27,11 @@ public class Triangle extends Polygon {
 	}
 
 	private void registerListeners() {
-		for ( int i = 0; i < pointsProperty.length; i += 2) {
+		for ( int i = 0; i < pointsProperty.length; i++) {
 			final int index = i;
 			pointsProperty[index].addListener(( observable, oldValue, newValue ) -> {
 				final double value = newValue.doubleValue();
-//			s	if ( value >= 0 && value < xBound)
-					getPoints().set(index, value);
-//				else
-//					pointsProperty[index].setValue(oldValue);
-			});
-			pointsProperty[index + 1].addListener(( observable, oldValue, newValue ) -> {
-				final double value = newValue.doubleValue();
-//				if (value >= 0 && value < yBound)
-					getPoints().set(index + 1, value);
-//				else
-//					pointsProperty[index + 1].setValue(oldValue);
+				getPoints().set(index, value);
 			});
 		}
 	}

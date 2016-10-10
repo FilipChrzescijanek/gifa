@@ -486,6 +486,8 @@ public class Controller {
 
 	@FXML
 	void getResults( ActionEvent event ) {
+		State.INSTANCE.setNoSelection();
+		imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
 		imagesList.getSelectionModel().clearSelection();
 		doSample();
 		mainTabPane.getSelectionModel().select(resultsTab);
@@ -877,12 +879,12 @@ public class Controller {
 			rectangle.setScaleY(scale);
 			recalculateTranslates(scale);
 		});
-		imageView.setOnMouseMoved(event -> {
+		imageViewGroup.setOnMouseMoved(event -> {
 			mousePositionLabel.setText((int) ( event.getX() / imageView.getScaleX() ) + " : " + (int) ( event.getY() / imageView.getScaleY() ));
 			State.INSTANCE.setSelection(
 					triangle.getIndexOfNearestPointInRadius(
-							event.getX(),
-							event.getY(),
+							event.getX() / imageView.getScaleX(),
+							event.getY() / imageView.getScaleY(),
 							7.0 / triangle.getScaleX()
 					)
 			);
@@ -905,14 +907,25 @@ public class Controller {
 				imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
 			}
 		});
-		imageView.setOnMouseDragged(event -> {
-			final double x = event.getX();
-			final double y = event.getY();
+		imageViewGroup.setOnMouseDragged(event -> {
+			final long x = Math.round(event.getX() / imageView.getScaleX());
+			final long y = Math.round(event.getY() / imageView.getScaleY());
 				if ( State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE ) {
-					triangle.moveTriangleBy(x - State.INSTANCE.x, y - State.INSTANCE.y);
+					final ObservableList< Double > points = triangle.getPoints();
+					int minX = (int) getMin(points.get(0), points.get(2), points.get(4));
+					int maxX = (int) getMax(points.get(0), points.get(2), points.get(4));
+					int minY = (int) getMin(points.get(1), points.get(3), points.get(5));
+					int maxY = (int) getMax(points.get(1), points.get(3), points.get(5));
+					final long dX = x - State.INSTANCE.x;
+					final long dY = y - State.INSTANCE.y;
+					if (minX + dX >= 0 && maxX + dX <= imageView.getImage().getWidth()
+							&& minY + dY >= 0 && maxY + dY <= imageView.getImage().getHeight())
+					triangle.moveTriangleBy(dX, dY);
+
 					State.INSTANCE.x = x;
 					State.INSTANCE.y = y;
-				} else {
+				} else if (x >= 0 && x <= imageView.getImage().getWidth()
+						&& y >= 0 && y <= imageView.getImage().getHeight()) {
 					switch ( State.INSTANCE.getTriangleSelection() ) {
 						case FIRST_POINT:
 							imageViewGroup.getScene().setCursor(Cursor.CLOSED_HAND);
@@ -932,16 +945,16 @@ public class Controller {
 				}
 
 		});
-		imageView.setOnMousePressed(event -> {
+		imageViewGroup.setOnMousePressed(event -> {
 			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE) {
-				State.INSTANCE.x = event.getX();
-				State.INSTANCE.y = event.getY();
+				State.INSTANCE.x = (int) (event.getX() / imageView.getScaleX());
+				State.INSTANCE.y = (int) (event.getY() / imageView.getScaleY());
 			}
 		});
-		imageView.setOnMouseReleased(event -> {
+		imageViewGroup.setOnMouseReleased(event -> {
 			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE) {
-				State.INSTANCE.x = 0.0;
-				State.INSTANCE.y = 0.0;
+				State.INSTANCE.x = 0;
+				State.INSTANCE.y = 0;
 			}
 		});
 	}
@@ -959,9 +972,9 @@ public class Controller {
 
 	private void setImageViewControls( ImageView imageView, ScrollPane imageScrollPane, Group imageViewGroup, ComboBox< String > scaleCombo, Label
 			mousePositionLabel ) {
-		imageView.setOnMouseMoved(event -> mousePositionLabel.setText((int) event.getX() + " : " + (int) event.getY()));
-		imageView.setOnMouseExited(event -> mousePositionLabel.setText("- : -"));
-		imageView.setOnScroll(event -> {
+		imageViewGroup.setOnMouseMoved(event -> mousePositionLabel.setText((int) event.getX() + " : " + (int) event.getY()));
+		imageViewGroup.setOnMouseExited(event -> mousePositionLabel.setText("- : -"));
+		imageViewGroup.setOnScroll(event -> {
 			if ( event.isControlDown() ) {
 				double deltaY = event.getDeltaY();
 				if ( deltaY > 0 ) {
@@ -1013,25 +1026,34 @@ public class Controller {
 		double firstPointX = Double.parseDouble(firstPointXTextField.getText());
 		double secondPointX = Double.parseDouble(secondPointXTextField.getText());
 		double thirdPointX = Double.parseDouble(thirdPointXTextField.getText());
-		double minX = Math.min(firstPointX, Math.min(secondPointX, thirdPointX));
-		double maxX = Math.max(firstPointX, Math.max(secondPointX, thirdPointX));
+		double minX = getMin(firstPointX, secondPointX, thirdPointX);
+		double maxX = getMax(firstPointX, secondPointX, thirdPointX);
 		return ( maxX - minX ) / 2.0 + minX;
+	}
+
+	private double getMin( final double firstPointX, final double secondPointX, final double thirdPointX ) {
+		return Math.min(firstPointX, Math.min(secondPointX, thirdPointX));
+	}
+
+	private double getMax( final double firstPointY, final double secondPointY, final double thirdPointY ) {
+		return Math.max(firstPointY, Math.max(secondPointY, thirdPointY));
 	}
 
 	private double getTriangleMiddleY() {
 		double firstPointY = Double.parseDouble(firstPointYTextField.getText());
 		double secondPointY = Double.parseDouble(secondPointYTextField.getText());
 		double thirdPointY = Double.parseDouble(thirdPointYTextField.getText());
-		double minY = Math.min(firstPointY, Math.min(secondPointY, thirdPointY));
-		double maxY = Math.max(firstPointY, Math.max(secondPointY, thirdPointY));
+		double minY = getMin(firstPointY, secondPointY, thirdPointY);
+		double maxY = getMax(firstPointY, secondPointY, thirdPointY);
 		return ( maxY - minY ) / 2.0 + minY;
 	}
+
 
 	private void addXTextFieldListener( TextField textField ) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if ( image != null && Double.parseDouble(newValue) >= image.getWidth() )
+				if ( image != null && Double.parseDouble(newValue) > image.getWidth() )
 					textField.setText(oldValue);
 				else if ( image != null )
 					triangle.setTranslateX(( imageView.getImage().getWidth() * 0.5 * ( triangle.getScaleX() - 1.0 ) ) -
@@ -1044,7 +1066,7 @@ public class Controller {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if ( image != null && Double.parseDouble(newValue) >= image.getHeight() )
+				if ( image != null && Double.parseDouble(newValue) > image.getHeight() )
 					textField.setText(oldValue);
 				else if ( image != null )
 					triangle.setTranslateY(( imageView.getImage().getHeight() * 0.5 * ( triangle.getScaleY() - 1.0 ) ) -
@@ -1121,7 +1143,7 @@ public class Controller {
 	private void setVisibilityBindings() {
 		SimpleListProperty imageListProperty = new SimpleListProperty();
 		imageListProperty.bind(imagesList.itemsProperty());
-		imageViewAnchor.visibleProperty().bind(imageView.imageProperty().isNotNull());
+		imageViewGroup.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		scaleCombo.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		mousePositionLabel.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		rightVBox.visibleProperty().bind(imageView.imageProperty().isNotNull());
@@ -1162,8 +1184,6 @@ public class Controller {
 					if ( newValue != null ) {
 						ImageData img = State.INSTANCE.images.get(newValue);
 						imageView.setImage(img.image);
-						triangle.xBound = img.image.getWidth();
-						triangle.yBound = img.image.getHeight();
 						triangle.copy(img.triangle);
 						rectangle.copy(img.rectangle);
 						imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * ( imageView.getScaleX() - 1.0 ));
