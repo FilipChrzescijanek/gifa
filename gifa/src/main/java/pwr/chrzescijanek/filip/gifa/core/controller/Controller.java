@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
@@ -19,6 +20,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelFormat;
+import javafx.scene.input.MouseDragEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -875,6 +877,73 @@ public class Controller {
 			rectangle.setScaleY(scale);
 			recalculateTranslates(scale);
 		});
+		imageView.setOnMouseMoved(event -> {
+			mousePositionLabel.setText((int) ( event.getX() / imageView.getScaleX() ) + " : " + (int) ( event.getY() / imageView.getScaleY() ));
+			State.INSTANCE.setSelection(
+					triangle.getIndexOfNearestPointInRadius(
+							event.getX(),
+							event.getY(),
+							7.0 / triangle.getScaleX()
+					)
+			);
+			if (State.INSTANCE.getTriangleSelection() != State.TriangleSelection.NONE
+					&& State.INSTANCE.getTriangleSelection() != State.TriangleSelection.MOVE) {
+				imageViewGroup.getScene().setCursor(Cursor.OPEN_HAND);
+			} else if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.NONE) {
+				imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+			}
+		});
+		triangle.setOnMouseMoved(event -> {
+			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.NONE) {
+				State.INSTANCE.setMoveTriangle();
+				imageViewGroup.getScene().setCursor(Cursor.MOVE);
+			}
+		});
+		triangle.setOnMouseExited(event -> {
+			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE) {
+				State.INSTANCE.setNoSelection();
+				imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+			}
+		});
+		imageView.setOnMouseDragged(event -> {
+			final double x = event.getX();
+			final double y = event.getY();
+				if ( State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE ) {
+					triangle.moveTriangleBy(x - State.INSTANCE.x, y - State.INSTANCE.y);
+					State.INSTANCE.x = x;
+					State.INSTANCE.y = y;
+				} else {
+					switch ( State.INSTANCE.getTriangleSelection() ) {
+						case FIRST_POINT:
+							imageViewGroup.getScene().setCursor(Cursor.CLOSED_HAND);
+							triangle.moveFirstPointTo(x, y);
+							break;
+						case SECOND_POINT:
+							imageViewGroup.getScene().setCursor(Cursor.CLOSED_HAND);
+							triangle.moveSecondPointTo(x, y);
+							break;
+						case THIRD_POINT:
+							imageViewGroup.getScene().setCursor(Cursor.CLOSED_HAND);
+							triangle.moveThirdPointTo(x, y);
+							break;
+						default:
+							break;
+					}
+				}
+
+		});
+		imageView.setOnMousePressed(event -> {
+			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE) {
+				State.INSTANCE.x = event.getX();
+				State.INSTANCE.y = event.getY();
+			}
+		});
+		imageView.setOnMouseReleased(event -> {
+			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE) {
+				State.INSTANCE.x = 0.0;
+				State.INSTANCE.y = 0.0;
+			}
+		});
 	}
 
 	private void recalculateTranslates( final double scale ) {
@@ -890,10 +959,9 @@ public class Controller {
 
 	private void setImageViewControls( ImageView imageView, ScrollPane imageScrollPane, Group imageViewGroup, ComboBox< String > scaleCombo, Label
 			mousePositionLabel ) {
-		imageViewGroup.setOnMouseMoved(event -> mousePositionLabel.setText((int) ( ( event.getX() / imageView.getScaleX() ) ) + " : " + (int) ( ( event.getY()
-				/ imageView.getScaleY() ) )));
-		imageViewGroup.setOnMouseExited(event -> mousePositionLabel.setText("- : -"));
-		imageViewGroup.setOnScroll(event -> {
+		imageView.setOnMouseMoved(event -> mousePositionLabel.setText((int) event.getX() + " : " + (int) event.getY()));
+		imageView.setOnMouseExited(event -> mousePositionLabel.setText("- : -"));
+		imageView.setOnScroll(event -> {
 			if ( event.isControlDown() ) {
 				double deltaY = event.getDeltaY();
 				if ( deltaY > 0 ) {
@@ -963,7 +1031,7 @@ public class Controller {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if ( image != null && Double.parseDouble(newValue) > image.getWidth() )
+				if ( image != null && Double.parseDouble(newValue) >= image.getWidth() )
 					textField.setText(oldValue);
 				else if ( image != null )
 					triangle.setTranslateX(( imageView.getImage().getWidth() * 0.5 * ( triangle.getScaleX() - 1.0 ) ) -
@@ -976,7 +1044,7 @@ public class Controller {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			try {
 				final Image image = imageView.getImage();
-				if ( image != null && Double.parseDouble(newValue) > image.getHeight() )
+				if ( image != null && Double.parseDouble(newValue) >= image.getHeight() )
 					textField.setText(oldValue);
 				else if ( image != null )
 					triangle.setTranslateY(( imageView.getImage().getHeight() * 0.5 * ( triangle.getScaleY() - 1.0 ) ) -
@@ -1094,6 +1162,8 @@ public class Controller {
 					if ( newValue != null ) {
 						ImageData img = State.INSTANCE.images.get(newValue);
 						imageView.setImage(img.image);
+						triangle.xBound = img.image.getWidth();
+						triangle.yBound = img.image.getHeight();
 						triangle.copy(img.triangle);
 						rectangle.copy(img.rectangle);
 						imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * ( imageView.getScaleX() - 1.0 ));
