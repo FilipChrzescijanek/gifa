@@ -84,8 +84,8 @@ public final class ImageUtils {
 	}
 
 	public static Mat transformToSize( final Mat src, final Mat dst ) {
-		final MatOfPoint2f srcPoints = new MatOfPoint2f(new Point(src.width(), 0), new Point(src.width(), 115), new Point(20, 0));
-		final MatOfPoint2f dstPoints = new MatOfPoint2f(new Point(0, 0), new Point(dst.width(), 0), new Point(0, dst.height()));
+		final MatOfPoint2f srcPoints = new MatOfPoint2f(new Point(0, 0), new Point(src.width(), 0), new Point(src.width(), src.height()));
+		final MatOfPoint2f dstPoints = new MatOfPoint2f(new Point(0, 0), new Point(dst.width(), 0), new Point(dst.width(), dst.height()));
 		final Mat warpMat = Imgproc.getAffineTransform(srcPoints, dstPoints);
 		final Mat result = new Mat(dst.size(), dst.type());
 		Imgproc.warpAffine(src, result, warpMat, result.size(), Imgproc.INTER_NEAREST, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));

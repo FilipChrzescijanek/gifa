@@ -20,7 +20,9 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelFormat;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseDragEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -502,10 +504,26 @@ public class Controller {
 		points[0] = State.INSTANCE.images.get("tri.jpg").triangle.getMatOfPoints();
 		points[1] = State.INSTANCE.images.get("tri-aff.jpg").triangle.getMatOfPoints();
 		points[2] = State.INSTANCE.images.get("tri-new.jpg").triangle.getMatOfPoints();
-		State.INSTANCE.result.setValue(DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images), points));
-		resultsImageView.setImage(State.INSTANCE.result.getValue().resultImage);
-		State.INSTANCE.charts.setValue(generateCharts());
-		placeCharts();
+		try {
+		if (triangleRadioButton.isSelected())
+			State.INSTANCE.result.setValue(DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images), points, false ));
+		else if (rectangleRadioButton.isSelected()) {
+			RectangleOfInterest rectangle = State.INSTANCE.images.get("tri.jpg").rectangle;
+			images[0] = images[0].submat((int) rectangle.getY(), (int) rectangle.getY() + (int) rectangle.getHeight() - 1, (int) rectangle.getX(), (int) rectangle.getX() + (int) rectangle.getWidth() - 1);
+			rectangle = State.INSTANCE.images.get("tri-aff.jpg").rectangle;
+			images[1] = images[1].submat((int) rectangle.getY(), (int) rectangle.getY() + (int) rectangle.getHeight() - 1, (int) rectangle.getX(), (int) rectangle.getX() + (int) rectangle.getWidth() - 1);
+			rectangle = State.INSTANCE.images.get("tri-new.jpg").rectangle;
+			images[2] = images[2].submat((int) rectangle.getY(), (int) rectangle.getY() + (int) rectangle.getHeight() - 1, (int) rectangle.getX(), (int) rectangle.getX() + (int) rectangle.getWidth() - 1);
+			State.INSTANCE.result.setValue(DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images), points, true));
+		}
+			resultsImageView.setImage(State.INSTANCE.result.getValue().resultImage);
+			State.INSTANCE.charts.setValue(generateCharts());
+			placeCharts();
+		} catch (Exception e) {
+			Alert alert = new Alert(Alert.AlertType.ERROR, "Generating results failed! Probably we couldn't find proper image transformation. " +
+					"Please check your rectangle selections.", ButtonType.OK);
+			alert.showAndWait();
+		}
 	}
 
 	private void placeCharts() {
@@ -569,6 +587,7 @@ public class Controller {
 				Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(image), image.width(), image.height(),
 						image.channels(), PixelFormat.getByteRgbInstance());
 				State.INSTANCE.images.put(fileName, new ImageData(fxImage, image));
+				imagesList.getItems().remove(fileName);
 				imagesList.getItems().add(fileName);
 			}
 			loadSample();
@@ -879,19 +898,93 @@ public class Controller {
 			rectangle.setScaleY(scale);
 			recalculateTranslates(scale);
 		});
+		imagesList.setOnKeyPressed(event -> {
+			if (event.getCode().equals(KeyCode.DELETE)) {
+				String key = imagesList.getSelectionModel().getSelectedItem();
+				if ( key != null ) {
+					imagesList.getSelectionModel().clearSelection();
+					imagesList.getItems().remove(key);
+					State.INSTANCE.images.remove(key);
+				}
+			}
+//			} else if (event.getCode().equals(KeyCode.A)) {
+//				if (this.listView.getSelectionModel().getSelectedItems().size() < this.shapes.size()) {
+//					this.listView.getSelectionModel().selectAll();
+//					for (final Shape shape : this.shapes.values()) {
+//						ControllerUtils.select(shape);
+//					}
+//				} else {
+//					this.listView.getSelectionModel().clearSelection();
+//					ControllerUtils.clearSelections();
+//				}
+//			}
+		});
 		imageViewGroup.setOnMouseMoved(event -> {
 			mousePositionLabel.setText((int) ( event.getX() / imageView.getScaleX() ) + " : " + (int) ( event.getY() / imageView.getScaleY() ));
-			State.INSTANCE.setSelection(
-					triangle.getIndexOfNearestPointInRadius(
-							event.getX() / imageView.getScaleX(),
-							event.getY() / imageView.getScaleY(),
-							7.0 / triangle.getScaleX()
-					)
-			);
-			if (State.INSTANCE.getTriangleSelection() != State.TriangleSelection.NONE
-					&& State.INSTANCE.getTriangleSelection() != State.TriangleSelection.MOVE) {
-				imageViewGroup.getScene().setCursor(Cursor.OPEN_HAND);
-			} else if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.NONE) {
+			if ( triangleRadioButton.isSelected() ) {
+				State.INSTANCE.setSelection(
+						triangle.getIndexOfNearestPointInRadius(
+								event.getX() / imageView.getScaleX(),
+								event.getY() / imageView.getScaleY(),
+								7.0 / triangle.getScaleX()
+						)
+				);
+				if ( State.INSTANCE.getTriangleSelection() != State.TriangleSelection.NONE
+						&& State.INSTANCE.getTriangleSelection() != State.TriangleSelection.MOVE ) {
+					imageViewGroup.getScene().setCursor(Cursor.OPEN_HAND);
+				} else if ( State.INSTANCE.getTriangleSelection() == State.TriangleSelection.NONE ) {
+					imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+				}
+			} else if (rectangleRadioButton.isSelected() && State.INSTANCE.getRectangleSelection() != State.RectangleSelection.DRAG) {
+				double dX = event.getX() / imageView.getScaleX() - rectangle.getX();
+				double dY = event.getY() / imageView.getScaleY() - rectangle.getY();
+				if (dX >= -7.0 / rectangle.getScaleX() && dY >= -7.0 / rectangle.getScaleX() && dX <= rectangle.getWidth() + 7.0 / rectangle.getScaleX() && dY <= rectangle.getHeight() + 7.0 / rectangle.getScaleX()) {
+					if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
+						imageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SE);
+					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
+						imageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NW);
+					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
+						imageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NE);
+					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
+						imageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SW);
+					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() ) {
+						imageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
+						State.INSTANCE.setRectangleSelection(State.RectangleSelection.E);
+					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() ) {
+						imageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
+						State.INSTANCE.setRectangleSelection(State.RectangleSelection.W);
+					} else if ( Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
+						imageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
+						State.INSTANCE.setRectangleSelection(State.RectangleSelection.S);
+					} else if ( Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
+						imageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
+						State.INSTANCE.setRectangleSelection(State.RectangleSelection.N);
+					} else {
+						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
+						imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+					}
+				} else {
+					State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
+					imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+				}
+			}
+		});
+
+//		rectangle.setOnMouseMoved(event -> {
+//				);
+		rectangle.setOnMouseMoved(event -> {
+			if (State.INSTANCE.getRectangleSelection() == State.RectangleSelection.NONE) {
+				State.INSTANCE.setRectangleSelection(State.RectangleSelection.DRAG);
+				imageViewGroup.getScene().setCursor(Cursor.MOVE);
+			}
+		});
+		rectangle.setOnMouseExited(event -> {
+			if (State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE) {
+				State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
 				imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
 			}
 		});
@@ -910,6 +1003,7 @@ public class Controller {
 		imageViewGroup.setOnMouseDragged(event -> {
 			final long x = Math.round(event.getX() / imageView.getScaleX());
 			final long y = Math.round(event.getY() / imageView.getScaleY());
+			if (triangleRadioButton.isSelected()) {
 				if ( State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE ) {
 					final ObservableList< Double > points = triangle.getPoints();
 					int minX = (int) getMin(points.get(0), points.get(2), points.get(4));
@@ -918,14 +1012,14 @@ public class Controller {
 					int maxY = (int) getMax(points.get(1), points.get(3), points.get(5));
 					final long dX = x - State.INSTANCE.x;
 					final long dY = y - State.INSTANCE.y;
-					if (minX + dX >= 0 && maxX + dX <= imageView.getImage().getWidth()
-							&& minY + dY >= 0 && maxY + dY <= imageView.getImage().getHeight())
-					triangle.moveTriangleBy(dX, dY);
+					if ( minX + dX >= 0 && maxX + dX <= imageView.getImage().getWidth()
+							&& minY + dY >= 0 && maxY + dY <= imageView.getImage().getHeight() )
+						triangle.moveTriangleBy(dX, dY);
 
 					State.INSTANCE.x = x;
 					State.INSTANCE.y = y;
-				} else if (x >= 0 && x <= imageView.getImage().getWidth()
-						&& y >= 0 && y <= imageView.getImage().getHeight()) {
+				} else if ( x >= 0 && x <= imageView.getImage().getWidth()
+						&& y >= 0 && y <= imageView.getImage().getHeight() ) {
 					switch ( State.INSTANCE.getTriangleSelection() ) {
 						case FIRST_POINT:
 							imageViewGroup.getScene().setCursor(Cursor.CLOSED_HAND);
@@ -943,20 +1037,171 @@ public class Controller {
 							break;
 					}
 				}
-
+			}
+			else if (rectangleRadioButton.isSelected()) {
+				final long dX = x - State.INSTANCE.x;
+				final long dY = y - State.INSTANCE.y;
+				State.INSTANCE.x = x;
+				State.INSTANCE.y = y;
+				switch (State.INSTANCE.getRectangleSelection()) {
+					case NW:
+						resizeNW(dX, dY);
+						break;
+					case NE:
+						resizeNE(dX, dY);
+						break;
+					case SE:
+						resizeSE(dX, dY);
+						break;
+					case SW:
+						resizeSW(dX, dY);
+						break;
+					case W:
+						resizeW(dX, dY);
+						break;
+					case E:
+						resizeE(dX, dY);
+						break;
+					case S:
+						resizeS(dX, dY);
+						break;
+					case N:
+						resizeN(dX, dY);
+						break;
+					case DRAG:
+						drag(dX, dY);
+						break;
+					default:
+						break;
+				}
+			}
 		});
 		imageViewGroup.setOnMousePressed(event -> {
-			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE) {
+			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE
+					|| State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE) {
 				State.INSTANCE.x = (int) (event.getX() / imageView.getScaleX());
 				State.INSTANCE.y = (int) (event.getY() / imageView.getScaleY());
 			}
 		});
 		imageViewGroup.setOnMouseReleased(event -> {
-			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE) {
+			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE
+					|| State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE) {
 				State.INSTANCE.x = 0;
 				State.INSTANCE.y = 0;
 			}
 		});
+		
+	}
+
+	public void resizeNW(final long deltaX, final long deltaY) {
+		final double newWidth = rectangle.getWidth() - deltaX;
+		final double newHeight = rectangle.getHeight() - deltaY;
+
+		if (!(rectangle.getX() + deltaX < 0 || rectangle.getY() + deltaY < 0)) {
+			rectangle.setX(newWidth > 5 ? rectangle.getX() + deltaX : rectangle.getX());
+			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
+			rectangle.setY(newHeight > 5 ? rectangle.getY() + deltaY : rectangle.getY());
+			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
+		}
+	}
+
+	public void resizeSE(final long deltaX, final long deltaY) {
+		Image image = imageView.getImage();
+
+		final double newWidth = rectangle.getWidth() + deltaX;
+		final double newHeight = rectangle.getHeight() + deltaY;
+
+		if (!(newWidth + rectangle.getX() + deltaX > image.getWidth()
+				|| newHeight + rectangle.getY() + deltaY > image.getHeight())) {
+			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
+			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
+		}
+	}
+
+	public void resizeSW(final long deltaX, final long deltaY) {
+		Image image = imageView.getImage();
+
+		final double newWidth = rectangle.getWidth() - deltaX;
+		final double newHeight = rectangle.getHeight() + deltaY;
+
+		if (!(rectangle.getX() + deltaX < 0
+				|| newHeight + rectangle.getY() + deltaY > image.getHeight() - 0)) {
+			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
+			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
+			rectangle.setX(newWidth > 5 ? rectangle.getX() + deltaX : rectangle.getX());
+		}
+		
+	}
+
+	public void resizeNE(final long deltaX, final long deltaY) {
+		Image image = imageView.getImage();
+
+		final double newWidth = rectangle.getWidth() + deltaX;
+		final double newHeight = rectangle.getHeight() - deltaY;
+
+		if (!(newWidth + rectangle.getX() + deltaX > image.getWidth() - 0
+				|| rectangle.getY() + deltaY < 0)) {
+			rectangle.setY(newHeight > 5 ? rectangle.getY() + deltaY : rectangle.getY());
+			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
+			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
+		}
+		
+	}
+
+	public void resizeE(final long deltaX, final long deltaY) {
+		Image image = imageView.getImage();
+
+		final double newWidth = rectangle.getWidth() + deltaX;
+
+		if (!(newWidth + rectangle.getX() + deltaX > image.getWidth() - 0)) {
+			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
+		}
+		
+	}
+
+	public void resizeW(final long deltaX, final long deltaY) {
+
+		final double newWidth = rectangle.getWidth() - deltaX;
+
+		if (!(rectangle.getX() + deltaX < 0)) {
+			rectangle.setX(newWidth > 5 ? rectangle.getX() + deltaX : rectangle.getX());
+			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
+		}
+		
+	}
+
+	public void resizeS( long deltaX, final long deltaY) {
+		Image image = imageView.getImage();
+
+		final double newHeight = rectangle.getHeight() + deltaY;
+
+		if (!(newHeight + rectangle.getY() + deltaY > image.getHeight() - 0)) {
+			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
+		}
+		
+	}
+
+	public void resizeN(final long deltaX, final long deltaY) {
+		final double newHeight = rectangle.getHeight() - deltaY;
+
+		if (!(rectangle.getY() + deltaY < 0)) {
+			rectangle.setY(newHeight > 5 ? rectangle.getY() + deltaY : rectangle.getY());
+			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
+		}
+		
+	}
+
+	public void drag(final long deltaX, final long deltaY) {
+		Image image = imageView.getImage();
+
+		if (!(rectangle.getX() + deltaX + rectangle.getWidth() > image.getWidth() - 0
+				|| rectangle.getX() + deltaX < 0
+				|| rectangle.getY() + deltaY + rectangle.getHeight() > image.getHeight() - 0
+				|| rectangle.getY() + deltaY < 0)) {
+			rectangle.setX(rectangle.getX() + deltaX);
+			rectangle.setY(rectangle.getY() + deltaY);
+			
+		}
 	}
 
 	private void recalculateTranslates( final double scale ) {
@@ -984,7 +1229,7 @@ public class Controller {
 				}
 			}
 		});
-		imageScrollPane.setOnScroll(event -> {
+		imageScrollPane.addEventFilter(ScrollEvent.ANY, event -> {
 			if ( event.isControlDown() ) {
 				double deltaY = event.getDeltaY();
 				if ( deltaY > 0 ) {
@@ -992,8 +1237,20 @@ public class Controller {
 				} else {
 					imageView.setScaleX(imageView.getScaleX() * 0.95);
 				}
+				event.consume();
 			}
 		});
+//		imageScrollPane.setOnScroll(event -> {
+//			if ( event.isControlDown() ) {
+//				double deltaY = event.getDeltaY();
+//				if ( deltaY > 0 ) {
+//					imageView.setScaleX(imageView.getScaleX() * 1.05);
+//				} else {
+//					imageView.setScaleX(imageView.getScaleX() * 0.95);
+//				}
+//				event.consume();
+//			}
+//		});
 		imageView.scaleXProperty().addListener(( observable, oldValue, newValue ) -> {
 			String asString = String.format("%.0f%%", newValue.doubleValue() * 100);
 			if ( !scaleCombo.getValue().equals(asString) )

@@ -19,18 +19,27 @@ public enum State {
 	public final ObjectProperty<Result> result = new SimpleObjectProperty<>(null);
 	public final ObjectProperty<List<BarChart<String, Number>>> charts = new SimpleObjectProperty<>(null);
 	private TriangleSelection triangleSelection = NONE;
-	public long x,y;
+	private RectangleSelection rectangleSelection = RectangleSelection.NONE;
+	public long x, y;
+
+	public void setRectangleSelection( final RectangleSelection rectangleSelection ) {
+		this.rectangleSelection = rectangleSelection;
+	}
 
 	public TriangleSelection getTriangleSelection() {
 		return triangleSelection;
+	}
+
+	public RectangleSelection getRectangleSelection() {
+		return rectangleSelection;
 	}
 
 	enum TriangleSelection {
 		NONE, FIRST_POINT, SECOND_POINT, THIRD_POINT, MOVE
 	}
 
-	private enum RectangleSelection {
-		NONE
+	enum RectangleSelection {
+		NONE, NW, NE, SW, SE, N, S, W, E, DRAG
 	}
 
 	public void setSelection(int index) {
