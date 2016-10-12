@@ -59,11 +59,12 @@
 										<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES"/>
 									</columnConstraints>
 									<rowConstraints>
-										<RowConstraints vgrow="SOMETIMES"/>
+										<RowConstraints valignment="CENTER" vgrow="SOMETIMES"/>
 										<RowConstraints vgrow="SOMETIMES"/>
 									</rowConstraints>
 									<children>
 										<ListView fx:id="imagesList"/>
+										<Label fx:id="imagesListInfo" text="No images were loaded." />
 										<HBox fx:id="imagesListToolbar" alignment="CENTER" GridPane.rowIndex="1">
 												<Button fx:id="loadImagesButton" mnemonicParsing="false" onAction="#loadImages">
 													<graphic>
@@ -74,6 +75,9 @@
 															</image>
 														</ImageView>
 													</graphic>
+													<HBox.margin>
+														<Insets right="5.0"/>
+													</HBox.margin>
 												</Button>
 												<Button fx:id="deleteImageButton" mnemonicParsing="false" onAction="#deleteImage">
 													<graphic>
@@ -84,6 +88,9 @@
 															</image>
 														</ImageView>
 													</graphic>
+													<HBox.margin>
+														<Insets right="5.0"/>
+													</HBox.margin>
 												</Button>
 												<Button fx:id="clearImagesButton" mnemonicParsing="false" onAction="#clearImages">
 													<graphic>
@@ -253,7 +260,10 @@
 																		</GridPane>
 																	</children>
 																</StackPane>
-																<HBox fx:id="toolbar" alignment="CENTER" >
+																<HBox fx:id="toolbar" alignment="CENTER">
+																	<VBox.margin>
+																		<Insets top="15.0"/>
+																	</VBox.margin>
 																		<Button fx:id="verticalFlipButton" mnemonicParsing="false" onAction="#flipVertical">
 																			<graphic>
 																				<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
@@ -263,6 +273,9 @@
 																					</image>
 																				</ImageView>
 																			</graphic>
+																			<HBox.margin>
+																				<Insets right="5.0"/>
+																			</HBox.margin>
 																		</Button>
 																		<Button fx:id="horizontalFlipButton" mnemonicParsing="false" onAction="#flipHorizontal">
 																			<graphic>
@@ -273,6 +286,9 @@
 																					</image>
 																				</ImageView>
 																			</graphic>
+																			<HBox.margin>
+																				<Insets right="5.0"/>
+																			</HBox.margin>
 																		</Button>
 																		<Button fx:id="rotateLeftButton" mnemonicParsing="false" onAction="#rotateLeft">
 																			<graphic>
@@ -283,6 +299,9 @@
 																					</image>
 																				</ImageView>
 																			</graphic>
+																			<HBox.margin>
+																				<Insets right="5.0"/>
+																			</HBox.margin>
 																		</Button>
 																		<Button fx:id="rotateRightButton" mnemonicParsing="false" onAction="#rotateRight">
 																			<graphic>
@@ -350,64 +369,101 @@
 				<Tab fx:id="resultsTab" closable="false" text="Results">
 					<content>
 						<BorderPane fx:id="resultsMainPane">
+							<top>
+								<HBox fx:id="resultsGraphsHBox" alignment="CENTER">
+									<Label fx:id="resultsGraphsInfo" text="Select multiple graphs by clicking on them. Clicking again will remove selection." />
+								</HBox>
+							</top>
 							<bottom>
-								<HBox fx:id="resultsControls" alignment="CENTER" minHeight="40.0" BorderPane.alignment="CENTER">
+								<GridPane fx:id="resultsControls">
+									<columnConstraints>
+										<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" />
+										<ColumnConstraints hgrow="SOMETIMES" percentWidth="8.0" />
+										<ColumnConstraints hgrow="SOMETIMES" percentWidth="18.0" halignment="CENTER" />
+										<ColumnConstraints hgrow="SOMETIMES" percentWidth="18.0" halignment="CENTER" />
+										<ColumnConstraints hgrow="SOMETIMES" percentWidth="18.0" halignment="CENTER" />
+										<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" />
+										<ColumnConstraints hgrow="SOMETIMES" percentWidth="8.0" />
+									</columnConstraints>
+									<rowConstraints>
+										<RowConstraints vgrow="SOMETIMES" minHeight="40.0"/>
+									</rowConstraints>
+									<!--<children>-->
+										<!--<Label fx:id="imageSizeLabel" text=""/>-->
+										<!--<ComboBox fx:id="scaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5" GridPane.columnIndex="1"/>-->
+										<!--<Label fx:id="mousePositionLabel" text="- : -" GridPane.columnIndex="2"/>-->
+									<!--</children>-->
+								<!--<HBox fx:id="resultsControls" alignment="CENTER" minHeight="40.0" BorderPane.alignment="CENTER">-->
 									<children>
-										<RadioButton fx:id="resultImageRadioButton" mnemonicParsing="false" onAction="#showResultImage" text="Image">
-											<HBox.margin>
-												<Insets right="15.0"/>
-											</HBox.margin>
+										<RadioButton fx:id="resultImageRadioButton" mnemonicParsing="false" onAction="#showResultImage" text="Image" GridPane.columnIndex="2" >
 											<toggleGroup>
 												<ToggleGroup fx:id="result"/>
 											</toggleGroup>
 										</RadioButton>
 										<RadioButton fx:id="graphsRadioButton" mnemonicParsing="false" onAction="#showGraphs" text="Graphs"
-													 toggleGroup="$result">
-											<HBox.margin>
-												<Insets right="50.0"/>
-											</HBox.margin>
-										</RadioButton>
-										<Label fx:id="resultsColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns">
-											<HBox.margin>
-												<Insets right="20.0"/>
-											</HBox.margin>
-										</Label>
-										<TextField fx:id="resultsColumnsTextField" alignment="CENTER" onAction="#columnsChanged" prefWidth="50.0" text="2">
-											<HBox.margin>
-												<Insets left="20.0"/>
-												<Insets right="50.0"/>
-											</HBox.margin>
-										</TextField>
-										<Button fx:id="resultsRefreshButton" onAction="#refresh">
-											<graphic>
-												<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-														   preserveRatio="true">
-													<image>
-														<Image url="@refresh.png"/>
-													</image>
-												</ImageView>
-											</graphic>
-											<HBox.margin>
-												<Insets left="20.0"/>
-												<Insets right="50.0"/>
-											</HBox.margin>
-										</Button>
-										<ComboBox fx:id="resultsScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5">
-											<HBox.margin>
-												<Insets right="30.0"/>
-											</HBox.margin>
-										</ComboBox>
-										<Label fx:id="resultsMousePositionLabel" text="- : -">
-											<HBox.margin>
-												<Insets right="5.0"/>
-											</HBox.margin>
-										</Label>
-										<HBox fx:id="seriesColorPickers" alignment="CENTER" minHeight="40.0" />
+													 toggleGroup="$result" GridPane.columnIndex="3" />
+										<RadioButton fx:id="historyRadioButton" mnemonicParsing="false" onAction="#showHistory" text="History"
+													 toggleGroup="$result" GridPane.columnIndex="4" />
+										<Label fx:id="resultsColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns" GridPane.columnIndex="0" />
+										<TextField fx:id="resultsColumnsTextField" alignment="CENTER" text="2" GridPane.columnIndex="1" />
+										<HBox alignment="CENTER" fx:id="resultsGraphsToolbar" GridPane.columnIndex="5" GridPane.columnSpan="2">
+											<Button fx:id="resultsRefreshButton" onAction="#refresh" alignment="CENTER"  >
+												<graphic>
+													<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+															   preserveRatio="true">
+														<image>
+															<Image url="@refresh.png"/>
+														</image>
+													</ImageView>
+												</graphic>
+												<HBox.margin>
+													<Insets right="5.0"/>
+												</HBox.margin>
+											</Button>
+											<Button fx:id="resultsMergeButton" onAction="#merge" alignment="CENTER"  >
+												<graphic>
+													<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+															   preserveRatio="true">
+														<image>
+															<Image url="@plus.png"/>
+														</image>
+													</ImageView>
+												</graphic>
+												<HBox.margin>
+													<Insets right="5.0"/>
+												</HBox.margin>
+											</Button>
+											<Button fx:id="resultsShiftButton" onAction="#shift" alignment="CENTER"  >
+												<graphic>
+													<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+															   preserveRatio="true">
+														<image>
+															<Image url="@minus.png"/>
+														</image>
+													</ImageView>
+												</graphic>
+												<HBox.margin>
+													<Insets right="5.0"/>
+												</HBox.margin>
+											</Button>
+											<Button fx:id="resultsDeleteButton" onAction="#delete" alignment="CENTER"  >
+												<graphic>
+													<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+															   preserveRatio="true">
+														<image>
+															<Image url="@trash.png"/>
+														</image>
+													</ImageView>
+												</graphic>
+											</Button>
+										</HBox>
+										<ComboBox fx:id="resultsScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5" GridPane.columnIndex="5" />
+										<Label fx:id="resultsMousePositionLabel" text="- : -" alignment="CENTER_LEFT" GridPane.columnIndex="6" />
 									</children>
 									<BorderPane.margin>
 										<Insets left="50.0"/>
 									</BorderPane.margin>
-								</HBox>
+								</GridPane>
 							</bottom>
 							<center>
 								<GridPane BorderPane.alignment="CENTER">
@@ -425,6 +481,16 @@
 											<columnConstraints>
 												<ColumnConstraints/>
 											</columnConstraints>
+										</GridPane>
+									</ScrollPane>
+									<ScrollPane fx:id="resultsHistoryGridScrollPane" fitToWidth="true">
+										<GridPane fx:id="resultsHistoryGrid">
+										<rowConstraints>
+										<RowConstraints vgrow="SOMETIMES"/>
+										</rowConstraints>
+										<columnConstraints>
+										<ColumnConstraints/>
+										</columnConstraints>
 										</GridPane>
 									</ScrollPane>
 									<ScrollPane fx:id="resultsImageScrollPane">
