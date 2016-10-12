@@ -46,9 +46,9 @@
 					<content>
 						<GridPane fx:id="imagesMainPane">
 							<columnConstraints>
-								<ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0" />
-								<ColumnConstraints hgrow="SOMETIMES" percentWidth="60.0" />
-								<ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0" />
+								<ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
+								<ColumnConstraints hgrow="SOMETIMES" percentWidth="60.0"/>
+								<ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0"/>
 							</columnConstraints>
 							<rowConstraints>
 								<RowConstraints vgrow="SOMETIMES"/>
@@ -64,8 +64,38 @@
 									</rowConstraints>
 									<children>
 										<ListView fx:id="imagesList"/>
-										<Button fx:id="loadImagesButton" mnemonicParsing="false" onAction="#loadImages" text="Load images"
-												GridPane.rowIndex="1"/>
+										<HBox fx:id="imagesListToolbar" alignment="CENTER" GridPane.rowIndex="1">
+												<Button fx:id="loadImagesButton" mnemonicParsing="false" onAction="#loadImages">
+													<graphic>
+														<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+																   preserveRatio="true">
+															<image>
+																<Image url="@plus.png"/>
+															</image>
+														</ImageView>
+													</graphic>
+												</Button>
+												<Button fx:id="deleteImageButton" mnemonicParsing="false" onAction="#deleteImage">
+													<graphic>
+														<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+																   preserveRatio="true">
+															<image>
+																<Image url="@minus.png"/>
+															</image>
+														</ImageView>
+													</graphic>
+												</Button>
+												<Button fx:id="clearImagesButton" mnemonicParsing="false" onAction="#clearImages">
+													<graphic>
+														<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+																   preserveRatio="true">
+															<image>
+																<Image url="@trash.png"/>
+															</image>
+														</ImageView>
+													</graphic>
+												</Button>
+										</HBox>
 									</children>
 									<padding>
 										<Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
@@ -91,18 +121,18 @@
 									<bottom>
 										<GridPane fx:id="bottomGrid">
 											<columnConstraints>
-												<ColumnConstraints hgrow="SOMETIMES" percentWidth="70.0" />
-												<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" />
-												<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" halignment="RIGHT" />
+												<ColumnConstraints hgrow="SOMETIMES" percentWidth="70.0"/>
+												<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0"/>
+												<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" halignment="RIGHT"/>
 											</columnConstraints>
 											<rowConstraints>
 												<RowConstraints vgrow="SOMETIMES" minHeight="40.0"/>
 											</rowConstraints>
 											<children>
-												<Label fx:id="imageSizeLabel" text="" />
-												<ComboBox fx:id="scaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5" GridPane.columnIndex="1" />
-												<Label fx:id="mousePositionLabel" text="- : -" GridPane.columnIndex="2" />
-												</children>
+												<Label fx:id="imageSizeLabel" text=""/>
+												<ComboBox fx:id="scaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5" GridPane.columnIndex="1"/>
+												<Label fx:id="mousePositionLabel" text="- : -" GridPane.columnIndex="2"/>
+											</children>
 										</GridPane>
 									</bottom>
 								</BorderPane>
@@ -223,8 +253,7 @@
 																		</GridPane>
 																	</children>
 																</StackPane>
-																<ToolBar fx:id="toolbar" orientation="HORIZONTAL">
-																	<items>
+																<HBox fx:id="toolbar" alignment="CENTER" >
 																		<Button fx:id="verticalFlipButton" mnemonicParsing="false" onAction="#flipVertical">
 																			<graphic>
 																				<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
@@ -265,8 +294,7 @@
 																				</ImageView>
 																			</graphic>
 																		</Button>
-																	</items>
-																</ToolBar>
+																</HBox>
 															</children>
 															<padding>
 																<Insets left="15.0" right="15.0"/>
@@ -339,9 +367,9 @@
 												<Insets right="50.0"/>
 											</HBox.margin>
 										</RadioButton>
-										<Label fx:id="resultsColumnsLabel" alignment="CENTER_RIGHT" text="Number of columns">
+										<Label fx:id="resultsColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns">
 											<HBox.margin>
-												<Insets/>
+												<Insets right="20.0"/>
 											</HBox.margin>
 										</Label>
 										<TextField fx:id="resultsColumnsTextField" alignment="CENTER" onAction="#columnsChanged" prefWidth="50.0" text="2">
@@ -350,6 +378,20 @@
 												<Insets right="50.0"/>
 											</HBox.margin>
 										</TextField>
+										<Button fx:id="resultsRefreshButton" onAction="#refresh">
+											<graphic>
+												<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+														   preserveRatio="true">
+													<image>
+														<Image url="@refresh.png"/>
+													</image>
+												</ImageView>
+											</graphic>
+											<HBox.margin>
+												<Insets left="20.0"/>
+												<Insets right="50.0"/>
+											</HBox.margin>
+										</Button>
 										<ComboBox fx:id="resultsScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5">
 											<HBox.margin>
 												<Insets right="30.0"/>
@@ -360,10 +402,8 @@
 												<Insets right="5.0"/>
 											</HBox.margin>
 										</Label>
+										<HBox fx:id="seriesColorPickers" alignment="CENTER" minHeight="40.0" />
 									</children>
-									<opaqueInsets>
-										<Insets/>
-									</opaqueInsets>
 									<BorderPane.margin>
 										<Insets left="50.0"/>
 									</BorderPane.margin>
@@ -377,32 +417,24 @@
 									<rowConstraints>
 										<RowConstraints percentHeight="100.0" vgrow="SOMETIMES"/>
 									</rowConstraints>
-									<children>
-										<ScrollPane fx:id="resultsGridScrollPane" fitToWidth="true">
-											<content>
-												<GridPane fx:id="resultsGrid">
-													<rowConstraints>
-														<RowConstraints vgrow="SOMETIMES"/>
-													</rowConstraints>
-													<columnConstraints>
-														<ColumnConstraints/>
-													</columnConstraints>
-												</GridPane>
-											</content>
-										</ScrollPane>
-										<ScrollPane fx:id="resultsImageScrollPane">
-											<content>
-												<Group fx:id="resultsImageViewGroup" autoSizeChildren="false">
-													<AnchorPane fx:id="resultsImageViewAnchor" centerShape="false">
-														<children>
-															<ImageView fx:id="resultsImageView" preserveRatio="true" AnchorPane.bottomAnchor="0.0"
-																	   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-														</children>
-													</AnchorPane>
-												</Group>
-											</content>
-										</ScrollPane>
-									</children>
+									<ScrollPane fx:id="resultsGridScrollPane" fitToWidth="true">
+										<GridPane fx:id="resultsGrid">
+											<rowConstraints>
+												<RowConstraints vgrow="SOMETIMES"/>
+											</rowConstraints>
+											<columnConstraints>
+												<ColumnConstraints/>
+											</columnConstraints>
+										</GridPane>
+									</ScrollPane>
+									<ScrollPane fx:id="resultsImageScrollPane">
+										<Group fx:id="resultsImageViewGroup" autoSizeChildren="false">
+											<AnchorPane fx:id="resultsImageViewAnchor" centerShape="false">
+												<ImageView fx:id="resultsImageView" preserveRatio="true" AnchorPane.bottomAnchor="0.0"
+														   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
+											</AnchorPane>
+										</Group>
+									</ScrollPane>
 								</GridPane>
 							</center>
 						</BorderPane>

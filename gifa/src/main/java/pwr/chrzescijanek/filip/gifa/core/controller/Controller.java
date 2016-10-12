@@ -1,14 +1,15 @@
 package pwr.chrzescijanek.filip.gifa.core.controller;
 
+import com.sun.javafx.charts.Legend;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -21,7 +22,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -41,17 +41,20 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 public class Controller {
 
 	public static final String THEME_PREFERENCE_KEY = "gifa.theme";
 	public static final String THEME_DARK = "/theme-dark.css";
 	public static final String THEME_LIGHT = "/theme-light.css";
+	public static final String GRAPH_SELECTION_STYLE = "-fx-border-color: yellow; -fx-border-width: 3px;";
+	@FXML private HBox seriesColorPickers;
+	@FXML private Button resultsRefreshButton;
+	@FXML private Button deleteImageButton;
+	@FXML private Button clearImagesButton;
 
 	@FXML
 	private ResourceBundle resources;
@@ -276,7 +279,7 @@ public class Controller {
 	private Button horizontalFlipButton;
 
 	@FXML
-	private ToolBar toolbar;
+	private HBox toolbar;
 
 	@FXML
 	private Button rotateLeftButton;
@@ -400,6 +403,35 @@ public class Controller {
 	}
 
 	@FXML
+	void refresh( ActionEvent actionEvent ) {
+		List< XYChart.Series > series = State.INSTANCE.series.get();
+		List< BarChart< String, Number > > charts = State.INSTANCE.charts.get();
+		if (charts != null) charts.clear();
+		for (XYChart.Series serie : series) {
+					final CategoryAxis xAxis = new CategoryAxis();
+					final NumberAxis yAxis = new NumberAxis();
+					final BarChart< String, Number > bc = new BarChart<>(xAxis, yAxis);
+					bc.setTitle(serie.getName());
+					yAxis.setLabel("Value");
+					bc.getData().addAll(serie);
+					bc.setLegendVisible(false);
+//					for (Node node : bc.lookupAll(".default-color0.chart-bar")) {
+//						node.setStyle("-fx-bar-fill: red;");
+//					}
+					bc.setOnMouseClicked(event -> {
+						if (bc.getStyle().equals(GRAPH_SELECTION_STYLE))
+							bc.setStyle("-fx-border-color: null;");
+						else
+							bc.setStyle(GRAPH_SELECTION_STYLE);
+					});
+					charts.add(bc);
+				}
+		placeCharts();
+			}
+
+
+
+	@FXML
 	void columnsChanged( ActionEvent event ) {
 		placeCharts();
 	}
@@ -517,8 +549,8 @@ public class Controller {
 			State.INSTANCE.result.setValue(DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images), points, true));
 		}
 			resultsImageView.setImage(State.INSTANCE.result.getValue().resultImage);
-			State.INSTANCE.charts.setValue(generateCharts());
-			placeCharts();
+			State.INSTANCE.series.setValue(generateSeries());
+			refresh(null);
 		} catch (Exception e) {
 			Alert alert = new Alert(Alert.AlertType.ERROR, "Generating results failed! Probably we couldn't find proper image transformation. " +
 					"Please check your rectangle selections.", ButtonType.OK);
@@ -532,45 +564,68 @@ public class Controller {
 			resultsGrid.getChildren().clear();
 			resultsGrid.getColumnConstraints().clear();
 			resultsGrid.getRowConstraints().clear();
-			final int noOfColumns = Integer.parseInt(resultsColumnsTextField.getText());
-			for ( int i = 0; i < noOfColumns; i++ ) {
-				final ColumnConstraints columnConstraints = new ColumnConstraints();
-				columnConstraints.setPercentWidth(100.0 / noOfColumns);
-				resultsGrid.getColumnConstraints().add(columnConstraints);
-			}
-			final int noOfRows = charts.size() / noOfColumns + 1;
-			for ( int i = 0; i < noOfRows; i++ ) {
-				List< BarChart< String, Number > > chartsInRow = new ArrayList<>();
-				int n = 0;
-				while ( i * noOfColumns + n < charts.size() && n < noOfColumns ) {
-					chartsInRow.add(charts.get(i * noOfColumns + n));
-					n++;
+			final int noOfColumns = Math.min(Integer.parseInt(resultsColumnsTextField.getText()), charts.size());
+			if (noOfColumns > 0) {
+				for ( int i = 0; i < noOfColumns; i++ ) {
+					final ColumnConstraints columnConstraints = new ColumnConstraints();
+					columnConstraints.setPercentWidth(100.0 / noOfColumns);
+					resultsGrid.getColumnConstraints().add(columnConstraints);
 				}
-				resultsGrid.addRow(i, chartsInRow.toArray(new BarChart[0]));
+				final int noOfRows = charts.size() / noOfColumns + 1;
+				for ( int i = 0; i < noOfRows; i++ ) {
+					List< BarChart< String, Number > > chartsInRow = new ArrayList<>();
+					int n = 0;
+					while ( i * noOfColumns + n < charts.size() && n < noOfColumns ) {
+						chartsInRow.add(charts.get(i * noOfColumns + n));
+						n++;
+					}
+					resultsGrid.addRow(i, chartsInRow.toArray(new BarChart[0]));
+				}
 			}
+		}
+		colorSeries();
+	}
+
+	private void colorSeries() {
+		List<Color> colors = seriesColorPickers.getChildren().stream().filter(n -> n instanceof ColorPicker).map(n -> ( (ColorPicker) n ).getValue()).collect
+				(Collectors.toList());
+		seriesColorPickers.getChildren().clear();
+		int noOfPickers = State.INSTANCE.charts.get().stream().map(BarChart::getData).mapToInt(List::size).max().orElse(0);
+		for (int i = 0; i < noOfPickers; i++) {
+			final int index = i;
+			final ColorPicker e = new ColorPicker();
+			e.setMaxWidth(45);
+			e.valueProperty().addListener(( observable, oldValue, newValue ) -> {
+				String web = String.format( "#%02X%02X%02X%02X",
+						(int)( newValue.getRed() * 255 ),
+						(int)( newValue.getGreen() * 255 ),
+						(int)( newValue.getBlue() * 255 ),
+						(int)( newValue.getOpacity() * 255 ) );
+//				final XYChart.Series< String, Number > stringNumberSeries = State.INSTANCE.charts.get().stream().filter(c -> c.getData().size() > index).map(c
+//						-> c.getData().get(index)).collect(Collectors.toList()).get(0);
+				State.INSTANCE.charts.get().stream().filter(c -> c.getData().size() > index).map(c
+						-> c.getData().get(index).getData()).forEach(d -> d.forEach(n -> n.getNode().setStyle("-fx-bar-fill: " + web + ";")));
+				State.INSTANCE.charts.get().stream().filter(c -> c.getData().size() > index).map(c -> c.getChildrenUnmodifiable()).forEach(n -> n.stream().filter(x -> x instanceof Legend).map(l -> ((Legend) l).getItems().get(index).getSymbol()).forEach(y -> y.setStyle("-fx-background-color: " + web + ";")));//.map(c
+//						-> c.getData().get(index).loo).forEach(d -> d.forEach(n -> n.getNode().setStyle("-fx-bar-fill: " + web + ";")));
+			});
+			e.setValue(index >= colors.size() ? Color.color((index + 1) / (noOfPickers * 1.0), 0.0, 0.0) : colors.get(index));
+			seriesColorPickers.getChildren().add(e);
+			seriesColorPickers.setMargin(e, new Insets(0,5,0,5));
 		}
 	}
 
-	private List< BarChart< String, Number > > generateCharts() {
+	private List<XYChart.Series > generateSeries() {
 		Map< String, double[] > results = State.INSTANCE.result.getValue().results;
-		List< BarChart< String, Number > > charts = new ArrayList<>();
+		List<XYChart.Series> series = new ArrayList<>();
 		for ( Map.Entry< String, double[] > e : results.entrySet() ) {
-			final CategoryAxis xAxis = new CategoryAxis();
-			final NumberAxis yAxis = new NumberAxis();
-			final BarChart< String, Number > bc = new BarChart<>(xAxis, yAxis);
-			bc.setTitle(e.getKey());
-			yAxis.setLabel("Value");
-
 			XYChart.Series series1 = new XYChart.Series();
+			series1.setName(e.getKey());
 			for ( int i = 0; i < e.getValue().length; i++ ) {
 				series1.getData().add(new XYChart.Data(imagesList.getItems().get(i), e.getValue()[i]));
 			}
-
-			bc.getData().addAll(series1);
-			bc.setLegendVisible(false);
-			charts.add(bc);
+			series.add(series1);
 		}
-		return charts;
+		return series;
 	}
 
 	@FXML
@@ -730,6 +785,23 @@ public class Controller {
 	}
 
 	@FXML
+	void deleteImage() {
+		String key = imagesList.getSelectionModel().getSelectedItem();
+		if ( key != null ) {
+			imagesList.getSelectionModel().clearSelection();
+			imagesList.getItems().remove(key);
+			State.INSTANCE.images.remove(key);
+		}
+	}
+
+	@FXML
+	void clearImages() {
+			imagesList.getSelectionModel().clearSelection();
+			imagesList.getItems().clear();
+			State.INSTANCE.images.clear();
+	}
+
+	@FXML
 	void initialize() {
 		assert root != null : "fx:id=\"root\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert menuBar != null : "fx:id=\"menuBar\" was not injected: check your FXML file 'gifa-gui.fxml'.";
@@ -831,6 +903,10 @@ public class Controller {
 		assert resultsScaleCombo != null : "fx:id=\"resultsScaleCombo\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert resultsMousePositionLabel != null : "fx:id=\"resultsMousePositionLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert imageSizeLabel != null : "fx:id=\"imageSizeLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert deleteImageButton != null : "fx:id=\"deleteImageButton\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert clearImagesButton != null : "fx:id=\"clearImagesButton\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert resultsRefreshButton != null : "fx:id=\"resultsRefreshButton\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert seriesColorPickers != null : "fx:id=\"seriesColorPickers\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 
 		scaleCombo.itemsProperty().get().addAll(
 				"25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%", "250%", "500%", "1000%"
@@ -890,6 +966,77 @@ public class Controller {
 		verticalFlipButton.setTooltip(new Tooltip("Flip vertically"));
 		rotateLeftButton.setTooltip(new Tooltip("Rotate left by 90 degrees"));
 		rotateRightButton.setTooltip(new Tooltip("Rotate right by 90 degrees"));
+		loadImagesButton.setTooltip(new Tooltip("Load images"));
+		deleteImageButton.setTooltip(new Tooltip("Delete image"));
+		clearImagesButton.setTooltip(new Tooltip("Clear list"));
+		resultsRefreshButton.setTooltip(new Tooltip("Restore graphs"));
+		root.setOnKeyPressed(event -> {
+			if (resultsTab.isSelected() && graphsRadioButton.isSelected()) {
+							if (event.getCode().equals(KeyCode.ENTER) && resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).count() > 1) {
+								final CategoryAxis xAxis = new CategoryAxis();
+								final NumberAxis yAxis = new NumberAxis();
+								final BarChart< String, Number > bc = new BarChart<>(xAxis, yAxis);
+								yAxis.setLabel("Value");
+								resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> ((BarChart<String, Number>) n).getData()).forEach(series -> {
+									bc.getData().addAll(series);
+								});
+								bc.setOnMouseClicked(e -> {
+									if (bc.getStyle().equals(GRAPH_SELECTION_STYLE))
+										bc.setStyle("-fx-border-color: null;");
+									else
+										bc.setStyle(GRAPH_SELECTION_STYLE);
+								});
+								Optional< Integer > index = resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> State.INSTANCE.charts.get().indexOf(n)).min(Integer::compareTo);
+								State.INSTANCE.charts.get().removeAll(resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
+								State.INSTANCE.charts.get().add(index.orElse(0), bc);
+								placeCharts();
+							} else if (event.getCode().equals(KeyCode.DELETE)) {
+								State.INSTANCE.charts.get().removeAll(resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
+								placeCharts();
+							} else if (event.getCode().equals(KeyCode.SHIFT) && resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).count() == 1
+									&& resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> ((BarChart<String, Number>) n).getData().size()).reduce(Integer::sum).orElse(0) > 1) {
+								final CategoryAxis xAxis1 = new CategoryAxis();
+								final NumberAxis yAxis1 = new NumberAxis();
+								final CategoryAxis xAxis2 = new CategoryAxis();
+								final NumberAxis yAxis2 = new NumberAxis();
+								final BarChart< String, Number > bc1 = new BarChart<>(xAxis1, yAxis1);
+								final BarChart< String, Number > bc2 = new BarChart<>(xAxis2, yAxis2);
+								yAxis1.setLabel("Value");
+								yAxis2.setLabel("Value");
+								BarChart< String, Number > chart = (BarChart< String, Number > ) resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()).get(0); //.map(n -> ((BarChart<String, Number>) n).getData()).forEach(series -> {
+								XYChart.Series s = State.INSTANCE.series.get().stream().filter(n -> n.getName().equals(chart.getData().get(chart.getData().size() - 1).getName())).collect(Collectors.toList()).get(0);
+								List<String> names = chart.getData().stream().filter(n -> !n.getName().equals(chart.getData().get(chart.getData().size() - 1).getName())).map(n -> n.getName()).collect(Collectors.toList());
+								bc1.getData().add(s);
+								bc2.getData().addAll(State.INSTANCE.series.get().stream().filter(n -> names.contains(n.getName())).toArray(XYChart.Series[]::new));
+								bc1.setTitle(bc1.getData().get(0).getName());
+								if (bc2.getData().size() == 1) {
+									bc2.setTitle(bc2.getData().get(0).getName());
+									bc2.setLegendVisible(false);
+								}
+								bc1.setOnMouseClicked(e -> {
+									if (bc1.getStyle().equals(GRAPH_SELECTION_STYLE))
+										bc1.setStyle("-fx-border-color: null;");
+									else
+										bc1.setStyle(GRAPH_SELECTION_STYLE);
+								});
+									bc2.setOnMouseClicked(e -> {
+										if (bc2.getStyle().equals(GRAPH_SELECTION_STYLE))
+											bc2.setStyle("-fx-border-color: null;");
+										else
+											bc2.setStyle(GRAPH_SELECTION_STYLE);
+
+									});
+								bc1.setLegendVisible(false);
+								Optional< Integer > index = resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> State.INSTANCE.charts.get().indexOf(n)).min(Integer::compareTo);
+//								State.INSTANCE.charts.get().removeAll(resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
+								int i = index.orElse(State.INSTANCE.charts.get().size() - 1);
+								State.INSTANCE.charts.get().remove(chart);
+								State.INSTANCE.charts.get().add(i, bc1);
+								State.INSTANCE.charts.get().add(i, bc2);
+								placeCharts();
+							}
+			}
+		});
 		imageView.scaleYProperty().addListener(( observable, oldValue, newValue ) -> {
 			final double scale = newValue.doubleValue();
 			triangle.setScaleX(scale);
@@ -900,24 +1047,8 @@ public class Controller {
 		});
 		imagesList.setOnKeyPressed(event -> {
 			if (event.getCode().equals(KeyCode.DELETE)) {
-				String key = imagesList.getSelectionModel().getSelectedItem();
-				if ( key != null ) {
-					imagesList.getSelectionModel().clearSelection();
-					imagesList.getItems().remove(key);
-					State.INSTANCE.images.remove(key);
-				}
+				deleteImage();
 			}
-//			} else if (event.getCode().equals(KeyCode.A)) {
-//				if (this.listView.getSelectionModel().getSelectedItems().size() < this.shapes.size()) {
-//					this.listView.getSelectionModel().selectAll();
-//					for (final Shape shape : this.shapes.values()) {
-//						ControllerUtils.select(shape);
-//					}
-//				} else {
-//					this.listView.getSelectionModel().clearSelection();
-//					ControllerUtils.clearSelections();
-//				}
-//			}
 		});
 		imageViewGroup.setOnMouseMoved(event -> {
 			mousePositionLabel.setText((int) ( event.getX() / imageView.getScaleX() ) + " : " + (int) ( event.getY() / imageView.getScaleY() ));
@@ -974,8 +1105,6 @@ public class Controller {
 			}
 		});
 
-//		rectangle.setOnMouseMoved(event -> {
-//				);
 		rectangle.setOnMouseMoved(event -> {
 			if (State.INSTANCE.getRectangleSelection() == State.RectangleSelection.NONE) {
 				State.INSTANCE.setRectangleSelection(State.RectangleSelection.DRAG);
@@ -1094,10 +1223,16 @@ public class Controller {
 	}
 
 	public void resizeNW(final long deltaX, final long deltaY) {
+		Image image = imageView.getImage();
+
 		final double newWidth = rectangle.getWidth() - deltaX;
 		final double newHeight = rectangle.getHeight() - deltaY;
 
 		if (!(rectangle.getX() + deltaX < 0 || rectangle.getY() + deltaY < 0)) {
+//			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
+//			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
+//			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
 			rectangle.setX(newWidth > 5 ? rectangle.getX() + deltaX : rectangle.getX());
 			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
 			rectangle.setY(newHeight > 5 ? rectangle.getY() + deltaY : rectangle.getY());
@@ -1116,6 +1251,9 @@ public class Controller {
 			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
 			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
 		}
+
+//		rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//		rectangle.setHeight(Math.min(newHeight, image.getHeight()));
 	}
 
 	public void resizeSW(final long deltaX, final long deltaY) {
@@ -1129,6 +1267,10 @@ public class Controller {
 			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
 			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
 			rectangle.setX(newWidth > 5 ? rectangle.getX() + deltaX : rectangle.getX());
+
+//		rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//		rectangle.setHeight(Math.min(newHeight, image.getHeight()));
+//		rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
 		}
 		
 	}
@@ -1145,7 +1287,10 @@ public class Controller {
 			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
 			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
 		}
-		
+
+//		rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
+//		rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//		rectangle.setHeight(Math.min(newHeight, image.getHeight()));
 	}
 
 	public void resizeE(final long deltaX, final long deltaY) {
@@ -1156,10 +1301,12 @@ public class Controller {
 		if (!(newWidth + rectangle.getX() + deltaX > image.getWidth() - 0)) {
 			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
 		}
-		
+
+//		rectangle.setWidth(Math.min(newWidth, image.getWidth()));
 	}
 
 	public void resizeW(final long deltaX, final long deltaY) {
+		Image image = imageView.getImage();
 
 		final double newWidth = rectangle.getWidth() - deltaX;
 
@@ -1167,6 +1314,8 @@ public class Controller {
 			rectangle.setX(newWidth > 5 ? rectangle.getX() + deltaX : rectangle.getX());
 			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
 		}
+//		rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
+//		rectangle.setWidth(Math.min(newWidth, image.getWidth()));
 		
 	}
 
@@ -1178,17 +1327,21 @@ public class Controller {
 		if (!(newHeight + rectangle.getY() + deltaY > image.getHeight() - 0)) {
 			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
 		}
+//		rectangle.setHeight(Math.min(newHeight, image.getHeight()));
 		
 	}
 
 	public void resizeN(final long deltaX, final long deltaY) {
+		Image image = imageView.getImage();
 		final double newHeight = rectangle.getHeight() - deltaY;
 
 		if (!(rectangle.getY() + deltaY < 0)) {
 			rectangle.setY(newHeight > 5 ? rectangle.getY() + deltaY : rectangle.getY());
 			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
 		}
-		
+
+//		rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
+//		rectangle.setHeight(Math.min(newHeight, image.getHeight()));
 	}
 
 	public void drag(final long deltaX, final long deltaY) {
@@ -1200,8 +1353,10 @@ public class Controller {
 				|| rectangle.getY() + deltaY < 0)) {
 			rectangle.setX(rectangle.getX() + deltaX);
 			rectangle.setY(rectangle.getY() + deltaY);
-			
+
 		}
+//		rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
+//		rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
 	}
 
 	private void recalculateTranslates( final double scale ) {
@@ -1217,7 +1372,7 @@ public class Controller {
 
 	private void setImageViewControls( ImageView imageView, ScrollPane imageScrollPane, Group imageViewGroup, ComboBox< String > scaleCombo, Label
 			mousePositionLabel ) {
-		imageViewGroup.setOnMouseMoved(event -> mousePositionLabel.setText((int) event.getX() + " : " + (int) event.getY()));
+		imageViewGroup.setOnMouseMoved(event -> mousePositionLabel.setText((int) (event.getX() / imageView.getScaleX()) + " : " + (int) (event.getY() / imageView.getScaleY())));
 		imageViewGroup.setOnMouseExited(event -> mousePositionLabel.setText("- : -"));
 		imageViewGroup.setOnScroll(event -> {
 			if ( event.isControlDown() ) {
@@ -1240,17 +1395,6 @@ public class Controller {
 				event.consume();
 			}
 		});
-//		imageScrollPane.setOnScroll(event -> {
-//			if ( event.isControlDown() ) {
-//				double deltaY = event.getDeltaY();
-//				if ( deltaY > 0 ) {
-//					imageView.setScaleX(imageView.getScaleX() * 1.05);
-//				} else {
-//					imageView.setScaleX(imageView.getScaleX() * 0.95);
-//				}
-//				event.consume();
-//			}
-//		});
 		imageView.scaleXProperty().addListener(( observable, oldValue, newValue ) -> {
 			String asString = String.format("%.0f%%", newValue.doubleValue() * 100);
 			if ( !scaleCombo.getValue().equals(asString) )
@@ -1398,12 +1542,11 @@ public class Controller {
 	}
 
 	private void setVisibilityBindings() {
-		SimpleListProperty imageListProperty = new SimpleListProperty();
-		imageListProperty.bind(imagesList.itemsProperty());
 		imageViewGroup.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		scaleCombo.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		mousePositionLabel.visibleProperty().bind(imageView.imageProperty().isNotNull());
 		rightVBox.visibleProperty().bind(imageView.imageProperty().isNotNull());
+		resultsButton.visibleProperty().bind(method.selectedToggleProperty().isNotNull());
 		triangle.visibleProperty().bind(triangleRadioButton.selectedProperty());
 		triangleGroupGrid.visibleProperty().bind(triangleRadioButton.selectedProperty());
 		rectangle.visibleProperty().bind(rectangleRadioButton.selectedProperty());
@@ -1414,9 +1557,13 @@ public class Controller {
 		resultsGridScrollPane.visibleProperty().bind(graphsRadioButton.selectedProperty());
 		resultsColumnsLabel.visibleProperty().bind(graphsRadioButton.selectedProperty());
 		resultsColumnsTextField.visibleProperty().bind(graphsRadioButton.selectedProperty());
+		resultsRefreshButton.visibleProperty().bind(graphsRadioButton.selectedProperty());
+		seriesColorPickers.visibleProperty().bind(graphsRadioButton.selectedProperty());
 	}
 
 	private void setEnablementBindings() {
+		deleteImageButton.disableProperty().bind(imagesList.getSelectionModel().selectedItemProperty().isNull());
+		clearImagesButton.disableProperty().bind(Bindings.isEmpty(imagesList.getItems()));
 		fileMenuExportToCsv.disableProperty().bind(State.INSTANCE.result.isNull());
 		IntegerProperty featuresSize = new SimpleIntegerProperty(featuresVBox.getChildren().size());
 		BooleanBinding noFeaturesAvailable = Bindings.equal(0, featuresSize);
@@ -1454,5 +1601,4 @@ public class Controller {
 				}
 		);
 	}
-
 }
