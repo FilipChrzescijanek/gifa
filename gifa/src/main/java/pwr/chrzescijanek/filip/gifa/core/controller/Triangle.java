@@ -2,6 +2,7 @@ package pwr.chrzescijanek.filip.gifa.core.controller;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.collections.ObservableList;
 import javafx.scene.shape.Polygon;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -21,8 +22,10 @@ public class Triangle extends Polygon {
 	public Triangle( final Point p1, final Point p2, final Point p3) {
 		super(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 		this.pointsProperty = new DoubleProperty[6];
-		for ( int i = 0; i < pointsProperty.length; i++)
-			pointsProperty[i] = new SimpleDoubleProperty();
+		final ObservableList< Double > points = getPoints();
+		for ( int i = 0; i < pointsProperty.length; i++) {
+			pointsProperty[i] = new SimpleDoubleProperty(points.get(i));
+		}
 		registerListeners();
 	}
 
@@ -34,6 +37,11 @@ public class Triangle extends Polygon {
 				getPoints().set(index, value);
 			});
 		}
+	}
+
+	public void reset() {
+		for ( int i = 0; i < pointsProperty.length; i++)
+			this.pointsProperty[i].setValue(0);
 	}
 
 	public void copy( Triangle other) {

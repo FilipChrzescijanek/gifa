@@ -71,7 +71,7 @@ public final class ImageUtils {
 		return imageCopy;
 	}
 
-	public static void performAffineTransformations( final Mat[] images) {
+	public static void performAffineTransformations( final Mat[] images, int interpolation) {
 		final int noOfImages = images.length;
 		for ( final Mat m : images )
 			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2BGRA);
@@ -79,7 +79,7 @@ public final class ImageUtils {
 			images[i] = transformToSize(images[i], images[0]);
 			final Mat warpMat = Video.estimateRigidTransform(images[i], images[0], false);
 			Imgproc.warpAffine(images[i], images[i], warpMat, images[0].size(),
-					Imgproc.INTER_NEAREST, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
+					interpolation, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
 		}
 	}
 
@@ -92,14 +92,14 @@ public final class ImageUtils {
 		return result;
 	}
 
-	public static void performAffineTransformations( final Mat[] images, final MatOfPoint2f[] points) {
+	public static void performAffineTransformations( final Mat[] images, final MatOfPoint2f[] points, int interpolation) {
 		final int noOfImages = images.length;
 		for ( final Mat m : images )
 			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2BGRA);
 		for ( int i = 1; i < noOfImages; i++ ) {
 			final Mat warpMat = Imgproc.getAffineTransform(points[i], points[0]);
 			Imgproc.warpAffine(images[i], images[i], warpMat, images[0].size(),
-					Imgproc.INTER_NEAREST, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
+					interpolation, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
 		}
 	}
 

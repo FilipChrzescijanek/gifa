@@ -11,14 +11,16 @@ public class RectangleOfInterest extends Rectangle {
 	}
 
 	public void copy( RectangleOfInterest other) {
-		this.setX(0.0);
-		this.setY(0.0);
-		this.setWidth(0.0);
-		this.setHeight(0.0);
 		this.setX(other.getX());
 		this.setY(other.getY());
 		this.setWidth(other.getWidth());
 		this.setHeight(other.getHeight());
 	}
 
+	public void reset() {
+		this.setX(0.0);
+		this.setY(0.0);
+		this.setWidth(0.0);
+		this.setHeight(0.0);
+	}
 }

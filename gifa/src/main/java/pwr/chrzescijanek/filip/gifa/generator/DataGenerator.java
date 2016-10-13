@@ -34,12 +34,12 @@ public enum DataGenerator {
 		injectFunction("Mean red", ( images, mask ) -> FunctionUtils.calculateMeans(images, mask, 2));
 	}
 
-	public Result generateData( final Mat[] images, final MatOfPoint2f[] points, boolean automatic ) {
+	public Result generateData( final Mat[] images, final MatOfPoint2f[] points, boolean automatic, int interpolation) {
 		assert ( images.length == points.length );
 		if (automatic)
-		ImageUtils.performAffineTransformations(images);
+		ImageUtils.performAffineTransformations(images, interpolation);
 		else
-		ImageUtils.performAffineTransformations(images, points);
+		ImageUtils.performAffineTransformations(images, points, interpolation);
 		final ResultImage resultImage = ImageUtils.getResultImage(images);
 		Image image = ImageUtils.createImage(resultImage.data, resultImage.width, resultImage.height, resultImage.channels,
 				PixelFormat.getByteBgraPreInstance());

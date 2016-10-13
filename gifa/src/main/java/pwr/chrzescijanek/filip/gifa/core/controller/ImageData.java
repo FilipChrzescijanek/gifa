@@ -10,6 +10,7 @@ public final class ImageData {
 	public final Mat imageData;
 	public final RectangleOfInterest rectangle;
 	public final Triangle triangle;
+	public double scale = 1.0;
 
 	public ImageData( final Image image, final Mat imageData ) {
 		this.image = image;

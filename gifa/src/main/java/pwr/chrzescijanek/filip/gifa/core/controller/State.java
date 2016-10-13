@@ -32,6 +32,7 @@ public enum State {
 	public Map<String, Color > seriesColors = new HashMap<>();
 	public Map<String, Color > historySeriesColors = new HashMap<>();
 	public long x, y;
+	public boolean dragStarted;
 
 	public void setRectangleSelection( final RectangleSelection rectangleSelection ) {
 		this.rectangleSelection = rectangleSelection;
@@ -68,5 +69,6 @@ public enum State {
 
 	public void setNoSelection() {
 		triangleSelection = NONE;
+		rectangleSelection=RectangleSelection.NONE;
 	}
 }

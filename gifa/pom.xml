@@ -21,16 +21,27 @@
 			<version>4.12</version>
 		</dependency>
 		<dependency>
-			<groupId>org.javaopencvbook</groupId>
-			<artifactId>opencvjar</artifactId>
-			<version>3.0.0</version>
+			<groupId>org.opencv</groupId>
+			<artifactId>opencv</artifactId>
+			<version>3.1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.javaopencvbook</groupId>
-			<artifactId>opencvjar-runtime</artifactId>
-			<version>3.0.0</version>
+			<groupId>org.opencv</groupId>
+			<artifactId>opencv-runtime</artifactId>
+			<version>3.1.0</version>
 			<classifier>natives-windows-x86_64</classifier>
 		</dependency>
+		<!--<dependency>-->
+		<!--<groupId>org.javaopencvbook</groupId>-->
+		<!--<artifactId>opencvjar</artifactId>-->
+		<!--<version>3.0.0</version>-->
+		<!--</dependency>-->
+		<!--<dependency>-->
+		<!--<groupId>org.javaopencvbook</groupId>-->
+		<!--<artifactId>opencvjar-runtime</artifactId>-->
+		<!--<version>3.0.0</version>-->
+		<!--<classifier>natives-windows-x86_64</classifier>-->
+		<!--</dependency>-->
 	</dependencies>
 
 	<build>

@@ -96,6 +96,21 @@
     -fx-background-color:transparent;
 }
 
+.dialog-pane:header .header-panel{
+    -fx-background-color: #aaa;
+}
+
+.dialog-pane:header .header-panel .label{
+    -fx-text-fill: black;
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+}
+
+.dialog-pane{
+    -fx-background-color: #444;
+    -fx-text-fill: white;
+}
+
 .menu-bar {
     -fx-background-color: #888;
 }

@@ -31,11 +31,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
-import org.opencv.core.Core;
-import org.opencv.core.CvException;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import pwr.chrzescijanek.filip.gifa.Main;
 import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
 import pwr.chrzescijanek.filip.gifa.core.util.Result;
@@ -46,6 +44,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
@@ -56,6 +56,36 @@ public class Controller {
 	public static final String THEME_DARK = "/theme-dark.css";
 	public static final String THEME_LIGHT = "/theme-light.css";
 	public static final String GRAPH_SELECTION_STYLE = "-fx-border-color: yellow; -fx-border-width: 3px;";
+	public MenuItem fileMenuRemoveImage;
+	public MenuItem fileMenuClear;
+	public MenuItem editMenuRectangleMode;
+	public MenuItem editMenuTriangleMode;
+	public MenuItem editMenuVerticalFlip;
+	public MenuItem editMenuHorizontalFlip;
+	public MenuItem editMenuRotateLeft;
+	public MenuItem editMenuRotateRight;
+	public MenuItem editMenuRestoreCharts;
+	public MenuItem editMenuMergeCharts;
+	public MenuItem editMenuExtractChart;
+	public MenuItem editMenuRemoveCharts;
+	public MenuItem editMenuSelectAllFeatures;
+	public MenuItem editMenuDeselectAllFeatures;
+	public MenuItem navMenuImages;
+	public MenuItem navMenuResults;
+	public MenuItem navMenuFeatures;
+	public MenuItem navMenuToolbar;
+	public MenuItem navMenuResultImage;
+	public MenuItem navMenuCharts;
+	public MenuItem navMenuHistory;
+	public MenuItem editMenuZoomIn;
+	public MenuItem editMenuZoomOut;
+	public Menu editMenu;
+	public Menu navMenu;
+	public MenuItem runMenuResultsButton;
+	public RadioButton nearestRadioButton;
+	public ToggleGroup interpolation;
+	public RadioButton linearRadioButton;
+	public RadioButton cubicRadioButton;
 	@FXML private ScrollPane resultsHistoryGridScrollPane;
 	@FXML private GridPane resultsHistoryGrid;
 	@FXML private HBox resultsGraphsHBox;
@@ -79,7 +109,7 @@ public class Controller {
 	private URL location;
 
 	@FXML
-	private VBox root;
+	private GridPane root;
 
 	@FXML
 	private MenuBar menuBar;
@@ -381,6 +411,14 @@ public class Controller {
 	@FXML
 	void about( ActionEvent event ) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION, "Global image features analyzer\n\nCopyright © 2016 Filip Chrześcijanek", ButtonType.OK);
+		DialogPane dialogPane = alert.getDialogPane();
+		Preferences prefs = Preferences.userNodeForPackage(Main.class);
+		String theme = prefs.get(Controller.THEME_PREFERENCE_KEY, Controller.THEME_LIGHT);
+		if (theme.equals(Controller.THEME_LIGHT)) {
+			dialogPane.getStylesheets().add(Controller.THEME_LIGHT);
+		} else {
+			dialogPane.getStylesheets().add(Controller.THEME_DARK);
+		}
 		alert.setTitle("About");
 		alert.setHeaderText("gifa®");
 		alert.setGraphic(new ImageView(new Image(getClass().getResourceAsStream( "/icon-big.png" ) )));
@@ -447,6 +485,9 @@ public class Controller {
 						resultsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
 						resultsDeleteButton.setDisable(nodes.isEmpty());
 						resultsMergeButton.setDisable(nodes.size() < 2);
+						editMenuMergeCharts.setDisable(nodes.size() < 2);
+						editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
+						editMenuRemoveCharts.setDisable(nodes.isEmpty());
 					});
 					charts.add(bc);
 				}
@@ -459,10 +500,14 @@ public class Controller {
 		resultsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
 		resultsDeleteButton.setDisable(nodes.isEmpty());
 		resultsMergeButton.setDisable(nodes.size() < 2);
+		editMenuMergeCharts.setDisable(nodes.size() < 2);
+		editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
+		editMenuRemoveCharts.setDisable(nodes.isEmpty());
 			}
 
 	@FXML
 	void deselectAllFunctions( ActionEvent event ) {
+		if (!featuresTab.isSelected()) rightVBoxTabPane.getSelectionModel().select(featuresTab);
 		for ( Node chb : featuresVBox.getChildren() ) {
 			( (CheckBox) chb ).setSelected(false);
 		}
@@ -486,21 +531,40 @@ public class Controller {
 			} catch ( IOException e ) {
 				e.printStackTrace();
 				Alert alert = new Alert(Alert.AlertType.ERROR, "Save failed! Check your write permissions.", ButtonType.OK);
+				DialogPane dialogPane = alert.getDialogPane();
+				Preferences prefs = Preferences.userNodeForPackage(Main.class);
+				String theme = prefs.get(Controller.THEME_PREFERENCE_KEY, Controller.THEME_LIGHT);
+				if (theme.equals(Controller.THEME_LIGHT)) {
+					dialogPane.getStylesheets().add(Controller.THEME_LIGHT);
+				} else {
+					dialogPane.getStylesheets().add(Controller.THEME_DARK);
+				}
 				alert.showAndWait();
 			}
 		}
 	}
 
 	private String createCsvContents() {
-		Map< String, double[] > results = State.INSTANCE.result.getValue().results;
-		String csvContents = "Image";
-		for ( String s : results.keySet() )
+		final Set< String > collect = State.INSTANCE.history.get().stream()
+				.flatMap(r -> r.results.keySet().stream()).collect(Collectors.toSet());
+		TreeSet<String> functions = new TreeSet<>(collect);
+		String csvContents = "Sample,Image";
+		for ( String s : functions )
 			csvContents += ",\"" + s + "\"";
-		final ObservableList< String > images = imagesList.getItems();
-		for ( int i = 0; i < images.size(); i++ ) {
-			csvContents += "\r\n\"" + images.get(i) + "\"";
-			for ( String s : results.keySet() )
-				csvContents += ",\"" + results.get(s)[i] + "\"";
+		int no = 0;
+		for (Result r : State.INSTANCE.history.get()) {
+			Map< String, double[] > results = r.results;
+			final List< String > images = r.imageNames;
+			for ( int i = 0; i < images.size(); i++ ) {
+				csvContents += "\r\n" + ++no + ",\"" + images.get(i) + "\"";
+				for ( String s : functions ) {
+					final double[] doubles = results.get(s);
+					if (doubles == null)
+						csvContents += ",";
+					else
+						csvContents += ",\"" +  doubles[i] + "\"";
+				}
+			}
 		}
 		return csvContents;
 	}
@@ -547,32 +611,40 @@ public class Controller {
 	void getResults( ActionEvent event ) {
 		State.INSTANCE.setNoSelection();
 		imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
-		imagesList.getSelectionModel().clearSelection();
+		ImageData img = State.INSTANCE.images.get(imagesList.getSelectionModel().getSelectedItem());
+		img.triangle.copy(triangle);
+		img.rectangle.copy(rectangle);
 		doSample();
 	}
 
 	private void doSample() {
-		final Mat[] images = new Mat[3];
-		images[0] = State.INSTANCE.images.get("tri.jpg").imageData;
-		images[1] = State.INSTANCE.images.get("tri-aff.jpg").imageData;
-		images[2] = State.INSTANCE.images.get("tri-new.jpg").imageData;
-		final MatOfPoint2f[] points = new MatOfPoint2f[3];
-		points[0] = State.INSTANCE.images.get("tri.jpg").triangle.getMatOfPoints();
-		points[1] = State.INSTANCE.images.get("tri-aff.jpg").triangle.getMatOfPoints();
-		points[2] = State.INSTANCE.images.get("tri-new.jpg").triangle.getMatOfPoints();
+		final Mat[] images = new Mat[State.INSTANCE.images.size()];
+		int interpolation = cubicRadioButton.isSelected() ?
+				Imgproc.INTER_CUBIC : linearRadioButton.isSelected() ?
+				Imgproc.INTER_LINEAR : Imgproc.INTER_NEAREST;
 		try {
 		if (triangleRadioButton.isSelected()) {
-			State.INSTANCE.result.setValue(DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images), points, false));
+			final MatOfPoint2f[] points = new MatOfPoint2f[State.INSTANCE.images.size()];
+			int i = 0;
+			for (String key : imagesList.getItems()) {
+				images[i] = State.INSTANCE.images.get(key).imageData;
+				points[i] = State.INSTANCE.images.get(key).triangle.getMatOfPoints();
+				i++;
+			}
+			final Result result = DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images), points, false, interpolation);
+			result.imageNames.addAll(imagesList.getItems());
+			State.INSTANCE.result.setValue(result);
 			State.INSTANCE.history.get().add(State.INSTANCE.result.get());
 		} else if (rectangleRadioButton.isSelected()) {
-			RectangleOfInterest rectangle = State.INSTANCE.images.get("tri.jpg").rectangle;
-			images[0] = images[0].submat((int) rectangle.getY(), (int) rectangle.getY() + (int) rectangle.getHeight() - 1, (int) rectangle.getX(), (int) rectangle.getX() + (int) rectangle.getWidth() - 1);
-			rectangle = State.INSTANCE.images.get("tri-aff.jpg").rectangle;
-			images[1] = images[1].submat((int) rectangle.getY(), (int) rectangle.getY() + (int) rectangle.getHeight() - 1, (int) rectangle.getX(), (int) rectangle.getX() + (int) rectangle.getWidth() - 1);
-			rectangle = State.INSTANCE.images.get("tri-new.jpg").rectangle;
-			images[2] = images[2].submat((int) rectangle.getY(), (int) rectangle.getY() + (int) rectangle.getHeight() - 1, (int) rectangle.getX(), (int) rectangle.getX() + (int) rectangle.getWidth() - 1);
-
-			State.INSTANCE.result.setValue(DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images), points, true));
+			int i = 0;
+			for (String key : imagesList.getItems()) {
+				RectangleOfInterest rectangle = State.INSTANCE.images.get(key).rectangle;
+				images[i] = State.INSTANCE.images.get(key).imageData.submat((int) rectangle.getY(), (int) rectangle.getY() + (int) rectangle.getHeight() - 1, (int) rectangle.getX(), (int) rectangle.getX() + (int) rectangle.getWidth() - 1);
+				i++;
+			}
+			final Result result = DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images), null, true, interpolation);
+			result.imageNames.addAll(imagesList.getItems());
+			State.INSTANCE.result.setValue(result);
 			State.INSTANCE.history.get().add(State.INSTANCE.result.get());
 		}
 			resultsImageView.setImage(State.INSTANCE.result.getValue().resultImage);
@@ -585,6 +657,14 @@ public class Controller {
 		catch (CvException e) {
 			Alert alert = new Alert(Alert.AlertType.ERROR, "Generating results failed! Probably we couldn't find proper image transformation. " +
 					"Please check your rectangle selections.", ButtonType.OK);
+			DialogPane dialogPane = alert.getDialogPane();
+			Preferences prefs = Preferences.userNodeForPackage(Main.class);
+			String theme = prefs.get(Controller.THEME_PREFERENCE_KEY, Controller.THEME_LIGHT);
+			if (theme.equals(Controller.THEME_LIGHT)) {
+				dialogPane.getStylesheets().add(Controller.THEME_LIGHT);
+			} else {
+				dialogPane.getStylesheets().add(Controller.THEME_DARK);
+			}
 			alert.showAndWait();
 		}
 	}
@@ -592,25 +672,29 @@ public class Controller {
 	private void createHistoryCharts() {
 		List< LineChart< String, Number > > charts = new ArrayList<>();
 		List<Result > history = State.INSTANCE.history.get();
-		Set<String> functions = new TreeSet<>(history.stream().flatMap(r -> r.results.keySet().stream()).collect(Collectors.toSet()));
+		final Set< String > collect = history.stream().flatMap(r -> r.results.keySet().stream()).collect(Collectors.toSet());
+		Set<String> functions = new TreeSet<>(collect);
 		for (String s : functions) {
 			final CategoryAxis xAxis = new CategoryAxis();
 			final NumberAxis yAxis = new NumberAxis();
 			final LineChart< String, Number > lc = new LineChart<>(xAxis, yAxis);
 			lc.setTitle(s);
 			yAxis.setLabel("Value");
+			xAxis.setLabel("Sample");
 			List< double[] > results = history.stream().map(r -> r.results.get(s)).collect(Collectors.toList());
 			List< Series > series = new ArrayList<>();
 			for ( int i = 0; i < results.size(); i++ ) {
 				double[] r = results.get(i);
-				for ( int j = 0; j < r.length; j++ ) {
-					if ( series.size() == j ) {
-						Series series1 = new Series();
-						series1.setName("Series " + ( j + 1 ));
-						series.add(series1);
+				if (r != null) {
+					for ( int j = 0; j < r.length; j++ ) {
+						if ( series.size() == j ) {
+							Series series1 = new Series();
+							series1.setName("Series " + ( j + 1 ));
+							series.add(series1);
+						}
+						Series current = series.get(j);
+						current.getData().add(new XYChart.Data("" + ( i + 1 ), r[j]));
 					}
-					Series current = series.get(j);
-					current.getData().add(new XYChart.Data("" + ( i + 1 ), r[j]));
 				}
 			}
 			series.forEach(lc.getData()::add);
@@ -628,7 +712,7 @@ public class Controller {
 								.filter(r -> r.getText().equals(s.getName())).findAny().orElse(null)).orElse(null);
 				if ( item != null ) {
 					final ColorPicker e = new ColorPicker();
-					e.setMaxWidth(15);
+					e.setMaxWidth(12);
 					e.valueProperty().addListener(( observable, oldValue, newValue ) -> {
 						String web = String.format("#%02X%02X%02X%02X",
 								(int) ( newValue.getRed() * 255 ),
@@ -767,33 +851,41 @@ public class Controller {
 		List< File > selectedFiles = fileChooser.showOpenMultipleDialog(root.getScene().getWindow());
 		if ( selectedFiles != null ) {
 			for ( File f : selectedFiles ) {
-				String filePath = f.getAbsolutePath();
+				String filePath = null;
+				try {
+					filePath = f.getCanonicalPath();
+				} catch ( IOException e ) {
+					e.printStackTrace();
+				}
 				String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
-				Mat image = Imgcodecs.imread(filePath, Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-				Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(image), image.width(), image.height(),
-						image.channels(), PixelFormat.getByteRgbInstance());
-				State.INSTANCE.images.put(fileName, new ImageData(fxImage, image));
-				imagesList.getItems().remove(fileName);
-				imagesList.getItems().add(fileName);
+				Mat image = null;
+				try {
+					image = Imgcodecs.imread(filePath, Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
+					if (image.dataAddr() == 0)
+						throw new CvException("Imgcodecs.imread failed to load image!");
+				} catch (CvException e) {
+					e.printStackTrace();
+					Alert alert = new Alert(Alert.AlertType.ERROR, "Loading failed!\nImages might be corrupted or you do not have sufficient read permissions.", ButtonType.OK);
+					DialogPane dialogPane = alert.getDialogPane();
+					Preferences prefs = Preferences.userNodeForPackage(Main.class);
+					String theme = prefs.get(Controller.THEME_PREFERENCE_KEY, Controller.THEME_LIGHT);
+					if (theme.equals(Controller.THEME_LIGHT)) {
+						dialogPane.getStylesheets().add(Controller.THEME_LIGHT);
+					} else {
+						dialogPane.getStylesheets().add(Controller.THEME_DARK);
+					}
+					alert.showAndWait();
+				}
+				if (image != null) {
+					Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(image), image.width(), image.height(),
+							image.channels(), PixelFormat.getByteRgbInstance());
+					State.INSTANCE.images.put(fileName, new ImageData(fxImage, image));
+					imagesList.getItems().remove(fileName);
+					imagesList.getItems().add(fileName);
+					imagesList.getSelectionModel().selectFirst();
+				}
 			}
-			loadSample();
-			imagesList.getSelectionModel().selectFirst();
 		}
-	}
-
-	private void loadSample() {
-		ImageData data1 = State.INSTANCE.images.get("tri.jpg");
-		data1.triangle.moveFirstPointTo(58, 10);
-		data1.triangle.moveSecondPointTo(13, 97);
-		data1.triangle.moveThirdPointTo(103, 97);
-		ImageData data2 = State.INSTANCE.images.get("tri-aff.jpg");
-		data2.triangle.moveFirstPointTo(70, 10);
-		data2.triangle.moveSecondPointTo(25, 97);
-		data2.triangle.moveThirdPointTo(115, 97);
-		ImageData data3 = State.INSTANCE.images.get("tri-new.jpg");
-		data3.triangle.moveFirstPointTo(127, 57);
-		data3.triangle.moveSecondPointTo(40, 12);
-		data3.triangle.moveThirdPointTo(40, 102);
 	}
 
 	@FXML
@@ -839,7 +931,24 @@ public class Controller {
 		newImageData.rectangle.copy(rectangle);
 		State.INSTANCE.images.put(imageName, newImageData);
 		imageView.setImage(fxImage);
+		resetAfterRotate(fxImage);
+	}
 
+	private void resetAfterRotate( final Image fxImage ) {
+		imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * ( imageView.getScaleX() - 1.0 ));
+		imageView.setTranslateY(imageView.getImage().getHeight() * 0.5 * ( imageView.getScaleY() - 1.0 ));
+		double quarterWidth = fxImage.getWidth() / 4;
+		double quarterHeight = fxImage.getHeight() / 4;
+		double halfWidth = fxImage.getWidth() / 2;
+		double halfHeight = fxImage.getHeight() / 2;
+		this.rectangle.reset();
+		this.triangle.reset();
+		this.rectangle.copy(new RectangleOfInterest(quarterWidth, quarterHeight, halfWidth, halfHeight));
+		this.triangle.copy(new Triangle(
+				new Point(halfWidth, quarterHeight),
+				new Point(quarterWidth, quarterHeight + halfHeight),
+				new Point(quarterWidth + halfWidth, quarterHeight + halfHeight)));
+		recalculateTranslates(imageView.getScaleX());
 	}
 
 	@FXML
@@ -855,6 +964,7 @@ public class Controller {
 		newImageData.rectangle.copy(rectangle);
 		State.INSTANCE.images.put(imageName, newImageData);
 		imageView.setImage(fxImage);
+		resetAfterRotate(fxImage);
 	}
 
 	@FXML
@@ -869,6 +979,7 @@ public class Controller {
 
 	@FXML
 	void selectAllFunctions( ActionEvent event ) {
+		if (!featuresTab.isSelected()) rightVBoxTabPane.getSelectionModel().select(featuresTab);
 		for ( Node chb : featuresVBox.getChildren() ) {
 			( (CheckBox) chb ).setSelected(true);
 		}
@@ -1061,6 +1172,9 @@ public class Controller {
 		resultsShiftButton.setDisable(true);
 		resultsDeleteButton.setDisable(true);
 		resultsMergeButton.setDisable(true);
+		editMenuMergeCharts.setDisable(true);
+		editMenuExtractChart.setDisable(true);
+		editMenuRemoveCharts.setDisable(true);
 		createCheckBoxes();
 		setVisibilityBindings();
 		setEnablementBindings();
@@ -1100,10 +1214,12 @@ public class Controller {
 		bindTrianglePoint(secondPointYTextField, 3);
 		bindTrianglePoint(thirdPointXTextField, 4);
 		bindTrianglePoint(thirdPointYTextField, 5);
-		rectangleXTextField.textProperty().bindBidirectional(rectangle.xProperty(), new NumberStringConverter());
-		rectangleYTextField.textProperty().bindBidirectional(rectangle.yProperty(), new NumberStringConverter());
-		rectangleWidthTextField.textProperty().bindBidirectional(rectangle.widthProperty(), new NumberStringConverter());
-		rectangleHeightTextField.textProperty().bindBidirectional(rectangle.heightProperty(), new NumberStringConverter());
+		NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
+		nf.setGroupingUsed( false );
+		rectangleXTextField.textProperty().bindBidirectional(rectangle.xProperty(), new NumberStringConverter(nf));
+		rectangleYTextField.textProperty().bindBidirectional(rectangle.yProperty(), new NumberStringConverter(nf));
+		rectangleWidthTextField.textProperty().bindBidirectional(rectangle.widthProperty(), new NumberStringConverter(nf));
+		rectangleHeightTextField.textProperty().bindBidirectional(rectangle.heightProperty(), new NumberStringConverter(nf));
 		setImageViewControls(imageView, imageScrollPane, imageViewGroup, scaleCombo, mousePositionLabel);
 		setImageViewControls(resultsImageView, resultsImageScrollPane, resultsImageViewGroup, resultsScaleCombo, resultsMousePositionLabel);
 		resultsColumnsTextField.textProperty().addListener(( observable, oldValue, newValue ) -> {
@@ -1111,35 +1227,15 @@ public class Controller {
 		});
 		horizontalFlipButton.setTooltip(new Tooltip("Flip horizontally"));
 		verticalFlipButton.setTooltip(new Tooltip("Flip vertically"));
-		rotateLeftButton.setTooltip(new Tooltip("Rotate left by 90 degrees"));
-		rotateRightButton.setTooltip(new Tooltip("Rotate right by 90 degrees"));
+		rotateLeftButton.setTooltip(new Tooltip("Rotate left by 90°"));
+		rotateRightButton.setTooltip(new Tooltip("Rotate right by 90°"));
 		loadImagesButton.setTooltip(new Tooltip("Load images"));
-		deleteImageButton.setTooltip(new Tooltip("Delete image"));
-		clearImagesButton.setTooltip(new Tooltip("Clear list"));
-		resultsRefreshButton.setTooltip(new Tooltip("Restore graphs"));
-		resultsMergeButton.setTooltip(new Tooltip("Merge graphs"));
-		resultsShiftButton.setTooltip(new Tooltip("Shift graphs"));
-		resultsDeleteButton.setTooltip(new Tooltip("Remove graphs"));
-		root.setOnKeyPressed(event -> {
-			if (resultsTab.isSelected() && graphsRadioButton.isSelected()) {
-							if (event.getCode().equals(KeyCode.ENTER) && resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).count() > 1) {
-								merge(null);
-							} else if (event.getCode().equals(KeyCode.DELETE)) {
-								delete(null);
-							} else if (event.getCode().equals(KeyCode.SHIFT) && resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).count() == 1
-									&& resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> ((BarChart<String, Number>) n).getData().size()).reduce(Integer::sum).orElse(0) > 1) {
-								shift(null);
-							}
-			} else if (event.getCode().equals(KeyCode.ADD) && event.isControlDown() && imagesTab.isSelected() && imageView.getImage() != null) {
-				imageView.setScaleX(imageView.getScaleX() * 1.05);
-			} else if (event.getCode().equals(KeyCode.SUBTRACT) && event.isControlDown() && imagesTab.isSelected() && imageView.getImage() != null) {
-				imageView.setScaleX(imageView.getScaleX() * 0.95);
-			} else if (event.getCode().equals(KeyCode.ADD) && event.isControlDown() && resultsTab.isSelected() && resultsImageView.getImage() != null) {
-				resultsImageView.setScaleX(resultsImageView.getScaleX() * 1.05);
-			} else if (event.getCode().equals(KeyCode.SUBTRACT) && event.isControlDown() && resultsTab.isSelected() && resultsImageView.getImage() != null) {
-				resultsImageView.setScaleX(resultsImageView.getScaleX() * 0.95);
-			}
-		});
+		deleteImageButton.setTooltip(new Tooltip("Remove image"));
+		clearImagesButton.setTooltip(new Tooltip("Clear image list"));
+		resultsRefreshButton.setTooltip(new Tooltip("Restore charts"));
+		resultsMergeButton.setTooltip(new Tooltip("Merge charts"));
+		resultsShiftButton.setTooltip(new Tooltip("Extract chart"));
+		resultsDeleteButton.setTooltip(new Tooltip("Remove charts"));
 		imageView.scaleYProperty().addListener(( observable, oldValue, newValue ) -> {
 			final double scale = newValue.doubleValue();
 			triangle.setScaleX(scale);
@@ -1147,11 +1243,6 @@ public class Controller {
 			rectangle.setScaleX(scale);
 			rectangle.setScaleY(scale);
 			recalculateTranslates(scale);
-		});
-		imagesList.setOnKeyPressed(event -> {
-			if (event.getCode().equals(KeyCode.DELETE)) {
-				deleteImage();
-			}
 		});
 		imageViewGroup.setOnMouseMoved(event -> {
 			mousePositionLabel.setText((int) ( event.getX() / imageView.getScaleX() ) + " : " + (int) ( event.getY() / imageView.getScaleY() ));
@@ -1207,27 +1298,30 @@ public class Controller {
 				}
 			}
 		});
-
+		imageViewGroup.setOnMouseExited(event -> {
+			if (!State.INSTANCE.dragStarted) {
+				State.INSTANCE.setNoSelection();
+				imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+			}
+		});
+		mainTabPane.setOnMouseReleased(event -> {
+			State.INSTANCE.dragStarted = false;
+			State.INSTANCE.setNoSelection();
+			imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+		});
 		rectangle.setOnMouseMoved(event -> {
-			double dX = event.getX() / rectangle.getScaleX() - rectangle.getX();
-			double dY = event.getY() / rectangle.getScaleY() - rectangle.getY();
-			if (dX > 7.0 / rectangle.getScaleX() && dY > 7.0 / rectangle.getScaleY()
-				&& rectangle.getWidth() - dX > 7.0 / rectangle.getScaleX()
-				&& rectangle.getHeight() - dY > 7.0 / rectangle.getScaleY() &&
+			double dX = event.getX() - rectangle.getX();
+			double dY = event.getY() - rectangle.getY();
+			if (dX > 7.0 / imageView.getScaleX() && dY > 7.0 / imageView.getScaleY() && rectangle.getWidth() - dX > 7.0 / imageView.getScaleX()
+				&& rectangle.getHeight() - dY > 7.0 / imageView.getScaleY() &&
 					State.INSTANCE.getRectangleSelection() == State.RectangleSelection.NONE) {
 				State.INSTANCE.setRectangleSelection(State.RectangleSelection.DRAG);
 				imageViewGroup.getScene().setCursor(Cursor.MOVE);
 			}
-			else if (!(dX > 7.0 / rectangle.getScaleX() && dY > 7.0 / rectangle.getScaleY()
-					&& rectangle.getWidth() - dX > 7.0 / rectangle.getScaleX()
-					&& rectangle.getHeight() - dY > 7.0 / rectangle.getScaleY()) &&
+			else if (!(dX > 7.0 / imageView.getScaleX() && dY > 7.0 / imageView.getScaleY()
+					&& rectangle.getWidth() - dX > 7.0 / imageView.getScaleX()
+					&& rectangle.getHeight() - dY > 7.0 / imageView.getScaleY()) &&
 					State.INSTANCE.getRectangleSelection() == State.RectangleSelection.DRAG) {
-				State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
-				imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
-			}
-		});
-		rectangle.setOnMouseExited(event -> {
-			if (State.INSTANCE.getRectangleSelection() == State.RectangleSelection.DRAG) {
 				State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
 				imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
 			}
@@ -1238,15 +1332,10 @@ public class Controller {
 				imageViewGroup.getScene().setCursor(Cursor.MOVE);
 			}
 		});
-		triangle.setOnMouseExited(event -> {
-			if (State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE) {
-				State.INSTANCE.setNoSelection();
-				imageViewGroup.getScene().setCursor(Cursor.DEFAULT);
-			}
-		});
 		imageViewGroup.setOnMouseDragged(event -> {
-			final long x = Math.round(event.getX() / imageView.getScaleX());
-			final long y = Math.round(event.getY() / imageView.getScaleY());
+			long x = Math.round(event.getX() / imageView.getScaleX());
+			long y = Math.round(event.getY() / imageView.getScaleY());
+			State.INSTANCE.dragStarted = true;
 			if (triangleRadioButton.isSelected()) {
 				if ( State.INSTANCE.getTriangleSelection() == State.TriangleSelection.MOVE ) {
 					final ObservableList< Double > points = triangle.getPoints();
@@ -1257,27 +1346,29 @@ public class Controller {
 					final long dX = x - State.INSTANCE.x;
 					final long dY = y - State.INSTANCE.y;
 					if ( minX + dX >= 0 && maxX + dX <= imageView.getImage().getWidth()
-							&& minY + dY >= 0 && maxY + dY <= imageView.getImage().getHeight() )
+							&& minY + dY >= 0 && maxY + dY <= imageView.getImage().getHeight() ) {
 						triangle.moveTriangleBy(dX, dY);
-
+					}
 					State.INSTANCE.x = x;
 					State.INSTANCE.y = y;
-				} else if ( x >= 0 && x <= imageView.getImage().getWidth()
-						&& y >= 0 && y <= imageView.getImage().getHeight() ) {
+				} else {
+					double x1 = Math.max(0, Math.min(x, imageView.getImage().getWidth()));
+					double y1 = Math.max(0, Math.min(y, imageView.getImage().getHeight()));
 					switch ( State.INSTANCE.getTriangleSelection() ) {
 						case FIRST_POINT:
 							imageViewGroup.getScene().setCursor(Cursor.CLOSED_HAND);
-							triangle.moveFirstPointTo(x, y);
+							triangle.moveFirstPointTo(x1, y1);
 							break;
 						case SECOND_POINT:
 							imageViewGroup.getScene().setCursor(Cursor.CLOSED_HAND);
-							triangle.moveSecondPointTo(x, y);
+							triangle.moveSecondPointTo(x1, y1);
 							break;
 						case THIRD_POINT:
 							imageViewGroup.getScene().setCursor(Cursor.CLOSED_HAND);
-							triangle.moveThirdPointTo(x, y);
+							triangle.moveThirdPointTo(x1, y1);
 							break;
 						default:
+							State.INSTANCE.dragStarted = false;
 							break;
 					}
 				}
@@ -1316,6 +1407,7 @@ public class Controller {
 						drag(dX, dY);
 						break;
 					default:
+						State.INSTANCE.dragStarted = false;
 						break;
 				}
 			}
@@ -1351,12 +1443,6 @@ public class Controller {
 			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
 			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
 		}
-//		if (!(rectangle.getX() + deltaX < 0 || rectangle.getY() + deltaY < 0)) {
-//			rectangle.setX(newWidth > 5 ? rectangle.getX() + deltaX : rectangle.getX());
-//			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
-//			rectangle.setY(newHeight > 5 ? rectangle.getY() + deltaY : rectangle.getY());
-//			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
-//		}
 	}
 
 	public void resizeSE(final long deltaX, final long deltaY) {
@@ -1365,11 +1451,6 @@ public class Controller {
 		final double newWidth = rectangle.getWidth() + deltaX;
 		final double newHeight = rectangle.getHeight() + deltaY;
 
-//		if (!(newWidth + rectangle.getX() + deltaX > image.getWidth()
-//				|| newHeight + rectangle.getY() + deltaY > image.getHeight())) {
-//			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
-//			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
-//		}
 		if (!(rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0) || newWidth < rectangle.getWidth())
 			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
 		if (!(rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0) || newHeight < rectangle.getHeight())
@@ -1382,12 +1463,6 @@ public class Controller {
 		final double newWidth = rectangle.getWidth() - deltaX;
 		final double newHeight = rectangle.getHeight() + deltaY;
 
-//		if (!(rectangle.getX() + deltaX < 0
-//				|| newHeight + rectangle.getY() + deltaY > image.getHeight() - 0)) {
-//			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
-//			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
-//			rectangle.setX(newWidth > 5 ? rectangle.getX() + deltaX : rectangle.getX());
-//		}
 		if (!(Math.abs(rectangle.getX()) < 0.000001) || newWidth < rectangle.getWidth()) {
 			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
 			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
@@ -1403,12 +1478,6 @@ public class Controller {
 		final double newWidth = rectangle.getWidth() + deltaX;
 		final double newHeight = rectangle.getHeight() - deltaY;
 
-//		if (!(newWidth + rectangle.getX() + deltaX > image.getWidth() - 0
-//				|| rectangle.getY() + deltaY < 0)) {
-//			rectangle.setY(newHeight > 5 ? rectangle.getY() + deltaY : rectangle.getY());
-//			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
-//			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
-//		}
 		if (!(Math.abs(rectangle.getY()) < 0.000001) || newHeight < rectangle.getHeight()) {
 			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
 			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
@@ -1422,9 +1491,6 @@ public class Controller {
 
 		final double newWidth = rectangle.getWidth() + deltaX;
 
-//		if (!(newWidth + rectangle.getX() + deltaX > image.getWidth() - 0)) {
-//			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
-//		}
 		if (!(rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0) || newWidth < rectangle.getWidth())
 			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
 	}
@@ -1434,10 +1500,6 @@ public class Controller {
 
 		final double newWidth = rectangle.getWidth() - deltaX;
 
-//		if (!(rectangle.getX() + deltaX < 0)) {
-//			rectangle.setX(newWidth > 5 ? rectangle.getX() + deltaX : rectangle.getX());
-//			rectangle.setWidth(newWidth > 5 ? newWidth : 5);
-//		}
 		if (!(Math.abs(rectangle.getX()) < 0.000001) || newWidth < rectangle.getWidth()) {
 			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
 			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
@@ -1449,9 +1511,6 @@ public class Controller {
 
 		final double newHeight = rectangle.getHeight() + deltaY;
 
-//		if (!(newHeight + rectangle.getY() + deltaY > image.getHeight() - 0)) {
-//			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
-//		}
 		if (!(rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0) || newHeight < rectangle.getHeight())
 			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
 		
@@ -1461,10 +1520,6 @@ public class Controller {
 		Image image = imageView.getImage();
 		final double newHeight = rectangle.getHeight() - deltaY;
 
-//		if (!(rectangle.getY() + deltaY < 0)) {
-//			rectangle.setY(newHeight > 5 ? rectangle.getY() + deltaY : rectangle.getY());
-//			rectangle.setHeight(newHeight > 5 ? newHeight : 5);
-//		}
 		if (!(Math.abs(rectangle.getY()) < 0.000001) || newHeight < rectangle.getHeight()) {
 			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
 			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
@@ -1474,14 +1529,6 @@ public class Controller {
 	public void drag(final long deltaX, final long deltaY) {
 		Image image = imageView.getImage();
 
-//		if (!(rectangle.getX() + deltaX + rectangle.getWidth() > image.getWidth() - 0
-//				|| rectangle.getX() + deltaX < 0
-//				|| rectangle.getY() + deltaY + rectangle.getHeight() > image.getHeight() - 0
-//				|| rectangle.getY() + deltaY < 0)) {
-//			rectangle.setX(rectangle.getX() + deltaX);
-//			rectangle.setY(rectangle.getY() + deltaY);
-//
-//		}
 		if (!(rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0) || deltaX < 0)
 			rectangle.setX(Math.min(Math.max(rectangle.getX() + deltaX, 0), image.getWidth() - rectangle.getWidth()));
 		if (!(rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0) || deltaY < 0)
@@ -1543,12 +1590,15 @@ public class Controller {
 	}
 
 	private void bindTrianglePoint( TextField textField, final int index ) {
-		Bindings.bindBidirectional(textField.textProperty(), triangle.pointsProperty[index], new NumberStringConverter());
+		NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
+		nf.setGroupingUsed( false );
+		Bindings.bindBidirectional(textField.textProperty(), triangle.pointsProperty[index], new NumberStringConverter(nf));
 	}
 
 	private void addNumberTextFieldListener( TextField textField ) {
 		textField.textProperty().addListener(( observable, oldValue, newValue ) -> {
-			if ( !newValue.matches("\\d+(\\.\\d+)?") ) textField.setText(oldValue);
+			if ( !newValue.matches("\\d+(\\.\\d*)?") )
+				textField.setText(oldValue);
 		});
 	}
 
@@ -1688,12 +1738,30 @@ public class Controller {
 		resultsColumnsLabel.visibleProperty().bind(Bindings.or(graphsRadioButton.selectedProperty(), historyRadioButton.selectedProperty()));
 		resultsColumnsTextField.visibleProperty().bind(Bindings.or(graphsRadioButton.selectedProperty(), historyRadioButton.selectedProperty()));
 		resultsGraphsToolbar.visibleProperty().bind(graphsRadioButton.selectedProperty());
-//		seriesColorPickers.visibleProperty().bind(graphsRadioButton.selectedProperty());
 		resultsGraphsHBox.visibleProperty().bind(graphsRadioButton.selectedProperty());
 		imagesListInfo.visibleProperty().bind(Bindings.isEmpty(imagesList.getItems()));
 	}
 
 	private void setEnablementBindings() {
+		fileMenuRemoveImage.disableProperty().bind(Bindings.or(imagesList.getSelectionModel().selectedItemProperty().isNull(), imagesTab.selectedProperty().not()));
+		fileMenuClear.disableProperty().bind(Bindings.or(Bindings.isEmpty(imagesList.getItems()), imagesTab.selectedProperty().not()));
+		editMenuRectangleMode.disableProperty().bind(Bindings.or(imageView.imageProperty().isNull(), imagesTab.selectedProperty().not()));
+		editMenuTriangleMode.disableProperty().bind(Bindings.or(imageView.imageProperty().isNull(), imagesTab.selectedProperty().not()));
+		editMenuVerticalFlip.disableProperty().bind(Bindings.or(imageView.imageProperty().isNull(), imagesTab.selectedProperty().not()));
+		editMenuHorizontalFlip.disableProperty().bind(Bindings.or(imageView.imageProperty().isNull(), imagesTab.selectedProperty().not()));
+		editMenuRotateLeft.disableProperty().bind(Bindings.or(imageView.imageProperty().isNull(), imagesTab.selectedProperty().not()));
+		editMenuRotateRight.disableProperty().bind(Bindings.or(imageView.imageProperty().isNull(), imagesTab.selectedProperty().not()));
+		editMenuSelectAllFeatures.disableProperty().bind(Bindings.or(imageView.imageProperty().isNull(), imagesTab.selectedProperty().not()));
+		editMenuDeselectAllFeatures.disableProperty().bind(Bindings.or(imageView.imageProperty().isNull(), imagesTab.selectedProperty().not()));
+		editMenuRestoreCharts.disableProperty().bind(graphsRadioButton.selectedProperty().not());
+		editMenuZoomIn.disableProperty().bind(Bindings.or(Bindings.and(imageView.imageProperty().isNull(), imagesTab.selectedProperty()), Bindings.or(Bindings.and(resultsImageView.imageProperty().isNull(), resultsTab.selectedProperty()), resultImageRadioButton.selectedProperty().not())));
+		editMenuZoomOut.disableProperty().bind(Bindings.or(Bindings.and(imageView.imageProperty().isNull(), imagesTab.selectedProperty()), Bindings.or(Bindings.and(resultsImageView.imageProperty().isNull(), resultsTab.selectedProperty()), resultImageRadioButton.selectedProperty().not())));
+		navMenuResults.disableProperty().bind(State.INSTANCE.result.isNull());
+		navMenuResultImage.disableProperty().bind(State.INSTANCE.result.isNull());
+		navMenuCharts.disableProperty().bind(State.INSTANCE.result.isNull());
+		navMenuHistory.disableProperty().bind(State.INSTANCE.result.isNull());
+		navMenuFeatures.disableProperty().bind(imageView.imageProperty().isNull());
+		navMenuToolbar.disableProperty().bind(imageView.imageProperty().isNull());
 		deleteImageButton.disableProperty().bind(imagesList.getSelectionModel().selectedItemProperty().isNull());
 		clearImagesButton.disableProperty().bind(Bindings.isEmpty(imagesList.getItems()));
 		fileMenuExportToCsv.disableProperty().bind(State.INSTANCE.result.isNull());
@@ -1706,6 +1774,7 @@ public class Controller {
 						.map(CheckBox.class::cast).map(CheckBox::selectedProperty).toArray(Observable[]::new)
 		);
 		resultsButton.disableProperty().bind(Bindings.or(noFeaturesAvailable, noFeaturesChosen));
+		runMenuResultsButton.disableProperty().bind(Bindings.or(Bindings.or(imagesTab.selectedProperty().not(), method.selectedToggleProperty().isNull()), Bindings.or(noFeaturesAvailable, noFeaturesChosen)));
 		resultsTab.disableProperty().bind(State.INSTANCE.result.isNull());
 	}
 
@@ -1716,12 +1785,16 @@ public class Controller {
 						ImageData img = State.INSTANCE.images.get(oldValue);
 						img.triangle.copy(triangle);
 						img.rectangle.copy(rectangle);
+						img.scale = imageView.getScaleX();
+						triangle.reset();
+						rectangle.reset();
 					}
 					if ( newValue != null ) {
 						ImageData img = State.INSTANCE.images.get(newValue);
 						imageView.setImage(img.image);
 						triangle.copy(img.triangle);
 						rectangle.copy(img.rectangle);
+						imageView.setScaleX(img.scale);
 						imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * ( imageView.getScaleX() - 1.0 ));
 						imageView.setTranslateY(imageView.getImage().getHeight() * 0.5 * ( imageView.getScaleY() - 1.0 ));
 						recalculateTranslates(imageView.getScaleX());
@@ -1734,7 +1807,7 @@ public class Controller {
 		);
 	}
 
-	@FXML  void merge( ActionEvent actionEvent ) {
+	@FXML void merge( ActionEvent actionEvent ) {
 		final CategoryAxis xAxis = new CategoryAxis();
 		final NumberAxis yAxis = new NumberAxis();
 		final BarChart< String, Number > bc = new BarChart<>(xAxis, yAxis);
@@ -1755,6 +1828,9 @@ public class Controller {
 			resultsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
 			resultsDeleteButton.setDisable(nodes.isEmpty());
 			resultsMergeButton.setDisable(nodes.size() < 2);
+			editMenuMergeCharts.setDisable(nodes.size() < 2);
+			editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
+			editMenuRemoveCharts.setDisable(nodes.isEmpty());
 		});
 		Optional< Integer > index = resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> State.INSTANCE.charts.get().indexOf(n)).min(Integer::compareTo);
 		State.INSTANCE.charts.get().removeAll(resultsGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
@@ -1769,6 +1845,9 @@ public class Controller {
 		resultsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
 		resultsDeleteButton.setDisable(nodes.isEmpty());
 		resultsMergeButton.setDisable(nodes.size() < 2);
+		editMenuMergeCharts.setDisable(nodes.size() < 2);
+		editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
+		editMenuRemoveCharts.setDisable(nodes.isEmpty());
 	}
 
 	@FXML void shift( ActionEvent actionEvent ) {
@@ -1803,6 +1882,9 @@ public class Controller {
 			resultsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
 			resultsDeleteButton.setDisable(nodes.isEmpty());
 			resultsMergeButton.setDisable(nodes.size() < 2);
+			editMenuMergeCharts.setDisable(nodes.size() < 2);
+			editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
+			editMenuRemoveCharts.setDisable(nodes.isEmpty());
 		});
 		bc2.setOnMouseClicked(e -> {
 			if (bc2.getStyle().equals(GRAPH_SELECTION_STYLE))
@@ -1817,6 +1899,9 @@ public class Controller {
 			resultsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
 			resultsDeleteButton.setDisable(nodes.isEmpty());
 			resultsMergeButton.setDisable(nodes.size() < 2);
+			editMenuMergeCharts.setDisable(nodes.size() < 2);
+			editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
+			editMenuRemoveCharts.setDisable(nodes.isEmpty());
 
 		});
 		//								bc1.setLegendVisible(false);
@@ -1836,6 +1921,9 @@ public class Controller {
 		resultsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
 		resultsDeleteButton.setDisable(nodes.isEmpty());
 		resultsMergeButton.setDisable(nodes.size() < 2);
+		editMenuMergeCharts.setDisable(nodes.size() < 2);
+		editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
+		editMenuRemoveCharts.setDisable(nodes.isEmpty());
 	}
 
 	@FXML  void delete( ActionEvent actionEvent ) {
@@ -1850,9 +1938,69 @@ public class Controller {
 		resultsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
 		resultsDeleteButton.setDisable(nodes.isEmpty());
 		resultsMergeButton.setDisable(nodes.size() < 2);
+		editMenuMergeCharts.setDisable(nodes.size() < 2);
+		editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
+		editMenuRemoveCharts.setDisable(nodes.isEmpty());
 	}
 
 	@FXML void showHistory( ActionEvent actionEvent ) {
 
+	}
+
+	public void rectangleMode( ActionEvent actionEvent ) {
+		if (!toolboxTab.isSelected()) rightVBoxTabPane.getSelectionModel().select(toolboxTab);
+		rectangleRadioButton.setSelected(true);
+	}
+
+	public void triangleMode( ActionEvent actionEvent ) {
+		if (!toolboxTab.isSelected()) rightVBoxTabPane.getSelectionModel().select(toolboxTab);
+		triangleRadioButton.setSelected(true);
+	}
+
+	public void imagesTab( ActionEvent actionEvent ) {
+		if (!imagesTab.isSelected()) mainTabPane.getSelectionModel().select(imagesTab);
+	}
+
+	public void resultsTab( ActionEvent actionEvent ) {
+		if (!resultsTab.isSelected()) mainTabPane.getSelectionModel().select(resultsTab);
+	}
+
+	public void featuresTab( ActionEvent actionEvent ) {
+		if (!imagesTab.isSelected()) mainTabPane.getSelectionModel().select(imagesTab);
+		if (!featuresTab.isSelected()) rightVBoxTabPane.getSelectionModel().select(featuresTab);
+	}
+
+	public void toolbarTab( ActionEvent actionEvent ) {
+		if (!imagesTab.isSelected()) mainTabPane.getSelectionModel().select(imagesTab);
+		if (!toolboxTab.isSelected()) rightVBoxTabPane.getSelectionModel().select(toolboxTab);
+	}
+
+	public void resultImage( ActionEvent actionEvent ) {
+		if (!resultsTab.isSelected()) mainTabPane.getSelectionModel().select(resultsTab);
+		resultImageRadioButton.setSelected(true);
+	}
+
+	public void charts( ActionEvent actionEvent ) {
+		if (!resultsTab.isSelected()) mainTabPane.getSelectionModel().select(resultsTab);
+		graphsRadioButton.setSelected(true);
+	}
+
+	public void history( ActionEvent actionEvent ) {
+		if (!resultsTab.isSelected()) mainTabPane.getSelectionModel().select(resultsTab);
+		historyRadioButton.setSelected(true);
+	}
+
+	public void zoomIn( ActionEvent actionEvent ) {
+		if (imagesTab.isSelected())
+			imageView.setScaleX(imageView.getScaleX() * 1.05);
+		else if (resultsTab.isSelected())
+			resultsImageView.setScaleX(resultsImageView.getScaleX() * 1.05);
+	}
+
+	public void zoomOut( ActionEvent actionEvent ) {
+		if (imagesTab.isSelected())
+			imageView.setScaleX(imageView.getScaleX() * 0.95);
+		else if (resultsTab.isSelected())
+			resultsImageView.setScaleX(resultsImageView.getScaleX() * 0.95);
 	}
 }

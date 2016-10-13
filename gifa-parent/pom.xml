@@ -9,12 +9,12 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <repositories>
-        <repository>
-            <id>javaopencvbook</id>
-            <url>https://raw.github.com/JavaOpenCVBook/code/maven2/</url>
-        </repository>
-    </repositories>
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<id>javaopencvbook</id>-->
+            <!--<url>https://raw.github.com/JavaOpenCVBook/code/maven2/</url>-->
+        <!--</repository>-->
+    <!--</repositories>-->
 
     <profiles>
         <profile>
