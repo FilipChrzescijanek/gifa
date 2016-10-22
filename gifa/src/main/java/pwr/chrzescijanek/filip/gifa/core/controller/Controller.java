@@ -6,6 +6,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -23,10 +24,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.opencv.core.Core;
-import org.opencv.core.CvException;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import pwr.chrzescijanek.filip.gifa.Main;
@@ -43,6 +41,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Controller {
 
@@ -87,7 +86,6 @@ public class Controller {
 	public Tab samplesTab;
 	public GridPane samplesMainPane;
 	public GridPane samplesLeftGridPane;
-	public VBox samplesToolbarVBox;
 	public RadioButton selectRadioButton;
 	public RadioButton createRadioButton;
 	public ToggleGroup drawMethod;
@@ -119,11 +117,10 @@ public class Controller {
 	public Label samplesInfo;
 	public HBox transformTopHBox;
 	public Label transformInfo;
-	public Button horizontalFlipSamplesButton;
-	public Button rotateRightSamplesButton;
-	public Button rotateLeftSamplesButton;
-	public Button verticalFlipSamplesButton;
 	public VBox samplesModeVBox;
+	public MenuItem editMenuDeleteSample;
+	public Label chartsSampleLabel;
+	public MenuItem runMenuTransformButton;
 
 	@FXML
 	private ScrollPane allChartsGridScrollPane;
@@ -386,8 +383,15 @@ public class Controller {
 
 	@FXML
 	void refresh( ActionEvent actionEvent ) {
-		List< Series > series = State.INSTANCE.series.get();
-		List< BarChart< String, Number > > charts = State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue());
+		final Integer index = chartsSampleComboBox.getValue() - 1;
+		createCharts(index);
+		placeCharts();
+		validateChartsControlsDisableProperties();
+	}
+
+	private void createCharts( final int index ) {
+		List< Series > series = State.INSTANCE.series.get().get(index);
+		List< BarChart< String, Number > > charts = State.INSTANCE.charts.get().get(index);
 		if ( charts != null ) charts.clear();
 		for ( Series serie : series ) {
 			final CategoryAxis xAxis = new CategoryAxis();
@@ -401,35 +405,15 @@ public class Controller {
 				else
 					bc.setStyle(GRAPH_SELECTION_STYLE);
 
-				final List< Node > nodes = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-						(GRAPH_SELECTION_STYLE)).collect(Collectors.toList());
-				final Integer integer = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-						(GRAPH_SELECTION_STYLE)).map(n -> ( (BarChart< String, Number >) n ).getData().size()).reduce(Integer::sum).orElse(0);
-				chartsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
-				chartsDeleteButton.setDisable(nodes.isEmpty());
-				chartsMergeButton.setDisable(nodes.size() < 2);
-				editMenuMergeCharts.setDisable(nodes.size() < 2);
-				editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
-				editMenuRemoveCharts.setDisable(nodes.isEmpty());
+				validateChartsControlsDisableProperties();
 			});
 			charts.add(bc);
 		}
-		placeCharts();
-
-		final List< Node > nodes = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList());
-		final Integer integer = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-				(GRAPH_SELECTION_STYLE)).map(n -> ( (BarChart< String, Number >) n ).getData().size()).reduce(Integer::sum).orElse(0);
-		chartsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
-		chartsDeleteButton.setDisable(nodes.isEmpty());
-		chartsMergeButton.setDisable(nodes.size() < 2);
-		editMenuMergeCharts.setDisable(nodes.size() < 2);
-		editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
-		editMenuRemoveCharts.setDisable(nodes.isEmpty());
 	}
 
 	@FXML
 	void deselectAllFunctions( ActionEvent event ) {
+		samplesTab(null);
 		if ( !featuresTab.isSelected() ) rightVBoxTabPane.getSelectionModel().select(featuresTab);
 		for ( Node chb : featuresVBox.getChildren() ) {
 			( (CheckBox) chb ).setSelected(false);
@@ -459,14 +443,14 @@ public class Controller {
 	}
 
 	private String createCsvContents() {
-		final Set< String > collect = State.INSTANCE.history.get().stream()
+		final Set< String > collect = State.INSTANCE.results.get().stream()
 				.flatMap(r -> r.results.keySet().stream()).collect(Collectors.toSet());
 		TreeSet< String > functions = new TreeSet<>(collect);
 		String csvContents = "Sample,Image";
 		for ( String s : functions )
 			csvContents += ",\"" + s + "\"";
 		int no = 0;
-		for ( Result r : State.INSTANCE.history.get() ) {
+		for ( Result r : State.INSTANCE.results.get() ) {
 			no++;
 			Map< String, double[] > results = r.results;
 			final List< String > images = r.imageNames;
@@ -486,13 +470,6 @@ public class Controller {
 
 	@FXML
 	void flipHorizontal( ActionEvent event ) {
-		if ( transformTab.isSelected() )
-			flipTransformImageHorizontally();
-		else if ( samplesTab.isSelected() )
-			flipSamplesImageHorizontally();
-	}
-
-	private void flipTransformImageHorizontally() {
 		String imageName = transformImageList.getSelectionModel().getSelectedItem();
 		TransformImageData img = State.INSTANCE.transformImages.get(imageName);
 		Core.flip(img.imageData, img.imageData, 1);
@@ -524,37 +501,8 @@ public class Controller {
 		transformImageSizeLabel.setText((int) newImageData.image.getWidth() + "x" + (int) newImageData.image.getHeight() + " px");
 	}
 
-	private void flipSamplesImageHorizontally() {
-		String imageName = samplesImageList.getSelectionModel().getSelectedItem();
-		SamplesImageData img = State.INSTANCE.samplesImages.get(imageName);
-		Core.flip(img.imageData, img.imageData, 1);
-		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
-				img.imageData.channels(), PixelFormat.getByteBgraPreInstance());
-		final SamplesImageData newImageData = new SamplesImageData(fxImage, img.imageData);
-		refreshSamplesImage(imageName, img, fxImage, newImageData);
-	}
-
-	private void refreshSamplesImage( final String imageName, final SamplesImageData img, final Image fxImage, final SamplesImageData newImageData ) {
-		State.INSTANCE.samplesImages.put(imageName, newImageData);
-		samplesImageView.setImage(fxImage);
-		for ( RectangleOfInterest r : img.rectangles )
-			samplesImageViewGroup.getChildren().remove(r);
-		samplesImageView.setTranslateX(samplesImageView.getImage().getWidth() * 0.5 * ( samplesImageView.getScaleX() - 1.0 ));
-		samplesImageView.setTranslateY(samplesImageView.getImage().getHeight() * 0.5 * ( samplesImageView.getScaleY() - 1.0 ));
-		recalculateTranslates(samplesImageView.getScaleX());
-		samplesImageSizeLabel.setText((int) newImageData.image.getWidth() + "x" + (int) newImageData.image.getHeight() + " px");
-	}
-
 	@FXML
 	void flipVertical( ActionEvent event ) {
-		if ( transformTab.isSelected() )
-			flipTransformImageVertically();
-		else if ( samplesTab.isSelected() )
-			flipSamplesImageVertically();
-	}
-
-	private void flipTransformImageVertically() {
 		String imageName = transformImageList.getSelectionModel().getSelectedItem();
 		TransformImageData img = State.INSTANCE.transformImages.get(imageName);
 		Core.flip(img.imageData, img.imageData, 0);
@@ -566,20 +514,9 @@ public class Controller {
 		refreshTransformImage(imageName, img, fxImage, newImageData);
 	}
 
-	private void flipSamplesImageVertically() {
-		String imageName = samplesImageList.getSelectionModel().getSelectedItem();
-		SamplesImageData img = State.INSTANCE.samplesImages.get(imageName);
-		Core.flip(img.imageData, img.imageData, 0);
-		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
-				img.imageData.channels(), PixelFormat.getByteBgraPreInstance());
-		final SamplesImageData newImageData = new SamplesImageData(fxImage, img.imageData);
-		refreshSamplesImage(imageName, img, fxImage, newImageData);
-	}
-
 	private void createHistoryCharts() {
 		List< LineChart< String, Number > > charts = new ArrayList<>();
-		List< Result > history = State.INSTANCE.history.get();
+		List< Result > history = State.INSTANCE.results.get();
 		final Set< String > collect = history.stream().flatMap(r -> r.results.keySet().stream()).collect(Collectors.toSet());
 		Set< String > functions = new TreeSet<>(collect);
 		for ( String s : functions ) {
@@ -594,10 +531,13 @@ public class Controller {
 			for ( int i = 0; i < results.size(); i++ ) {
 				double[] r = results.get(i);
 				if ( r != null ) {
+					List< String > names = history.stream().findFirst().map(result -> result.imageNames).orElse(
+						IntStream.range(1, r.length + 1).mapToObj(n -> "Series " + n).collect(Collectors.toList())
+					);
 					for ( int j = 0; j < r.length; j++ ) {
 						if ( series.size() == j ) {
 							Series series1 = new Series();
-							series1.setName("Series " + ( j + 1 ));
+							series1.setName(names.get(j));
 							series.add(series1);
 						}
 						Series current = series.get(j);
@@ -630,12 +570,12 @@ public class Controller {
 						final ObservableList< XYChart.Series > data = lc.getData();
 						s.getNode().setStyle("-fx-stroke: " + web + ";");
 						( (ObservableList< XYChart.Data >) s.getData() ).forEach(n -> n.getNode().setStyle("-fx-background-color: " + web + ", white;"));
-						State.INSTANCE.historySeriesColors.put(lc.getTitle() + "/" + s.getName(), newValue);
+						State.INSTANCE.resultsSeriesColors.put(lc.getTitle() + "/" + s.getName(), newValue);
 					});
 					final List< Color > defaultColors = Arrays.asList(Color.web("#f3622d"), Color.web("#fba71b"), Color.web("#57b757"), Color.web("#41a9c9"),
 							Color.web("#4258c9"), Color.web("#9a42c8"), Color.web("#c84164"), Color.web("#888888"));
-					e.setValue(State.INSTANCE.historySeriesColors.get(lc.getTitle() + "/" + s.getName()) == null ? defaultColors.get(index % defaultColors
-							.size()) : State.INSTANCE.historySeriesColors.get(lc.getTitle() + "/" + s.getName()));
+					e.setValue(State.INSTANCE.resultsSeriesColors.get(lc.getTitle() + "/" + s.getName()) == null ? defaultColors.get(index % defaultColors
+							.size()) : State.INSTANCE.resultsSeriesColors.get(lc.getTitle() + "/" + s.getName()));
 					item.setSymbol(e);
 				}
 			}
@@ -671,8 +611,7 @@ public class Controller {
 	}
 
 	private void placeCharts() {
-		int index = 0;
-		for ( RectangleOfInterest r : State.INSTANCE.samplesImages.get(samplesImageList.getSelectionModel().getSelectedItem()).rectangles ) {
+		final Integer index = chartsSampleComboBox.getValue() - 1;
 			List< BarChart< String, Number > > charts = State.INSTANCE.charts.get().get(index);
 			if ( charts != null ) {
 				chartsBySampleGrid.getChildren().clear();
@@ -698,13 +637,11 @@ public class Controller {
 				}
 			}
 			colorSeries(index);
-			index++;
-		}
 	}
 
 	private void colorSeries( int idx ) {
 		final List< BarChart< String, Number > > charts = State.INSTANCE.charts.get().get(idx);
-		final List< Series > series = State.INSTANCE.series.get();
+		final List< Series > series = State.INSTANCE.series.get().get(idx);
 
 		for ( int i = 0; i < series.size(); i++ ) {
 			final int index = i;
@@ -733,26 +670,24 @@ public class Controller {
 							.filter(l -> !l.isEmpty())
 							.map(l -> l.get(0).getData())
 							.forEach(d -> d.forEach(n -> n.getNode().setStyle("-fx-bar-fill: " + web + ";")));
-					State.INSTANCE.seriesColors.put(s.getName(), newValue);
+					State.INSTANCE.seriesColors.get(idx).put(s.getName(), newValue);
 				});
 				final List< Color > defaultColors = Arrays.asList(Color.web("#f3622d"), Color.web("#fba71b"), Color.web("#57b757"), Color.web("#41a9c9"),
 						Color.web("#4258c9"), Color.web("#9a42c8"), Color.web("#c84164"), Color.web("#888888"));
-
-				e.setValue(State.INSTANCE.seriesColors.get(s.getName()) == null ? defaultColors.get(index % defaultColors.size()) : State.INSTANCE
-						.seriesColors.get(s.getName()));
+				e.setValue(State.INSTANCE.seriesColors.get(idx).get(s.getName()) == null ? defaultColors.get(index % defaultColors.size()) : State.INSTANCE
+						.seriesColors.get(idx).get(s.getName()));
 				item.setSymbol(e);
 			}
 		}
 	}
 
-	private List< Series > generateSeries() {
-		Map< String, double[] > results = State.INSTANCE.result.getValue().results;
+	private List< Series > generateSeries( final Map< String, double[] > results ) {
 		List< Series > series = new ArrayList<>();
 		for ( Map.Entry< String, double[] > e : results.entrySet() ) {
 			Series series1 = new Series();
 			series1.setName(e.getKey());
 			for ( int i = 0; i < e.getValue().length; i++ ) {
-				series1.getData().add(new XYChart.Data(transformImageList.getItems().get(i), e.getValue()[i]));
+				series1.getData().add(new XYChart.Data(samplesImageList.getItems().get(i), e.getValue()[i]));
 			}
 			series.add(series1);
 		}
@@ -761,6 +696,7 @@ public class Controller {
 
 	@FXML
 	void selectAllFunctions( ActionEvent event ) {
+		samplesTab(null);
 		if ( !featuresTab.isSelected() ) rightVBoxTabPane.getSelectionModel().select(featuresTab);
 		for ( Node chb : featuresVBox.getChildren() ) {
 			( (CheckBox) chb ).setSelected(true);
@@ -803,25 +739,18 @@ public class Controller {
 			else
 				bc.setStyle(GRAPH_SELECTION_STYLE);
 
-			final List< Node > nodes = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-					(GRAPH_SELECTION_STYLE)).collect(Collectors.toList());
-			final Integer integer = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-					(GRAPH_SELECTION_STYLE)).map(n -> ( (BarChart< String, Number >) n ).getData().size()).reduce(Integer::sum).orElse(0);
-			chartsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
-			chartsDeleteButton.setDisable(nodes.isEmpty());
-			chartsMergeButton.setDisable(nodes.size() < 2);
-			editMenuMergeCharts.setDisable(nodes.size() < 2);
-			editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
-			editMenuRemoveCharts.setDisable(nodes.isEmpty());
+			validateChartsControlsDisableProperties();
 		});
 		Optional< Integer > index = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> State.INSTANCE
-				.charts.get().get(chartsSampleComboBox.getValue()).indexOf(n)).min(Integer::compareTo);
-		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue()).removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
+				.charts.get().get(chartsSampleComboBox.getValue() - 1).indexOf(n)).min(Integer::compareTo);
+		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
 				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
-		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue()).add(index.orElse(0), bc);
+		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).add(index.orElse(0), bc);
 		placeCharts();
+		validateChartsControlsDisableProperties();
+	}
 
-
+	private void validateChartsControlsDisableProperties() {
 		final List< Node > nodes = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
 				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList());
 		final Integer integer = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
@@ -846,12 +775,13 @@ public class Controller {
 		yAxis2.setLabel("Value");
 		BarChart< String, Number > chart = (BarChart< String, Number >) chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
 				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()).get(0); //.map(n -> ((BarChart<String, Number>) n).getData()).forEach(series -> {
-		Series s = State.INSTANCE.series.get().stream().filter(n -> n.getName().equals(chart.getData().get(chart.getData().size() - 1).getName())).collect
+		final Integer index = chartsSampleComboBox.getValue() - 1;
+		Series s = State.INSTANCE.series.get().get(index).stream().filter(n -> n.getName().equals(chart.getData().get(chart.getData().size() - 1).getName())).collect
 				(Collectors.toList()).get(0);
 		List< String > names = chart.getData().stream().filter(n -> !n.getName().equals(chart.getData().get(chart.getData().size() - 1).getName())).map(n -> n
 				.getName()).collect(Collectors.toList());
 		bc1.getData().add(s);
-		bc2.getData().addAll(State.INSTANCE.series.get().stream().filter(n -> names.contains(n.getName())).toArray(Series[]::new));
+		bc2.getData().addAll(State.INSTANCE.series.get().get(index).stream().filter(n -> names.contains(n.getName())).toArray(Series[]::new));
 		//								bc1.setTitle(bc1.getData().get(0).getName());
 		if ( bc2.getData().size() == 1 ) {
 			//									bc2.setTitle(bc2.getData().get(0).getName());
@@ -863,16 +793,7 @@ public class Controller {
 			else
 				bc1.setStyle(GRAPH_SELECTION_STYLE);
 
-			final List< Node > nodes = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-					(GRAPH_SELECTION_STYLE)).collect(Collectors.toList());
-			final Integer integer = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-					(GRAPH_SELECTION_STYLE)).map(n -> ( (BarChart< String, Number >) n ).getData().size()).reduce(Integer::sum).orElse(0);
-			chartsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
-			chartsDeleteButton.setDisable(nodes.isEmpty());
-			chartsMergeButton.setDisable(nodes.size() < 2);
-			editMenuMergeCharts.setDisable(nodes.size() < 2);
-			editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
-			editMenuRemoveCharts.setDisable(nodes.isEmpty());
+			validateChartsControlsDisableProperties();
 		});
 		bc2.setOnMouseClicked(e -> {
 			if ( bc2.getStyle().equals(GRAPH_SELECTION_STYLE) )
@@ -880,77 +801,44 @@ public class Controller {
 			else
 				bc2.setStyle(GRAPH_SELECTION_STYLE);
 
-			final List< Node > nodes = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-					(GRAPH_SELECTION_STYLE)).collect(Collectors.toList());
-			final Integer integer = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-					(GRAPH_SELECTION_STYLE)).map(n -> ( (BarChart< String, Number >) n ).getData().size()).reduce(Integer::sum).orElse(0);
-			chartsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
-			chartsDeleteButton.setDisable(nodes.isEmpty());
-			chartsMergeButton.setDisable(nodes.size() < 2);
-			editMenuMergeCharts.setDisable(nodes.size() < 2);
-			editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
-			editMenuRemoveCharts.setDisable(nodes.isEmpty());
+			validateChartsControlsDisableProperties();
 
 		});
 		//								bc1.setLegendVisible(false);
-		Optional< Integer > index = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> State.INSTANCE
-				.charts.get().get(chartsSampleComboBox.getValue()).indexOf(n)).min(Integer::compareTo);
+		Optional< Integer > idx = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> State.INSTANCE
+				.charts.get().get(chartsSampleComboBox.getValue() - 1).indexOf(n)).min(Integer::compareTo);
 		//								State.INSTANCE.chartsBySample.get().removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle()
 		// .equals(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
-		int i = index.orElse(State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue()).size() - 1);
-		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue()).remove(chart);
-		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue()).add(i, bc1);
-		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue()).add(i, bc2);
+		int i = idx.orElse(State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).size() - 1);
+		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).remove(chart);
+		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).add(i, bc1);
+		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).add(i, bc2);
 		placeCharts();
 
 
-		final List< Node > nodes = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList());
-		final Integer integer = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-				(GRAPH_SELECTION_STYLE)).map(n -> ( (BarChart< String, Number >) n ).getData().size()).reduce(Integer::sum).orElse(0);
-		chartsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
-		chartsDeleteButton.setDisable(nodes.isEmpty());
-		chartsMergeButton.setDisable(nodes.size() < 2);
-		editMenuMergeCharts.setDisable(nodes.size() < 2);
-		editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
-		editMenuRemoveCharts.setDisable(nodes.isEmpty());
+		validateChartsControlsDisableProperties();
 	}
 
 	@FXML
 	void delete( ActionEvent actionEvent ) {
-		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue()).removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
+		State.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
 				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
 		placeCharts();
-
-
-		final List< Node > nodes = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList());
-		final Integer integer = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-				(GRAPH_SELECTION_STYLE)).map(n -> ( (BarChart< String, Number >) n ).getData().size()).reduce(Integer::sum).orElse(0);
-		chartsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
-		chartsDeleteButton.setDisable(nodes.isEmpty());
-		chartsMergeButton.setDisable(nodes.size() < 2);
-		editMenuMergeCharts.setDisable(nodes.size() < 2);
-		editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
-		editMenuRemoveCharts.setDisable(nodes.isEmpty());
+		validateChartsControlsDisableProperties();
 	}
 
 	@FXML
-	void showAllCharts( ActionEvent actionEvent ) {
-
-	}
+	void showAllCharts( ActionEvent actionEvent ) {	}
 
 	public void transformTab( ActionEvent actionEvent ) {
 		if ( !transformTab.isSelected() ) mainTabPane.getSelectionModel().select(transformTab);
 	}
 
 	public void samplesTab( ActionEvent actionEvent ) {
-		if ( !chartsTab.isSelected() ) mainTabPane.getSelectionModel().select(chartsTab);
+		if ( !samplesTab.isSelected() ) mainTabPane.getSelectionModel().select(samplesTab);
 	}
 
-	public void chartsTab( ActionEvent actionEvent ) {
-		if ( !transformTab.isSelected() ) mainTabPane.getSelectionModel().select(transformTab);
-		if ( !featuresTab.isSelected() ) rightVBoxTabPane.getSelectionModel().select(featuresTab);
+	public void chartsTab( ActionEvent actionEvent ) {if ( !chartsTab.isSelected() ) mainTabPane.getSelectionModel().select(chartsTab);
 	}
 
 	public void chartsBySample( ActionEvent actionEvent ) {
@@ -985,22 +873,40 @@ public class Controller {
 	}
 
 	private void doSample() {
-		final Mat[] images = new Mat[State.INSTANCE.samplesImages.size()];
 		try {
-			int i = 0;
-			for ( String key : samplesImageList.getItems() ) {
-				images[i] = State.INSTANCE.samplesImages.get(key).imageData;
-				i++;
+			SamplesImageData img = State.INSTANCE.samplesImages.get(samplesImageList.getSelectionModel().getSelectedItem());
+			State.INSTANCE.results.set(new ArrayList<>());
+			State.INSTANCE.series.get().clear();
+			State.INSTANCE.charts.get().clear();
+			State.INSTANCE.samplesCharts.get().clear();
+			State.INSTANCE.seriesColors.clear();
+			State.INSTANCE.resultsSeriesColors.clear();
+			if (img != null) {
+				for ( int j = 0; j < img.rectangles.size(); j++) {
+					int i = 0;
+					RectangleOfInterest r = img.rectangles.get(j);
+					final Mat[] images = new Mat[State.INSTANCE.samplesImages.size()];
+					for ( String key : samplesImageList.getItems() ) {
+						images[i] = State.INSTANCE.samplesImages.get(key).imageData
+								.submat(new Rect((int) r.getX(), (int) r.getY(), (int) r.getWidth(), (int) r.getHeight()));
+						i++;
+					}
+					final Result result = DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images));
+					result.imageNames.addAll(samplesImageList.getItems());
+					State.INSTANCE.results.get().add(result);
+					State.INSTANCE.series.get().add(generateSeries(result.results));
+					State.INSTANCE.charts.get().add(new ArrayList<>());
+					State.INSTANCE.seriesColors.add(new HashMap<>());
+					createCharts(j);
+				}
+				chartsSampleComboBox.setItems(FXCollections.observableArrayList(IntStream.range(1, State.INSTANCE.results.get().size() + 1).boxed().collect(Collectors.toList())));
+				chartsSampleComboBox.setValue(1);
+				createHistoryCharts();
+				placeCharts();
+				validateChartsControlsDisableProperties();
+				mainTabPane.getSelectionModel().select(chartsTab);
+				chartsBySampleRadioButton.setSelected(true);
 			}
-			final Result result = DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images));
-			result.imageNames.addAll(samplesImageList.getItems());
-			State.INSTANCE.result.setValue(result);
-			State.INSTANCE.history.get().add(State.INSTANCE.result.get());
-			State.INSTANCE.series.setValue(generateSeries());
-			createHistoryCharts();
-			refresh(null);
-			mainTabPane.getSelectionModel().select(chartsTab);
-			chartsBySampleRadioButton.setSelected(true);
 		} catch ( CvException e ) {
 			showAlert("Generating results failed! If you are using custom function, check them for errors.");
 		}
@@ -1060,13 +966,6 @@ public class Controller {
 
 	@FXML
 	void rotateLeft( ActionEvent event ) {
-		if ( transformTab.isSelected() )
-			rotateLeftTransformImage();
-		else if ( samplesTab.isSelected() )
-			rotateLeftSamplesImage();
-	}
-
-	private void rotateLeftTransformImage() {
 		String imageName = transformImageList.getSelectionModel().getSelectedItem();
 		TransformImageData img = State.INSTANCE.transformImages.get(imageName);
 		Core.transpose(img.imageData, img.imageData);
@@ -1077,29 +976,10 @@ public class Controller {
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
 		refreshTransformImage(imageName, img, fxImage, newImageData);
-	}
-
-	private void rotateLeftSamplesImage() {
-		String imageName = samplesImageList.getSelectionModel().getSelectedItem();
-		SamplesImageData img = State.INSTANCE.samplesImages.get(imageName);
-		Core.transpose(img.imageData, img.imageData);
-		Core.flip(img.imageData, img.imageData, 0);
-		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
-				img.imageData.channels(), PixelFormat.getByteBgraPreInstance());
-		final SamplesImageData newImageData = new SamplesImageData(fxImage, img.imageData);
-		refreshSamplesImage(imageName, img, fxImage, newImageData);
 	}
 
 	@FXML
 	void rotateRight( ActionEvent event ) {
-		if ( transformTab.isSelected() )
-			rotateRightTransformImage();
-		else if ( samplesTab.isSelected() )
-			rotateRightSamplesImage();
-	}
-
-	private void rotateRightTransformImage() {
 		String imageName = transformImageList.getSelectionModel().getSelectedItem();
 		TransformImageData img = State.INSTANCE.transformImages.get(imageName);
 		Core.transpose(img.imageData, img.imageData);
@@ -1110,18 +990,6 @@ public class Controller {
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
 		refreshTransformImage(imageName, img, fxImage, newImageData);
-	}
-
-	private void rotateRightSamplesImage() {
-		String imageName = samplesImageList.getSelectionModel().getSelectedItem();
-		SamplesImageData img = State.INSTANCE.samplesImages.get(imageName);
-		Core.transpose(img.imageData, img.imageData);
-		Core.flip(img.imageData, img.imageData, 1);
-		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
-				img.imageData.channels(), PixelFormat.getByteBgraPreInstance());
-		final SamplesImageData newImageData = new SamplesImageData(fxImage, img.imageData);
-		refreshSamplesImage(imageName, img, fxImage, newImageData);
 	}
 
 	@FXML
@@ -1129,7 +997,11 @@ public class Controller {
 		String key = transformImageList.getSelectionModel().getSelectedItem();
 		if ( key != null ) {
 			transformImageList.getSelectionModel().clearSelection();
+			final int index = transformImageList.getItems().indexOf(key);
 			transformImageList.getItems().remove(key);
+			State.INSTANCE.imageViews.forEach(
+					l -> l.remove(index)
+			);
 			State.INSTANCE.transformImages.remove(key);
 		}
 	}
@@ -1139,6 +1011,8 @@ public class Controller {
 		transformImageList.getSelectionModel().clearSelection();
 		transformImageList.getItems().clear();
 		State.INSTANCE.transformImages.clear();
+		State.INSTANCE.imageViews.forEach(List< ImageView >::clear);
+		State.INSTANCE.imageViews.clear();
 	}
 
 	@FXML
@@ -1233,6 +1107,12 @@ public class Controller {
 		editMenuMergeCharts.setDisable(true);
 		editMenuExtractChart.setDisable(true);
 		editMenuRemoveCharts.setDisable(true);
+		chartsSampleComboBox.getSelectionModel().selectedItemProperty().addListener(( observable, oldValue, newValue ) -> {
+			if (newValue != null) {
+				placeCharts();
+				validateChartsControlsDisableProperties();
+			}
+		});
 		chartsColumnsTextField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			placeCharts();
 			placeHistoryCharts();
@@ -1281,7 +1161,10 @@ public class Controller {
 					samplesBorderColor.setValue((Color) newValue.getStroke());
 				}
 				for ( Map.Entry< String, SamplesImageData > e : State.INSTANCE.samplesImages.entrySet() ) {
-					if (containsRectangle(newValue, e)) break;
+					if (e.getValue().rectangles.contains(newValue)) {
+						samplesImageList.getSelectionModel().select(e.getKey());
+						break;
+					}
 				}
 			}
 		});
@@ -1510,37 +1393,96 @@ public class Controller {
 			State.INSTANCE.y = y;
 			RectangleOfInterest rectangle = State.INSTANCE.selectedSample.get();
 			Image image = samplesImageView.getImage();
-			switch ( State.INSTANCE.getRectangleSelection() ) {
-				case NW:
-					resizeNW(rectangle, image, dX, dY);
-					break;
-				case NE:
-					resizeNE(rectangle, image, dX, dY);
-					break;
-				case SE:
-					resizeSE(rectangle, image, dX, dY);
-					break;
-				case SW:
-					resizeSW(rectangle, image, dX, dY);
-					break;
-				case W:
-					resizeW(rectangle, image, dX, dY);
-					break;
-				case E:
-					resizeE(rectangle, image, dX, dY);
-					break;
-				case S:
-					resizeS(rectangle, image, dX, dY);
-					break;
-				case N:
-					resizeN(rectangle, image, dX, dY);
-					break;
-				case DRAG:
-					drag(rectangle, image, dX, dY);
-					break;
-				default:
-					State.INSTANCE.dragStarted = false;
-					break;
+			if (event.isControlDown()) {
+				switch ( State.INSTANCE.getRectangleSelection() ) {
+					case NW:
+							resizeNW(rectangle, image, dX, dY);
+						break;
+					case NE:
+							resizeNE(rectangle, image, dX, dY);
+						break;
+					case SE:
+							resizeSE(rectangle, image, dX, dY);
+						break;
+					case SW:
+							resizeSW(rectangle, image, dX, dY);
+						break;
+					case W:
+							resizeW(rectangle, image, dX, dY);
+						break;
+					case E:
+							resizeE(rectangle, image, dX, dY);
+						break;
+					case S:
+							resizeS(rectangle, image, dX, dY);
+						break;
+					case N:
+							resizeN(rectangle, image, dX, dY);
+						break;
+					case DRAG:
+							drag(rectangle, image, dX, dY);
+						break;
+					default:
+						State.INSTANCE.dragStarted = false;
+						break;
+				}
+			} else {
+				int i = -1;
+				for (SamplesImageData img : State.INSTANCE.samplesImages.values()) {
+					i = img.rectangles.indexOf(rectangle);
+					if (i >= 0) break;
+				}
+				final int index = i;
+				switch ( State.INSTANCE.getRectangleSelection() ) {
+					case NW:
+							State.INSTANCE.samplesImages.values().forEach(
+									img -> resizeNW(img.rectangles.get(index), image, dX, dY)
+							);
+						break;
+					case NE:
+							State.INSTANCE.samplesImages.values().forEach(
+									img -> resizeNE(img.rectangles.get(index), image, dX, dY)
+							);
+						break;
+					case SE:
+							State.INSTANCE.samplesImages.values().forEach(
+									img -> resizeSE(img.rectangles.get(index), image, dX, dY)
+							);
+						break;
+					case SW:
+							State.INSTANCE.samplesImages.values().forEach(
+									img -> resizeSW(img.rectangles.get(index), image, dX, dY)
+							);
+						break;
+					case W:
+							State.INSTANCE.samplesImages.values().forEach(
+									img -> resizeW(img.rectangles.get(index), image, dX, dY)
+							);
+						break;
+					case E:
+							State.INSTANCE.samplesImages.values().forEach(
+									img -> resizeE(img.rectangles.get(index), image, dX, dY)
+							);
+						break;
+					case S:
+							State.INSTANCE.samplesImages.values().forEach(
+									img -> resizeS(img.rectangles.get(index), image, dX, dY)
+							);
+						break;
+					case N:
+							State.INSTANCE.samplesImages.values().forEach(
+									img -> resizeN(img.rectangles.get(index), image, dX, dY)
+							);
+						break;
+					case DRAG:
+							State.INSTANCE.samplesImages.values().forEach(
+									img -> drag(img.rectangles.get(index), image, dX, dY)
+							);
+						break;
+					default:
+						State.INSTANCE.dragStarted = false;
+						break;
+				}
 			}
 			recalculateTranslates(samplesImageView.getScaleX());
 		});
@@ -1557,18 +1499,6 @@ public class Controller {
 			}
 		});
 
-	}
-
-	private boolean containsRectangle( final RectangleOfInterest newValue, final Map.Entry< String, SamplesImageData > e ) {
-		boolean contains = false;
-		for (RectangleOfInterest r : e.getValue().rectangles) {
-			if (r == newValue) {
-				samplesImageList.getSelectionModel().select(e.getKey());
-				contains = true;
-				break;
-			}
-		}
-		return contains;
 	}
 
 	public void resizeNW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
@@ -1665,10 +1595,6 @@ public class Controller {
 		verticalFlipButton.setTooltip(new Tooltip("Flip vertically"));
 		rotateLeftButton.setTooltip(new Tooltip("Rotate left by 90°"));
 		rotateRightButton.setTooltip(new Tooltip("Rotate right by 90°"));
-		horizontalFlipSamplesButton.setTooltip(new Tooltip("Flip horizontally"));
-		verticalFlipSamplesButton.setTooltip(new Tooltip("Flip vertically"));
-		rotateLeftSamplesButton.setTooltip(new Tooltip("Rotate left by 90°"));
-		rotateRightSamplesButton.setTooltip(new Tooltip("Rotate right by 90°"));
 		loadImagesButton.setTooltip(new Tooltip("Load transformImages"));
 		deleteImageButton.setTooltip(new Tooltip("Remove image"));
 		clearImagesButton.setTooltip(new Tooltip("Clear image list"));
@@ -1683,7 +1609,6 @@ public class Controller {
 			recalculateForTransformImage(scale);
 		else if ( samplesTab.isSelected() )
 			recalculateForSamplesImage(scale);
-
 	}
 
 	private void recalculateForTransformImage( final double scale ) {
@@ -1795,6 +1720,8 @@ public class Controller {
 		allChartsGridScrollPane.visibleProperty().bind(allChartsRadioButton.selectedProperty());
 		chartsColumnsLabel.visibleProperty().bind(Bindings.or(chartsBySampleRadioButton.selectedProperty(), allChartsRadioButton.selectedProperty()));
 		chartsColumnsTextField.visibleProperty().bind(Bindings.or(chartsBySampleRadioButton.selectedProperty(), allChartsRadioButton.selectedProperty()));
+		chartsSampleComboBox.visibleProperty().bind(chartsBySampleRadioButton.selectedProperty());
+		chartsSampleLabel.visibleProperty().bind(chartsBySampleRadioButton.selectedProperty());
 		chartsGraphsToolbar.visibleProperty().bind(chartsBySampleRadioButton.selectedProperty());
 		chartsGraphsHBox.visibleProperty().bind(chartsBySampleRadioButton.selectedProperty());
 		transformImageListInfo.visibleProperty().bind(Bindings.isEmpty(transformImageList.getItems()));
@@ -1815,20 +1742,26 @@ public class Controller {
 		editMenuHorizontalFlip.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
 		editMenuRotateLeft.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
 		editMenuRotateRight.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
-		editMenuSelectAllFeatures.disableProperty().bind(Bindings.or(samplesImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
-		editMenuDeselectAllFeatures.disableProperty().bind(Bindings.or(samplesImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
-		editMenuRestoreCharts.disableProperty().bind(chartsBySampleRadioButton.selectedProperty().not());
-		editMenuZoomIn.disableProperty().bind(Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(), transformTab.selectedProperty()), Bindings
-				.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty())));
-		editMenuZoomOut.disableProperty().bind(Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(), transformTab.selectedProperty()),
-				Bindings.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty())));
-		navMenuSamples.disableProperty().bind(State.INSTANCE.result.isNull());
-		navMenuChartsBySample.disableProperty().bind(State.INSTANCE.result.isNull());
-		navMenuAllCharts.disableProperty().bind(State.INSTANCE.result.isNull());
-		navMenuCharts.disableProperty().bind(State.INSTANCE.result.isNull());
+		editMenuDeleteSample.disableProperty().bind(
+				Bindings.or(
+					Bindings.or(State.INSTANCE.selectedSample.isNull(), selectRadioButton.selectedProperty().not()),
+					Bindings.or(samplesTab.selectedProperty().not(), samplesImageView.imageProperty().isNull())
+				)
+		);
+		editMenuSelectAllFeatures.disableProperty().bind(Bindings.or(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty().not()));
+		editMenuDeselectAllFeatures.disableProperty().bind(Bindings.or(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty().not()));
+		editMenuRestoreCharts.disableProperty().bind(Bindings.or(chartsBySampleRadioButton.selectedProperty().not(), chartsTab.selectedProperty().not()));
+		editMenuZoomIn.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(), transformTab.selectedProperty()), Bindings
+				.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty()))));
+		editMenuZoomOut.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(), transformTab.selectedProperty()),
+				Bindings.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty()))));
+		navMenuSamples.disableProperty().bind(State.INSTANCE.results.isNull());
+		navMenuChartsBySample.disableProperty().bind(State.INSTANCE.results.isNull());
+		navMenuAllCharts.disableProperty().bind(State.INSTANCE.results.isNull());
+		navMenuCharts.disableProperty().bind(State.INSTANCE.results.isNull());
 		deleteImageButton.disableProperty().bind(transformImageList.getSelectionModel().selectedItemProperty().isNull());
 		clearImagesButton.disableProperty().bind(Bindings.isEmpty(transformImageList.getItems()));
-		fileMenuExportToCsv.disableProperty().bind(State.INSTANCE.result.isNull());
+		fileMenuExportToCsv.disableProperty().bind(State.INSTANCE.results.isNull());
 		IntegerProperty featuresSize = new SimpleIntegerProperty(featuresVBox.getChildren().size());
 		BooleanBinding noFeaturesAvailable = Bindings.equal(0, featuresSize);
 		BooleanBinding noFeaturesChosen = Bindings.createBooleanBinding(
@@ -1837,24 +1770,17 @@ public class Controller {
 				featuresVBox.getChildren().stream().filter(CheckBox.class::isInstance)
 						.map(CheckBox.class::cast).map(CheckBox::selectedProperty).toArray(Observable[]::new)
 		);
-		BooleanBinding emptySamples = Bindings.createBooleanBinding(
-				() -> State.INSTANCE.samplesImages.entrySet().stream()
-						.noneMatch(e -> e.getValue().rectangles.isEmpty()));
 
-		BooleanBinding equalNoOfSamples = Bindings.createBooleanBinding(
-				() -> State.INSTANCE.samplesImages.entrySet().stream()
-						.map(e -> e.getValue().rectangles.size()).collect(Collectors.toSet()).size() == 1);
-
-		BooleanBinding emptyOrNotEqual = Bindings.or(emptySamples, equalNoOfSamples);
-		resultsButton.disableProperty().bind(Bindings.or(emptyOrNotEqual,
+		resultsButton.disableProperty().bind(Bindings.or(Bindings.isEmpty(State.INSTANCE.sampleImageViews),
 				Bindings.or(Bindings.isEmpty(samplesImageList.getItems()), Bindings.or(noFeaturesAvailable, noFeaturesChosen))));
 		runMenuResultsButton.disableProperty().bind(Bindings.or(samplesTab.selectedProperty().not(),
-				Bindings.or(emptyOrNotEqual,
+				Bindings.or(Bindings.isEmpty(State.INSTANCE.sampleImageViews),
 						Bindings.or(Bindings.isEmpty(samplesImageList.getItems()), Bindings.or(noFeaturesAvailable, noFeaturesChosen)))));
-		;
 		transformImagesButton.disableProperty().bind(Bindings.isEmpty(transformImageList.getItems()));
+		runMenuTransformButton.disableProperty().bind(Bindings.or(transformTab.selectedProperty().not(),
+				Bindings.isEmpty(transformImageList.getItems())));
 		samplesTab.disableProperty().bind(Bindings.isEmpty(samplesImageList.getItems()));
-		chartsTab.disableProperty().bind(State.INSTANCE.result.isNull());
+		chartsTab.disableProperty().bind(State.INSTANCE.results.isNull());
 
 	}
 
@@ -1924,8 +1850,10 @@ public class Controller {
 	}
 
 	public void transform( ActionEvent actionEvent ) {
-		for (List<ImageView> l : State.INSTANCE.sampleImageViews) l.clear();
+		State.INSTANCE.sampleImageViews.forEach(List< ImageView >::clear);
 		State.INSTANCE.sampleImageViews.clear();
+		State.INSTANCE.samplesImages.clear();
+		samplesImageList.getItems().clear();
 		final Mat[] images = new Mat[State.INSTANCE.transformImages.size()];
 		int interpolation = cubicRadioButton.isSelected() ?
 				Imgproc.INTER_CUBIC : linearRadioButton.isSelected() ?
@@ -1946,6 +1874,23 @@ public class Controller {
 			samplesImageList.getSelectionModel().selectFirst();
 		} catch ( CvException e ) {
 			showAlert("Transforming transformImages failed! Please check selected points.");
+		}
+	}
+
+	public void deleteSample( ActionEvent actionEvent ) {
+		RectangleOfInterest r = State.INSTANCE.selectedSample.get();
+		if (r != null) {
+			int index = -1;
+			for (SamplesImageData img : State.INSTANCE.samplesImages.values()) {
+				index = img.rectangles.indexOf(r);
+				if (index >= 0) break;
+			}
+			for (SamplesImageData img : State.INSTANCE.samplesImages.values()) {
+				img.rectangles.remove(index);
+			}
+			State.INSTANCE.sampleImageViews.remove(index);
+			samplesImageViewAnchor.getChildren().remove(r);
+			State.INSTANCE.selectedSample.set(null);
 		}
 	}
 }

@@ -1,6 +1,10 @@
 package pwr.chrzescijanek.filip.gifa.core.controller;
 
 import javafx.beans.binding.DoubleBinding;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
@@ -22,7 +26,7 @@ import java.util.prefs.Preferences;
 
 public class SamplesImageData extends ImageData {
 
-	public final List<RectangleOfInterest> rectangles = new ArrayList<>();
+	public final ObservableList<RectangleOfInterest> rectangles = FXCollections.observableArrayList();
 
 	public SamplesImageData( final Image image, final Mat imageData ) {
 		super(image, imageData);
@@ -32,12 +36,12 @@ public class SamplesImageData extends ImageData {
 		r.setStyle(STROKE_STYLE);
 		r.setFill(Color.color(0.3, 0.3, 0.3, 0.5));
 		r.setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
-		final int index = rectangles.size();
 		r.setOnMouseClicked(event -> {
 			State.INSTANCE.selectedSample.set(r);
-			registerDoubleClickListener(event, index);
+			registerDoubleClickListener(r, event, rectangles.indexOf(r));
 		});
 		final List< List< ImageView > > views = State.INSTANCE.sampleImageViews;
+		final int index = rectangles.size();
 		if ( views.size() == index) {
 			views.add(new ArrayList<>());
 		}
@@ -68,10 +72,11 @@ public class SamplesImageData extends ImageData {
 		this.rectangles.add(r);
 	}
 
-	private void registerDoubleClickListener( final MouseEvent event, final int i ) {
+	private void registerDoubleClickListener( final RectangleOfInterest r, final MouseEvent event, final int i ) {
 		if(event.getButton().equals(MouseButton.PRIMARY)){
 			if(event.getClickCount() > 1){
 				final Stage newStage = new Stage();
+				newStage.initOwner(r.getScene().getWindow());
 				final FXMLLoader loader = new FXMLLoader(getClass().getResource("/gifa-samples-panel.fxml"));
 				Parent root = null;
 				try {
@@ -95,6 +100,14 @@ public class SamplesImageData extends ImageData {
 				newStage.show();
 				controller.setIndex(i);
 				controller.placeImages();
+				rectangles.addListener((ListChangeListener< ? super RectangleOfInterest >) c -> {
+					while ( c.next() )
+					if (c.wasRemoved() && c.getRemoved().contains(r))
+						newStage.close();
+				});
+				State.INSTANCE.samplesImages.addListener((MapChangeListener< ? super String, ? super SamplesImageData >) c -> {
+					newStage.close();
+				});
 			}
 		}
 	}

@@ -14,10 +14,10 @@
 		<HBox fx:id="panelControls" alignment="CENTER" minHeight="40.0">
 			<Label fx:id="panelColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns">
 				<HBox.margin>
-					<Insets left="10"/>
+					<Insets right="50"/>
 				</HBox.margin>
 			</Label>
-			<TextField fx:id="panelColumnsTextField" alignment="CENTER" text="2"/>
+			<TextField fx:id="panelColumnsTextField" alignment="CENTER" text="3"/>
 		</HBox>
 	</bottom>
 	<center>

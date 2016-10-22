@@ -1,6 +1,7 @@
 package pwr.chrzescijanek.filip.gifa.core.controller;
 
 import javafx.beans.binding.DoubleBinding;
+import javafx.collections.MapChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
@@ -144,6 +145,9 @@ public class TransformImageData extends ImageData {
 				newStage.show();
 				controller.setIndex(i);
 				controller.placeImages();
+				State.INSTANCE.transformImages.addListener((MapChangeListener< ? super String, ? super TransformImageData >) c -> {
+					controller.placeImages();
+				});
 			}
 		}
 	}

@@ -29,6 +29,7 @@
 			<MenuItem fx:id="editMenuRotateRight" text="Rotate ri_ght by 90°" onAction="#rotateRight" accelerator="Shift+R"/>
 			<MenuItem fx:id="editMenuZoomIn" text="_Zoom in" onAction="#zoomIn" accelerator="Shortcut+Add"/>
 			<MenuItem fx:id="editMenuZoomOut" text="Zoom _out" onAction="#zoomOut" accelerator="Shortcut+Subtract"/>
+			<MenuItem fx:id="editMenuDeleteSample" text="Delete _sample" onAction="#deleteSample" accelerator="Shortcut+D"/>
 			<MenuItem fx:id="editMenuRestoreCharts" text="_Restore charts" onAction="#refresh" accelerator="F5"/>
 			<MenuItem fx:id="editMenuMergeCharts" text="_Merge charts" onAction="#merge" accelerator="F6"/>
 			<MenuItem fx:id="editMenuExtractChart" text="_Extract chart" onAction="#shift" accelerator="F7"/>
@@ -45,6 +46,7 @@
 		</Menu>
 		<Menu fx:id="runMenu" text="_Run">
 			<MenuItem fx:id="runMenuResultsButton" onAction="#getResults" text="_Get results" accelerator="F2"/>
+			<MenuItem fx:id="runMenuTransformButton" onAction="#transform" text="_Transform images" accelerator="F3"/>
 		</Menu>
 		<Menu fx:id="optionsMenu" text="_Options">
 			<Menu fx:id="optionsMenuTheme" text="_Theme">
@@ -192,7 +194,7 @@
 				<BorderPane fx:id="transformBorderPane" GridPane.columnIndex="1">
 					<top>
 						<HBox fx:id="transformTopHBox" alignment="CENTER">
-							<Label fx:id="transformInfo" text="Use available tools to edit points. Double-click to open compare view."/>
+							<Label fx:id="transformInfo" text="Click to select area. Double-click to open compare view."/>
 						</HBox>
 					</top>
 					<center>
@@ -294,52 +296,6 @@
 						<RowConstraints valignment="CENTER" percentHeight="20.0" vgrow="SOMETIMES"/>
 						<RowConstraints valignment="CENTER" percentHeight="40.0" vgrow="SOMETIMES"/>
 					</rowConstraints>
-					<VBox fx:id="samplesToolbarVBox" alignment="CENTER" >
-							<Button fx:id="verticalFlipSamplesButton" mnemonicParsing="false" onAction="#flipVertical">
-								<graphic>
-									<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
-											   preserveRatio="true">
-										<Image url="@vertical-flip.png"/>
-									</ImageView>
-								</graphic>
-								<VBox.margin>
-									<Insets top="15.0"/>
-								</VBox.margin>
-							</Button>
-							<Button fx:id="horizontalFlipSamplesButton" mnemonicParsing="false" onAction="#flipHorizontal">
-								<graphic>
-									<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
-											   preserveRatio="true">
-										<Image url="@horizontal-flip.png"/>
-									</ImageView>
-								</graphic>
-								<VBox.margin>
-									<Insets top="5.0"/>
-								</VBox.margin>
-							</Button>
-							<Button fx:id="rotateLeftSamplesButton" mnemonicParsing="false" onAction="#rotateLeft">
-								<graphic>
-									<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
-											   preserveRatio="true">
-										<Image url="@undo.png"/>
-									</ImageView>
-								</graphic>
-								<VBox.margin>
-									<Insets top="5.0"/>
-								</VBox.margin>
-							</Button>
-							<Button fx:id="rotateRightSamplesButton" mnemonicParsing="false" onAction="#rotateRight">
-								<graphic>
-									<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
-											   preserveRatio="true">
-										<Image url="@redo.png"/>
-									</ImageView>
-								</graphic>
-								<VBox.margin>
-									<Insets top="5.0"/>
-								</VBox.margin>
-							</Button>
-					</VBox>
 					<VBox fx:id="samplesModeVBox" alignment="CENTER" GridPane.rowIndex="1">
 						<RadioButton fx:id="selectRadioButton" mnemonicParsing="false" selected="true"
 									 text="Select">
@@ -386,7 +342,7 @@
 				<BorderPane fx:id="samplesBorderPane" GridPane.columnIndex="1">
 					<top>
 						<HBox fx:id="samplesTopHBox" alignment="CENTER">
-							<Label fx:id="samplesInfo" text="Use available tools to create or edit sample areas. Double-click to open compare view."/>
+							<Label fx:id="samplesInfo" text="Click to select area. Double-click to open compare view."/>
 						</HBox>
 					</top>
 					<center>
@@ -449,13 +405,13 @@
 										<Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAllFunctions"
 												text="Select all">
 											<HBox.margin>
-												<Insets right="20.0"/>
+												<Insets left="5.0" right="20.0" />
 											</HBox.margin>
 										</Button>
 										<Button fx:id="deselectAllButton" mnemonicParsing="false"
 												onAction="#deselectAllFunctions" text="Deselect all">
 											<HBox.margin>
-												<Insets left="20.0"/>
+												<Insets left="20.0" right="5.0" />
 											</HBox.margin>
 										</Button>
 									</HBox>
@@ -482,11 +438,12 @@
 				<bottom>
 					<GridPane fx:id="chartsControls">
 						<columnConstraints>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" halignment="CENTER"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="8.0" halignment="CENTER"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="11.0" halignment="CENTER"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="18.0" halignment="CENTER"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="18.0" halignment="CENTER"/>
+							<ColumnConstraints hgrow="SOMETIMES" percentWidth="12.0" halignment="CENTER"/>
+							<ColumnConstraints hgrow="SOMETIMES" percentWidth="6.0" halignment="CENTER"/>
+							<ColumnConstraints hgrow="SOMETIMES" percentWidth="12.0" halignment="RIGHT"/>
+							<ColumnConstraints hgrow="SOMETIMES" percentWidth="12.0" halignment="CENTER"/>
+							<ColumnConstraints hgrow="SOMETIMES" percentWidth="14.0" halignment="CENTER"/>
+							<ColumnConstraints hgrow="SOMETIMES" percentWidth="14.0" halignment="CENTER"/>
 							<ColumnConstraints hgrow="SOMETIMES" percentWidth="30.0" halignment="CENTER"/>
 						</columnConstraints>
 						<rowConstraints>
@@ -496,17 +453,18 @@
 							<Insets left="50.0"/>
 						</BorderPane.margin>
 						<Label fx:id="chartsColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns" GridPane.columnIndex="0"/>
-						<TextField fx:id="chartsColumnsTextField" alignment="CENTER" text="2" GridPane.columnIndex="1"/>
-						<ComboBox fx:id="chartsSampleComboBox" editable="false" visibleRowCount="5" GridPane.columnIndex="2"/>
+						<TextField fx:id="chartsColumnsTextField" alignment="CENTER" text="3" GridPane.columnIndex="1"/>
+						<Label fx:id="chartsSampleLabel" alignment="CENTER_RIGHT" text="Sample" GridPane.columnIndex="2"/>
+						<ComboBox fx:id="chartsSampleComboBox" editable="false" visibleRowCount="5" GridPane.columnIndex="3"/>
 						<RadioButton fx:id="chartsBySampleRadioButton" mnemonicParsing="false" text="By Sample"
-									 GridPane.columnIndex="3">
+									 GridPane.columnIndex="4">
 							<toggleGroup>
 								<ToggleGroup fx:id="result"/>
 							</toggleGroup>
 						</RadioButton>
 						<RadioButton fx:id="allChartsRadioButton" mnemonicParsing="false" text="All"
-									 toggleGroup="$result" GridPane.columnIndex="4"/>
-						<HBox alignment="CENTER" fx:id="chartsGraphsToolbar" GridPane.columnIndex="5">
+									 toggleGroup="$result" GridPane.columnIndex="5"/>
+						<HBox alignment="CENTER" fx:id="chartsGraphsToolbar" GridPane.columnIndex="6">
 							<Button fx:id="chartsRefreshButton" onAction="#refresh" alignment="CENTER">
 								<graphic>
 									<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
