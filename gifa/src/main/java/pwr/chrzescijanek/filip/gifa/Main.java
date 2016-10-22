@@ -1,6 +1,7 @@
 package pwr.chrzescijanek.filip.gifa;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -39,6 +40,7 @@ public class Main extends Application {
 			scene.getStylesheets().add(Controller.THEME_DARK);
 		}
 		primaryStage.setScene(scene);
+		primaryStage.setOnCloseRequest(event -> Platform.exit());
 		primaryStage.show();
 	}
 

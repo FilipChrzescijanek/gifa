@@ -19,7 +19,11 @@
     -fx-background-color:transparent;
 }
 
-#rectangle, #triangle {
+.color-picker {
+    -fx-color-label-visible: false ;
+}
+
+#firstCircle, #secondCircle, #thirdCircle, #firstRectangle, #secondRectangle, #thirdRectangle, #triangle {
     -fx-stroke-type: inside;
     -fx-stroke-width: 2;
     -fx-stroke-dash-array: 12 2 4 2;

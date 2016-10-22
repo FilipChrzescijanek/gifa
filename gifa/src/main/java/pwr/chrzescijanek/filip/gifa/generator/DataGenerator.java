@@ -5,6 +5,8 @@ import javafx.scene.image.PixelFormat;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.imgproc.Imgproc;
+import pwr.chrzescijanek.filip.gifa.core.controller.ImageData;
+import pwr.chrzescijanek.filip.gifa.core.controller.SamplesImageData;
 import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
 import pwr.chrzescijanek.filip.gifa.core.function.MeanValue;
 import pwr.chrzescijanek.filip.gifa.core.function.StdDeviationValue;
@@ -13,6 +15,7 @@ import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
 import pwr.chrzescijanek.filip.gifa.core.util.Result;
 import pwr.chrzescijanek.filip.gifa.core.util.ResultImage;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -34,16 +37,25 @@ public enum DataGenerator {
 		injectFunction("Mean red", ( images, mask ) -> FunctionUtils.calculateMeans(images, mask, 2));
 	}
 
-	public Result generateData( final Mat[] images, final MatOfPoint2f[] points, boolean automatic, int interpolation) {
+	public SamplesImageData[] transform( final Mat[] images, final MatOfPoint2f[] points, int interpolation) {
 		assert ( images.length == points.length );
-		if (automatic)
-		ImageUtils.performAffineTransformations(images, interpolation);
-		else
 		ImageUtils.performAffineTransformations(images, points, interpolation);
+		return Arrays.stream(images)
+				.map(i ->
+						new SamplesImageData(
+								ImageUtils.createImage(
+										ImageUtils.getImageData(i), i.width(), i.height(), i.channels(), PixelFormat.getByteBgraPreInstance()
+								), i
+						)
+				).toArray(SamplesImageData[]::new);
+	}
+
+	public Result generateData( final Mat[] images ) {
+//		assert ( transformImages.length == points.length );
 		final ResultImage resultImage = ImageUtils.getResultImage(images);
-		Image image = ImageUtils.createImage(resultImage.data, resultImage.width, resultImage.height, resultImage.channels,
-				PixelFormat.getByteBgraPreInstance());
-		Result result = new Result(image);
+//		Image image = ImageUtils.createImage(resultImage.data, resultImage.width, resultImage.height, resultImage.channels,
+//				PixelFormat.getByteBgraPreInstance());
+		Result result = new Result();//image);
 		ImageUtils.convertType(images, Imgproc.COLOR_BGRA2BGR);
 		result.putResults(calculateStatistics(images, resultImage.mask));
 		return result;

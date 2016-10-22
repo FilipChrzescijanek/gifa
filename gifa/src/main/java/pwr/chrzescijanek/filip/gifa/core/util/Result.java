@@ -11,9 +11,9 @@ public final class Result {
 
 	public final List<String> imageNames = new ArrayList<>();
 	public final Map<String, double[]> results = new TreeMap<>();
-	public final Image resultImage;
+//	public final Image resultImage;
 
-	public Result( final Image resultImage ) {this.resultImage = resultImage;}
+//	public Result( final Image resultImage ) {this.resultImage = resultImage;}
 
 	public void putResults(Map<String, double[]> results) {
 		this.results.putAll(results);

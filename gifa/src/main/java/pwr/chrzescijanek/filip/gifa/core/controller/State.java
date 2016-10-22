@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import pwr.chrzescijanek.filip.gifa.core.util.Result;
 
@@ -21,17 +22,23 @@ public enum State {
 
 	INSTANCE;
 
-	public final Map<String, ImageData> images = new TreeMap<>();
+	public ObjectProperty<RectangleOfInterest> selectedSample = new SimpleObjectProperty<>(null);
+	public ObjectProperty<RectangleOfInterest> selectedRectangle = new SimpleObjectProperty<>(null);
+	public final Map<String, TransformImageData> transformImages = new TreeMap<>();
+	public final Map<String, SamplesImageData> samplesImages = new TreeMap<>();
+	public final List<List<ImageView>> imageViews = new ArrayList<>();
+	public final List<List<ImageView>> sampleImageViews = new ArrayList<>();
+
 	public final ObjectProperty<List<Result>> history = new SimpleObjectProperty<>(new ArrayList<>());
 	public final ObjectProperty<Result> result = new SimpleObjectProperty<>(null);
 	public final ObjectProperty<List<XYChart.Series>> series = new SimpleObjectProperty<>(new ArrayList<>());
-	public final ObjectProperty<List< BarChart< String, Number > >> charts = new SimpleObjectProperty<>(new ArrayList<>());
-	public final ObjectProperty<List< LineChart< String, Number > >> historyCharts = new SimpleObjectProperty<>(new ArrayList<>());
+	public final ObjectProperty<List<List< BarChart< String, Number > >>> charts = new SimpleObjectProperty<>(new ArrayList<>());
+	public final ObjectProperty<List< LineChart< String, Number > >> samplesCharts = new SimpleObjectProperty<>(new ArrayList<>());
 	private TriangleSelection triangleSelection = NONE;
 	private RectangleSelection rectangleSelection = RectangleSelection.NONE;
 	public Map<String, Color > seriesColors = new HashMap<>();
 	public Map<String, Color > historySeriesColors = new HashMap<>();
-	public long x, y;
+	public double x, y;
 	public boolean dragStarted;
 
 	public void setRectangleSelection( final RectangleSelection rectangleSelection ) {

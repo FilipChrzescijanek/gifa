@@ -1,4 +1,4 @@
-#imageViewAnchor {
+#transformImageViewAnchor {
     -fx-background-color: #fff;
 }
 
@@ -10,7 +10,7 @@
     -fx-background-color: #444;
 }
 
-#rectangle, #triangle {
+#firstCircle, #secondCircle, #thirdCircle, #firstRectangle, #secondRectangle, #thirdRectangle, #triangle {
     -fx-stroke-type: inside;
     -fx-stroke-width: 2;
     -fx-stroke-dash-array: 12 2 4 2;
@@ -41,6 +41,10 @@
 .combo-box-base {
      -fx-background-color: #888;
  }
+
+.color-picker {
+    -fx-color-label-visible: false ;
+}
 
 .color-picker .arrow {
     -fx-background-color: white;
