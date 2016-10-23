@@ -39,19 +39,27 @@ public class TransformImageData extends ImageData {
 		triangle.pointsProperty[4].bind(rectangles[2].xProperty().add(rectangles[2].widthProperty().divide(2.0)));
 		triangle.pointsProperty[5].bind(rectangles[2].yProperty().add(rectangles[2].heightProperty().divide(2.0)));
 
-		rectangles[0].setOnMouseClicked(event -> {
+		rectangles[0].sample.setOnMouseClicked(event -> {
 			State.INSTANCE.selectedRectangle.set(rectangles[0]);
+			rectangles[0].setVisible(true);
+			rectangles[1].setVisible(false);
+			rectangles[2].setVisible(false);
 			registerDoubleClickListener(event, 0);
 		});
-		rectangles[1].setOnMouseClicked(event -> {
+		rectangles[1].sample.setOnMouseClicked(event -> {
 			State.INSTANCE.selectedRectangle.set(rectangles[1]);
+			rectangles[1].setVisible(true);
+			rectangles[0].setVisible(false);
+			rectangles[2].setVisible(false);
 			registerDoubleClickListener(event, 1);
 		});
-		rectangles[2].setOnMouseClicked(event -> {
+		rectangles[2].sample.setOnMouseClicked(event -> {
 			State.INSTANCE.selectedRectangle.set(rectangles[2]);
+			rectangles[2].setVisible(true);
+			rectangles[0].setVisible(false);
+			rectangles[1].setVisible(false);
 			registerDoubleClickListener(event, 2);
 		});
-
 
 		triangle.setFill(Color.color(1.0, 1.0, 1.0, 0.35));
 		triangle.setStroke(Color.color(1.0, 1.0, 1.0, 0.6));
@@ -59,12 +67,21 @@ public class TransformImageData extends ImageData {
 		rectangles[0].setStyle(STROKE_STYLE);
 		rectangles[1].setStyle(STROKE_STYLE);
 		rectangles[2].setStyle(STROKE_STYLE);
-		rectangles[0].setFill(Color.color(0.3, 0.3, 0.3, 0.5));
-		rectangles[0].setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
-		rectangles[1].setFill(Color.color(0.3, 0.3, 0.3, 0.5));
-		rectangles[1].setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
-		rectangles[2].setFill(Color.color(0.3, 0.3, 0.3, 0.5));
-		rectangles[2].setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
+		rectangles[0].sample.setStyle(STROKE_STYLE);
+		rectangles[1].sample.setStyle(STROKE_STYLE);
+		rectangles[2].sample.setStyle(STROKE_STYLE);
+		rectangles[0].sample.setFill(Color.color(0.3, 0.3, 0.3, 0.5));
+		rectangles[0].sample.setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
+		rectangles[1].sample.setFill(Color.color(0.3, 0.3, 0.3, 0.5));
+		rectangles[1].sample.setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
+		rectangles[2].sample.setFill(Color.color(0.3, 0.3, 0.3, 0.5));
+		rectangles[2].sample.setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
+		rectangles[0].setFill(Color.color(0.0, 0.0, 0.0, 0.0));
+		rectangles[0].setStroke(Color.color(1.0, 1.0, 1.0, 0.9));
+		rectangles[1].setFill(Color.color(0.0, 0.0, 0.0, 0.0));
+		rectangles[1].setStroke(Color.color(1.0, 1.0, 1.0, 0.9));
+		rectangles[2].setFill(Color.color(0.0, 0.0, 0.0, 0.0));
+		rectangles[2].setStroke(Color.color(1.0, 1.0, 1.0, 0.9));
 
 		int i = 0;
 		for (RectangleOfInterest r : rectangles) {

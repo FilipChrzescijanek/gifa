@@ -34,10 +34,15 @@ public class SamplesImageData extends ImageData {
 
 	public void add(RectangleOfInterest r) {
 		r.setStyle(STROKE_STYLE);
-		r.setFill(Color.color(0.3, 0.3, 0.3, 0.5));
-		r.setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
-		r.setOnMouseClicked(event -> {
+		r.sample.setStyle(STROKE_STYLE);
+		r.setFill(Color.color(0.0, 0.0, 0.0, 0.0));
+		r.setStroke(Color.color(1.0, 1.0, 1.0, 0.9));
+		r.sample.setFill(Color.color(0.3, 0.3, 0.3, 0.5));
+		r.sample.setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
+		r.sample.setOnMouseClicked(event -> {
 			State.INSTANCE.selectedSample.set(r);
+			rectangles.forEach(rec -> rec.setVisible(false));
+			r.setVisible(true);
 			registerDoubleClickListener(r, event, rectangles.indexOf(r));
 		});
 		final List< List< ImageView > > views = State.INSTANCE.sampleImageViews;

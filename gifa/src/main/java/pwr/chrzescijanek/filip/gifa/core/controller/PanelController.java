@@ -70,7 +70,7 @@ public class PanelController {
 						rowConstraints.setValignment(VPos.CENTER);
 						panelGrid.getRowConstraints().add(rowConstraints);
 					}
-					double fitWidth = Math.max(bounds.getWidth() / noOfColumns, 150.0);
+//					double fitWidth = Math.max(bounds.getWidth() / noOfColumns, 150.0);
 					double fitHeight = Math.max(bounds.getHeight() / noOfRows, 150.0);
 					for ( int i = 0; i < noOfRows; i++ ) {
 						List< ImageView > imageViewsInRow = new ArrayList<>();
@@ -78,9 +78,12 @@ public class PanelController {
 						while ( i * noOfColumns + n < imageViews.size() && n < noOfColumns ) {
 							final ImageView view = imageViews.get(i * noOfColumns + n);
 							view.setPreserveRatio(true);
-							view.setFitWidth(fitWidth);
+//							view.setFitWidth(fitWidth);
 							view.setFitHeight(fitHeight);
 							imageViewsInRow.add(view);
+							final int id = i;
+							final int nd = n;
+							view.fitWidthProperty().addListener(( observable, oldValue, newValue ) -> System.out.println((id * noOfColumns + nd ) + ": " + newValue));
 							n++;
 						}
 						panelGrid.addRow(i, imageViewsInRow.toArray(new ImageView[0]));

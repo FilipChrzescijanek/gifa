@@ -22,6 +22,7 @@ import javafx.scene.image.PixelFormat;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Ellipse;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.opencv.core.*;
@@ -484,17 +485,23 @@ public class Controller {
 	private void refreshTransformImage( final String imageName, final TransformImageData img, final Image fxImage, final TransformImageData newImageData ) {
 		State.INSTANCE.transformImages.put(imageName, newImageData);
 		transformImageView.setImage(fxImage);
-		transformImageViewGroup.getChildren().remove(img.triangle);
-		for ( RectangleOfInterest r : img.rectangles )
-			transformImageViewGroup.getChildren().remove(r);
+		transformImageViewAnchor.getChildren().remove(img.triangle);
+		transformImageViewAnchor.getChildren().removeAll(img.rectangles);
+		transformImageViewAnchor.getChildren().removeAll(
+				Arrays.stream(img.rectangles).map(r -> r.sample).toArray(Ellipse[]::new)
+		);
 		newImageData.triangle.setScaleX(transformImageView.getScaleX());
 		newImageData.triangle.setScaleY(transformImageView.getScaleY());
-		transformImageViewGroup.getChildren().add(newImageData.triangle);
+		transformImageViewAnchor.getChildren().add(newImageData.triangle);
 		for ( RectangleOfInterest r : newImageData.rectangles ) {
 			r.setScaleX(transformImageView.getScaleX());
 			r.setScaleY(transformImageView.getScaleY());
 		}
-		transformImageViewGroup.getChildren().addAll(newImageData.rectangles);
+		transformImageViewAnchor.getChildren().addAll(newImageData.rectangles);
+		transformImageViewAnchor.getChildren().addAll(
+				Arrays.stream(newImageData.rectangles).map(r -> r.sample).toArray(Ellipse[]::new)
+		);
+		Arrays.stream(newImageData.rectangles).forEach(r -> r.setVisible(false));
 		transformImageView.setTranslateX(transformImageView.getImage().getWidth() * 0.5 * ( transformImageView.getScaleX() - 1.0 ));
 		transformImageView.setTranslateY(transformImageView.getImage().getHeight() * 0.5 * ( transformImageView.getScaleY() - 1.0 ));
 		recalculateTranslates(transformImageView.getScaleX());
@@ -1127,21 +1134,21 @@ public class Controller {
 		transformTriangleStrokeColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
 				State.INSTANCE.transformImages.get(transformImageList.getSelectionModel().getSelectedItem()).triangle.setStroke(newValue));
 		transformFillColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
-				State.INSTANCE.selectedRectangle.get().setFill(newValue));
+				State.INSTANCE.selectedRectangle.get().sample.setFill(newValue));
 		transformStrokeColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
-				State.INSTANCE.selectedRectangle.get().setStroke(newValue));
+				State.INSTANCE.selectedRectangle.get().sample.setStroke(newValue));
 		transformBorderColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
 				State.INSTANCE.selectedRectangle.get().setStroke(newValue));
 		samplesFillColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
-				State.INSTANCE.selectedSample.get().setFill(newValue));
+				State.INSTANCE.selectedSample.get().sample.setFill(newValue));
 		samplesStrokeColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
-				State.INSTANCE.selectedSample.get().setStroke(newValue));
+				State.INSTANCE.selectedSample.get().sample.setStroke(newValue));
 		samplesBorderColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
 				State.INSTANCE.selectedSample.get().setStroke(newValue));
 		State.INSTANCE.selectedRectangle.addListener(( observable, oldValue, newValue ) -> {
 			if ( newValue != null ) {
-				transformFillColor.setValue((Color) newValue.getFill());
-				transformStrokeColor.setValue((Color) newValue.getStroke());
+				transformFillColor.setValue((Color) newValue.sample.getFill());
+				transformStrokeColor.setValue((Color) newValue.sample.getStroke());
 				transformBorderColor.setValue((Color) newValue.getStroke());
 				for ( Map.Entry< String, TransformImageData > e : State.INSTANCE.transformImages.entrySet() ) {
 					if ( Arrays.asList(e.getValue().rectangles).contains(newValue) ) {
@@ -1156,8 +1163,8 @@ public class Controller {
 				State.INSTANCE.selectedSample.set(null);
 			} else {
 				if ( newValue != null ) {
-					samplesFillColor.setValue((Color) newValue.getFill());
-					samplesStrokeColor.setValue((Color) newValue.getStroke());
+					samplesFillColor.setValue((Color) newValue.sample.getFill());
+					samplesStrokeColor.setValue((Color) newValue.sample.getStroke());
 					samplesBorderColor.setValue((Color) newValue.getStroke());
 				}
 				for ( Map.Entry< String, SamplesImageData > e : State.INSTANCE.samplesImages.entrySet() ) {
@@ -1328,7 +1335,9 @@ public class Controller {
 				}
 				final List< RectangleOfInterest > rectangles = imageData
 						.rectangles;
-				samplesImageViewAnchor.getChildren().add(rectangles.get(rectangles.size() - 1));
+				final RectangleOfInterest rectangleOfInterest = rectangles.get(rectangles.size() - 1);
+				samplesImageViewAnchor.getChildren().add(rectangleOfInterest);
+				samplesImageViewAnchor.getChildren().add(rectangleOfInterest.sample);
 				recalculateTranslates(samplesImageView.getScaleX());
 			}
 		});
@@ -1793,8 +1802,10 @@ public class Controller {
 						img.hScrollPos = transformScrollPane.getHvalue();
 						img.vScrollPos = transformScrollPane.getVvalue();
 						transformImageViewAnchor.getChildren().remove(img.triangle);
-						for ( RectangleOfInterest r : img.rectangles )
-							transformImageViewAnchor.getChildren().remove(r);
+						transformImageViewAnchor.getChildren().removeAll(img.rectangles);
+						transformImageViewAnchor.getChildren().removeAll(
+								Arrays.stream(img.rectangles).map(r -> r.sample).toArray(Ellipse[]::new)
+						);
 						State.INSTANCE.selectedRectangle.set(null);
 					}
 					if ( newValue != null ) {
@@ -1802,6 +1813,10 @@ public class Controller {
 						transformImageView.setImage(img.image);
 						transformImageViewAnchor.getChildren().add(img.triangle);
 						transformImageViewAnchor.getChildren().addAll(img.rectangles);
+						transformImageViewAnchor.getChildren().addAll(
+								Arrays.stream(img.rectangles).map(r -> r.sample).toArray(Ellipse[]::new)
+						);
+						Arrays.stream(img.rectangles).forEach(r -> r.setVisible(false));
 						transformImageView.setScaleX(img.scale);
 						transformScrollPane.setHvalue(img.hScrollPos);
 						transformScrollPane.setVvalue(img.vScrollPos);
@@ -1811,6 +1826,7 @@ public class Controller {
 						transformImageSizeLabel.setText((int) img.image.getWidth() + "x" + (int) img.image.getHeight() + " px");
 						transformTriangleFillColor.setValue((Color) img.triangle.getFill());
 						transformTriangleStrokeColor.setValue((Color) img.triangle.getStroke());
+						State.INSTANCE.selectedRectangle.set(null);
 					} else {
 						transformImageView.setImage(null);
 						transformImageSizeLabel.setText("");
@@ -1825,14 +1841,20 @@ public class Controller {
 						img.scale = samplesImageView.getScaleX();
 						img.hScrollPos = samplesScrollPane.getHvalue();
 						img.vScrollPos = samplesScrollPane.getVvalue();
-						for ( RectangleOfInterest r : img.rectangles )
-							samplesImageViewAnchor.getChildren().remove(r);
+						samplesImageViewAnchor.getChildren().removeAll(img.rectangles);
+						samplesImageViewAnchor.getChildren().removeAll(
+								img.rectangles.stream().map(r -> r.sample).toArray(Ellipse[]::new)
+						);
 						State.INSTANCE.selectedSample.set(null);
 					}
 					if ( newValue != null ) {
 						SamplesImageData img = State.INSTANCE.samplesImages.get(newValue);
 						samplesImageView.setImage(img.image);
 						samplesImageViewAnchor.getChildren().addAll(img.rectangles);
+						samplesImageViewAnchor.getChildren().addAll(
+								img.rectangles.stream().map(r -> r.sample).toArray(Ellipse[]::new)
+						);
+						img.rectangles.forEach(r -> r.setVisible(false));
 						samplesImageView.setScaleX(img.scale);
 						samplesScrollPane.setHvalue(img.hScrollPos);
 						samplesScrollPane.setVvalue(img.vScrollPos);
@@ -1840,6 +1862,7 @@ public class Controller {
 						samplesImageView.setTranslateY(samplesImageView.getImage().getHeight() * 0.5 * ( samplesImageView.getScaleY() - 1.0 ));
 						recalculateTranslates(samplesImageView.getScaleX());
 						samplesImageSizeLabel.setText((int) img.image.getWidth() + "x" + (int) img.image.getHeight() + " px");
+						State.INSTANCE.selectedSample.set(null);
 					} else {
 						samplesImageView.setImage(null);
 						samplesImageSizeLabel.setText("");
