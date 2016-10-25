@@ -29,13 +29,15 @@
 			<MenuItem fx:id="editMenuRotateRight" text="Rotate ri_ght by 90°" onAction="#rotateRight" accelerator="Shift+R"/>
 			<MenuItem fx:id="editMenuZoomIn" text="_Zoom in" onAction="#zoomIn" accelerator="Shortcut+Add"/>
 			<MenuItem fx:id="editMenuZoomOut" text="Zoom _out" onAction="#zoomOut" accelerator="Shortcut+Subtract"/>
+			<MenuItem fx:id="editMenuCreateMode" text="Create mo_de" onAction="#setCreateMode" accelerator="Shortcut+Shift+C"/>
+			<MenuItem fx:id="editMenuSelectMode" text="Selec_t mode" onAction="#setSelectMode" accelerator="Shortcut+Shift+T"/>
 			<MenuItem fx:id="editMenuDeleteSample" text="Delete _sample" onAction="#deleteSample" accelerator="Shortcut+D"/>
 			<MenuItem fx:id="editMenuRestoreCharts" text="_Restore charts" onAction="#refresh" accelerator="F5"/>
 			<MenuItem fx:id="editMenuMergeCharts" text="_Merge charts" onAction="#merge" accelerator="F6"/>
 			<MenuItem fx:id="editMenuExtractChart" text="_Extract chart" onAction="#shift" accelerator="F7"/>
 			<MenuItem fx:id="editMenuRemoveCharts" text="Remove _charts" onAction="#delete" accelerator="F8"/>
 			<MenuItem fx:id="editMenuSelectAllFeatures" text="Select _all features" onAction="#selectAllFunctions" accelerator="F9"/>
-			<MenuItem fx:id="editMenuDeselectAllFeatures" text="_Deselect all features" onAction="#deselectAllFunctions" accelerator="F10"/>
+			<MenuItem fx:id="editMenuDeselectAllFeatures" text="Deselect all _features" onAction="#deselectAllFunctions" accelerator="F10"/>
 		</Menu>
 		<Menu fx:id="navMenu" text="_Navigate">
 			<MenuItem fx:id="navMenuTransform" onAction="#transformTab" text="_Transform" accelerator="Shortcut+Alt+T"/>

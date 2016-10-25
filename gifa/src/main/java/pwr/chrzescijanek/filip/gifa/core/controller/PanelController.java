@@ -1,5 +1,6 @@
 package pwr.chrzescijanek.filip.gifa.core.controller;
 
+import javafx.beans.binding.DoubleBinding;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
@@ -9,6 +10,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Ellipse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,53 +46,82 @@ public class PanelController {
 		panelGridScrollPane.viewportBoundsProperty().addListener(( observable, oldValue, newValue ) -> placeImages());
 	}
 
-	public void setIndex(int index) {
+	public void setIndex( int index ) {
 		this.index = index;
 	}
 
 	public void placeImages() {
-			List< ImageView > imageViews = State.INSTANCE.imageViews.get(index);
-			if ( imageViews != null ) {
-				panelGrid.getChildren().clear();
-				panelGrid.getColumnConstraints().clear();
-				panelGrid.getRowConstraints().clear();
-				Bounds bounds = panelGridScrollPane.getViewportBounds();
-				final int noOfColumns = Math.min(Integer.parseInt(panelColumnsTextField.getText()), imageViews.size());
-				if ( noOfColumns > 0 ) {
-					for ( int i = 0; i < noOfColumns; i++ ) {
-						final ColumnConstraints columnConstraints = new ColumnConstraints();
-						columnConstraints.setPercentWidth(100.0 / noOfColumns);
-						columnConstraints.setHalignment(HPos.CENTER);
-						panelGrid.getColumnConstraints().add(columnConstraints);
+		List< ImageView > imageViews = State.INSTANCE.imageViews.get(index);
+		if ( imageViews != null ) {
+			panelGrid.getChildren().clear();
+			panelGrid.getColumnConstraints().clear();
+			panelGrid.getRowConstraints().clear();
+			Bounds bounds = panelGridScrollPane.getLayoutBounds();
+			final int noOfColumns = Math.min(Integer.parseInt(panelColumnsTextField.getText()), imageViews.size());
+			if ( noOfColumns > 0 ) {
+				for ( int i = 0; i < noOfColumns; i++ ) {
+					final ColumnConstraints columnConstraints = new ColumnConstraints();
+					columnConstraints.setPercentWidth(100.0 / noOfColumns);
+					columnConstraints.setHalignment(HPos.CENTER);
+					panelGrid.getColumnConstraints().add(columnConstraints);
+				}
+				final int noOfRows = imageViews.size() / noOfColumns + ( imageViews.size() % noOfColumns == 0 ? 0 : 1 );
+				for ( int i = 0; i < noOfRows; i++ ) {
+					final RowConstraints rowConstraints = new RowConstraints();
+					rowConstraints.setPercentHeight(100.0 / noOfRows);
+					rowConstraints.setValignment(VPos.CENTER);
+					panelGrid.getRowConstraints().add(rowConstraints);
+				}
+				double fitWidth = Math.max((bounds.getWidth() - 50.0) / noOfColumns, 150.0);
+				double fitHeight = Math.max((bounds.getHeight() - 50.0) / noOfRows, 150.0);
+				for ( int i = 0; i < noOfRows; i++ ) {
+					List< ImageView > imageViewsInRow = new ArrayList<>();
+					int n = 0;
+					while ( i * noOfColumns + n < imageViews.size() && n < noOfColumns ) {
+						final ImageView view = imageViews.get(i * noOfColumns + n);
+						view.setPreserveRatio(true);
+						view.setFitWidth(fitWidth);
+						view.setFitHeight(fitHeight);
+						Ellipse e = new Ellipse();
+						e.centerXProperty().bind(e.radiusXProperty());
+						e.centerYProperty().bind(e.radiusYProperty());
+						e.radiusXProperty().bind(new DoubleBinding() {
+
+							{
+								super.bind(view.viewportProperty());
+							}
+
+							@Override
+							protected double computeValue() {
+								final double radiusX = view.getFitWidth() / view.getFitHeight() > view.getViewport().getWidth() / view.getViewport().getHeight() ?
+										( view.getFitHeight() * view.getViewport().getWidth() / view.getViewport().getHeight() ) / 2
+										: view.getFitWidth() / 2;
+								return radiusX;
+							}
+						});
+						e.radiusYProperty().bind(new DoubleBinding() {
+
+							{
+								super.bind(view.viewportProperty());
+							}
+
+							@Override
+							protected double computeValue() {
+								final double radiusY = view.getFitWidth() / view.getFitHeight() > view.getViewport().getWidth() / view.getViewport().getHeight() ?
+										view.getFitHeight() / 2
+										: ( view.getFitWidth() * view.getViewport().getHeight() / view.getViewport().getWidth() ) / 2;
+								return radiusY;
+							}
+						});
+						view.setClip(e);
+						imageViewsInRow.add(view);
+						n++;
 					}
-					final int noOfRows = imageViews.size() / noOfColumns + (imageViews.size() % noOfColumns == 0 ? 0 : 1);
-					for ( int i = 0; i < noOfRows; i++ ) {
-						final RowConstraints rowConstraints = new RowConstraints();
-						rowConstraints.setPercentHeight(100.0 / noOfRows);
-						rowConstraints.setValignment(VPos.CENTER);
-						panelGrid.getRowConstraints().add(rowConstraints);
-					}
-//					double fitWidth = Math.max(bounds.getWidth() / noOfColumns, 150.0);
-					double fitHeight = Math.max(bounds.getHeight() / noOfRows, 150.0);
-					for ( int i = 0; i < noOfRows; i++ ) {
-						List< ImageView > imageViewsInRow = new ArrayList<>();
-						int n = 0;
-						while ( i * noOfColumns + n < imageViews.size() && n < noOfColumns ) {
-							final ImageView view = imageViews.get(i * noOfColumns + n);
-							view.setPreserveRatio(true);
-//							view.setFitWidth(fitWidth);
-							view.setFitHeight(fitHeight);
-							imageViewsInRow.add(view);
-							final int id = i;
-							final int nd = n;
-							view.fitWidthProperty().addListener(( observable, oldValue, newValue ) -> System.out.println((id * noOfColumns + nd ) + ": " + newValue));
-							n++;
-						}
-						panelGrid.addRow(i, imageViewsInRow.toArray(new ImageView[0]));
-					}
+					panelGrid.addRow(i, imageViewsInRow.toArray(new ImageView[0]));
 				}
 			}
 		}
+	}
 
 
 }

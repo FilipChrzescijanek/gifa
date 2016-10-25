@@ -44,6 +44,8 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.opencv.imgproc.Imgproc.*;
+
 public class Controller {
 
 	//static strings
@@ -122,6 +124,8 @@ public class Controller {
 	public MenuItem editMenuDeleteSample;
 	public Label chartsSampleLabel;
 	public MenuItem runMenuTransformButton;
+	public MenuItem editMenuCreateMode;
+	public MenuItem editMenuSelectMode;
 
 	@FXML
 	private ScrollPane allChartsGridScrollPane;
@@ -475,7 +479,7 @@ public class Controller {
 		TransformImageData img = State.INSTANCE.transformImages.get(imageName);
 		Core.flip(img.imageData, img.imageData, 1);
 		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		Imgproc.cvtColor(imageCopy, imageCopy, Imgproc.COLOR_BGR2RGB);
+		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
 		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
@@ -514,7 +518,7 @@ public class Controller {
 		TransformImageData img = State.INSTANCE.transformImages.get(imageName);
 		Core.flip(img.imageData, img.imageData, 0);
 		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		Imgproc.cvtColor(imageCopy, imageCopy, Imgproc.COLOR_BGR2RGB);
+		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
 		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
@@ -894,8 +898,13 @@ public class Controller {
 					RectangleOfInterest r = img.rectangles.get(j);
 					final Mat[] images = new Mat[State.INSTANCE.samplesImages.size()];
 					for ( String key : samplesImageList.getItems() ) {
-						images[i] = State.INSTANCE.samplesImages.get(key).imageData
+						final SamplesImageData samplesImageData = State.INSTANCE.samplesImages.get(key);
+						images[i] = samplesImageData.imageData
 								.submat(new Rect((int) r.getX(), (int) r.getY(), (int) r.getWidth(), (int) r.getHeight()));
+						Mat zeros = Mat.zeros(images[i].rows(), images[i].cols(), images[i].type());
+						ellipse(zeros, new Point(r.getWidth() / 2, r.getHeight() / 2), new Size(r.getWidth() / 2, r.getHeight() / 2), 0.0, 0.0, 360.0, new Scalar(255, 255, 255, 255), Core.FILLED);
+						Core.bitwise_and(images[i], zeros, images[i]);
+//						Imgcodecs.imwrite("img" + i + ".png", images[i]);
 						i++;
 					}
 					final Result result = DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images));
@@ -959,7 +968,7 @@ public class Controller {
 				}
 				if ( image != null ) {
 					final Mat imageCopy = ImageUtils.getImageCopy(image);
-					Imgproc.cvtColor(image, imageCopy, Imgproc.COLOR_BGR2RGB);
+					cvtColor(image, imageCopy, COLOR_BGR2RGB);
 					Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), imageCopy.width(), imageCopy.height(),
 							imageCopy.channels(), PixelFormat.getByteRgbInstance());
 					State.INSTANCE.transformImages.put(fileName, new TransformImageData(fxImage, image));
@@ -978,7 +987,7 @@ public class Controller {
 		Core.transpose(img.imageData, img.imageData);
 		Core.flip(img.imageData, img.imageData, 0);
 		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		Imgproc.cvtColor(imageCopy, imageCopy, Imgproc.COLOR_BGR2RGB);
+		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
 		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
@@ -992,7 +1001,7 @@ public class Controller {
 		Core.transpose(img.imageData, img.imageData);
 		Core.flip(img.imageData, img.imageData, 1);
 		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		Imgproc.cvtColor(imageCopy, imageCopy, Imgproc.COLOR_BGR2RGB);
+		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
 		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
@@ -1263,8 +1272,11 @@ public class Controller {
 			double x = event.getX();
 			double y = event.getY();
 			State.INSTANCE.dragStarted = true;
+			System.out.println("(x,y)=(" + x + "," + y + ")");
+			System.out.println("(state.x,state.y)=(" + State.INSTANCE.x + "," + State.INSTANCE.y + ")");
 			final double dX = ( x - State.INSTANCE.x ) / transformImageView.getScaleX();
 			final double dY = ( y - State.INSTANCE.y ) / transformImageView.getScaleY();
+			System.out.println("(dX,dY)=(" + dX + "," + dY + ")");
 			State.INSTANCE.x = x;
 			State.INSTANCE.y = y;
 			RectangleOfInterest rectangle = State.INSTANCE.selectedRectangle.get();
@@ -1336,6 +1348,7 @@ public class Controller {
 				final List< RectangleOfInterest > rectangles = imageData
 						.rectangles;
 				final RectangleOfInterest rectangleOfInterest = rectangles.get(rectangles.size() - 1);
+				rectangleOfInterest.setVisible(false);
 				samplesImageViewAnchor.getChildren().add(rectangleOfInterest);
 				samplesImageViewAnchor.getChildren().add(rectangleOfInterest.sample);
 				recalculateTranslates(samplesImageView.getScaleX());
@@ -1511,6 +1524,7 @@ public class Controller {
 	}
 
 	public void resizeNW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+		System.out.println("Resize NW by: [" + deltaX + "," + deltaY + "]");
 		final double newWidth = rectangle.getWidth() - deltaX;
 		final double newHeight = rectangle.getHeight() - deltaY;
 
@@ -1525,6 +1539,7 @@ public class Controller {
 	}
 
 	public void resizeSE( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+		System.out.println("Resize SE by: [" + deltaX + "," + deltaY + "]");
 		final double newWidth = rectangle.getWidth() + deltaX;
 		final double newHeight = rectangle.getHeight() + deltaY;
 
@@ -1535,6 +1550,7 @@ public class Controller {
 	}
 
 	public void resizeSW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+		System.out.println("Resize SW by: [" + deltaX + "," + deltaY + "]");
 		final double newWidth = rectangle.getWidth() - deltaX;
 		final double newHeight = rectangle.getHeight() + deltaY;
 
@@ -1548,6 +1564,7 @@ public class Controller {
 	}
 
 	public void resizeNE( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+		System.out.println("Resize NE by: [" + deltaX + "," + deltaY + "]");
 		final double newWidth = rectangle.getWidth() + deltaX;
 		final double newHeight = rectangle.getHeight() - deltaY;
 
@@ -1560,6 +1577,7 @@ public class Controller {
 	}
 
 	public void resizeE( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+		System.out.println("Resize E by: [" + deltaX + "," + deltaY + "]");
 		final double newWidth = rectangle.getWidth() + deltaX;
 
 		if ( !( rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0 ) || newWidth < rectangle.getWidth() )
@@ -1567,15 +1585,17 @@ public class Controller {
 	}
 
 	public void resizeW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+		System.out.println("Resize W by: [" + deltaX + "," + deltaY + "]");
 		final double newWidth = rectangle.getWidth() - deltaX;
 
-		if ( !( Math.abs(rectangle.getX()) < 0.000001 ) || newWidth < rectangle.getWidth() ) {
+		if ( !( Math.abs(rectangle.getX()) < 0.000001 ) || newWidth < rectangle.getWidth()) {
 			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
 			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
 		}
 	}
 
 	public void resizeS( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+		System.out.println("Resize S by: [" + deltaX + "," + deltaY + "]");
 		final double newHeight = rectangle.getHeight() + deltaY;
 
 		if ( !( rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0 ) || newHeight < rectangle.getHeight() )
@@ -1584,6 +1604,7 @@ public class Controller {
 	}
 
 	public void resizeN( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+		System.out.println("Resize N by: [" + deltaX + "," + deltaY + "]");
 		final double newHeight = rectangle.getHeight() - deltaY;
 
 		if ( !( Math.abs(rectangle.getY()) < 0.000001 ) || newHeight < rectangle.getHeight() ) {
@@ -1751,6 +1772,8 @@ public class Controller {
 		editMenuHorizontalFlip.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
 		editMenuRotateLeft.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
 		editMenuRotateRight.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
+		editMenuCreateMode.disableProperty().bind(Bindings.or(samplesTab.selectedProperty().not(), createRadioButton.selectedProperty()));
+		editMenuSelectMode.disableProperty().bind(Bindings.or(samplesTab.selectedProperty().not(), selectRadioButton.selectedProperty()));
 		editMenuDeleteSample.disableProperty().bind(
 				Bindings.or(
 					Bindings.or(State.INSTANCE.selectedSample.isNull(), selectRadioButton.selectedProperty().not()),
@@ -1879,8 +1902,8 @@ public class Controller {
 		samplesImageList.getItems().clear();
 		final Mat[] images = new Mat[State.INSTANCE.transformImages.size()];
 		int interpolation = cubicRadioButton.isSelected() ?
-				Imgproc.INTER_CUBIC : linearRadioButton.isSelected() ?
-				Imgproc.INTER_LINEAR : Imgproc.INTER_NEAREST;
+				INTER_CUBIC : linearRadioButton.isSelected() ?
+				INTER_LINEAR : INTER_NEAREST;
 		try {
 			final MatOfPoint2f[] points = new MatOfPoint2f[State.INSTANCE.transformImages.size()];
 			int i = 0;
@@ -1913,7 +1936,16 @@ public class Controller {
 			}
 			State.INSTANCE.sampleImageViews.remove(index);
 			samplesImageViewAnchor.getChildren().remove(r);
+			samplesImageViewAnchor.getChildren().remove(r.sample);
 			State.INSTANCE.selectedSample.set(null);
 		}
+	}
+
+	public void setCreateMode( ActionEvent actionEvent ) {
+		if (!createRadioButton.isSelected()) createRadioButton.setSelected(true);
+	}
+
+	public void setSelectMode( ActionEvent actionEvent ) {
+		if (!selectRadioButton.isSelected()) selectRadioButton.setSelected(true);
 	}
 }

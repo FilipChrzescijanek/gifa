@@ -34,7 +34,8 @@ public class RectangleOfInterest extends Rectangle {
 		});
 		sample.setOnMouseExited(event -> {
 			State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
-			this.getScene().setCursor(Cursor.DEFAULT);
+			if (getScene() != null)
+				getScene().setCursor(Cursor.DEFAULT);
 		});
 	}
 
