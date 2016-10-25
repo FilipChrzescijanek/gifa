@@ -25,7 +25,7 @@ public class PanelController {
 	public TextField panelColumnsTextField;
 	public ScrollPane panelGridScrollPane;
 	public GridPane panelGrid;
-	private int index = 0;
+	private int index = -1;
 
 	@FXML
 	void initialize() {
@@ -43,7 +43,7 @@ public class PanelController {
 			else
 				placeImages();
 		});
-		panelGridScrollPane.viewportBoundsProperty().addListener(( observable, oldValue, newValue ) -> placeImages());
+		root.layoutBoundsProperty().addListener(( observable, oldValue, newValue ) -> placeImages());
 	}
 
 	public void setIndex( int index ) {

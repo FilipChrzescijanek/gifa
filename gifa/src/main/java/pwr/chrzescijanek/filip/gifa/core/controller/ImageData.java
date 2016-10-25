@@ -11,8 +11,8 @@ public class ImageData {
 			"    -fx-stroke-dash-array: 12 2 4 2;\n" +
 			"    -fx-stroke-dash-offset: 6;\n" +
 			"    -fx-stroke-line-cap: butt;";
-	public final Image image;
-	public final Mat imageData;
+	public Image image;
+	public Mat imageData;
 	public double scale = 1.0;
 	public double vScrollPos = 0.0;
 	public double hScrollPos = 0.0;

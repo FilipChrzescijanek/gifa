@@ -15,7 +15,7 @@ public class Triangle extends Polygon {
 		super(0,0,0,0,0,0);
 		this.pointsProperty = new DoubleProperty[6];
 		for ( int i = 0; i < pointsProperty.length; i++)
-			pointsProperty[i] = new SimpleDoubleProperty();
+			pointsProperty[i] = new SimpleDoubleProperty(0.0);
 		registerListeners();
 	}
 
@@ -45,7 +45,7 @@ public class Triangle extends Polygon {
 				( height * 0.5 - getTriangleMiddleY() ) * ( getScaleY() - 1.0 ));
 	}
 
-	private double getTriangleMiddleX() {
+	public double getTriangleMiddleX() {
 		double firstPointX = getPoints().get(0);
 		double secondPointX = getPoints().get(2);
 		double thirdPointX = getPoints().get(4);
@@ -54,7 +54,7 @@ public class Triangle extends Polygon {
 		return ( maxX - minX ) / 2.0 + minX;
 	}
 
-	private double getTriangleMiddleY() {
+	public double getTriangleMiddleY() {
 		double firstPointY = getPoints().get(1);
 		double secondPointY = getPoints().get(3);
 		double thirdPointY = getPoints().get(5);
@@ -71,38 +71,6 @@ public class Triangle extends Polygon {
 		return Math.max(firstPointY, Math.max(secondPointY, thirdPointY));
 	}
 
-	public void reset() {
-		for ( int i = 0; i < pointsProperty.length; i++)
-			this.pointsProperty[i].setValue(0);
-	}
-
-	public void copy( Triangle other) {
-		for ( int i = 0; i < pointsProperty.length; i++)
-			this.pointsProperty[i].setValue(other.pointsProperty[i].getValue());
-	}
-
-	public void moveFirstPointTo(final double x, final double y) {
-		pointsProperty[0].setValue(x);
-		pointsProperty[1].setValue(y);
-	}
-
-	public void moveSecondPointTo(final double x, final double y) {
-		pointsProperty[2].setValue(x);
-		pointsProperty[3].setValue(y);
-	}
-
-	public void moveThirdPointTo(final double x, final double y) {
-		pointsProperty[4].setValue(x);
-		pointsProperty[5].setValue(y);
-	}
-
-	public void moveTriangleBy(final double x, final double y) {
-		for ( int i = 0; i < pointsProperty.length; i += 2) {
-			pointsProperty[i].setValue(pointsProperty[i].getValue() + x);
-			pointsProperty[i + 1].setValue(pointsProperty[i + 1].getValue() + y);
-		}
-	}
-
 	public MatOfPoint2f getMatOfPoints() {
 		return new MatOfPoint2f(
 				new Point(pointsProperty[0].getValue(), pointsProperty[1].getValue()),
@@ -110,22 +78,4 @@ public class Triangle extends Polygon {
 				new Point(pointsProperty[4].getValue(), pointsProperty[5].getValue())
 		);
 	}
-
-	public int getIndexOfNearestPointInRadius(final double x, final double y, final double radius) {
-		int index = -1;
-		double minDistance = radius;
-		for ( int i = 0; i < pointsProperty.length; i += 2) {
-			final double distance = getDistanceBetween(x, y, pointsProperty[i].getValue(), pointsProperty[i + 1].getValue());
-			if ( distance < minDistance ) {
-				index = i / 2;
-				minDistance = distance;
-			}
-		}
-		return index;
-	}
-
-	private double getDistanceBetween(double x1, double y1, double x2, double y2) {
-		return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-	}
-
 }

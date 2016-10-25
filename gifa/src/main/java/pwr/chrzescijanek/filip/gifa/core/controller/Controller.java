@@ -19,6 +19,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelFormat;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -482,34 +483,20 @@ public class Controller {
 		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
 		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
-		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
-		refreshTransformImage(imageName, img, fxImage, newImageData);
-	}
-
-	private void refreshTransformImage( final String imageName, final TransformImageData img, final Image fxImage, final TransformImageData newImageData ) {
-		State.INSTANCE.transformImages.put(imageName, newImageData);
-		transformImageView.setImage(fxImage);
-		transformImageViewAnchor.getChildren().remove(img.triangle);
-		transformImageViewAnchor.getChildren().removeAll(img.rectangles);
-		transformImageViewAnchor.getChildren().removeAll(
-				Arrays.stream(img.rectangles).map(r -> r.sample).toArray(Ellipse[]::new)
-		);
-		newImageData.triangle.setScaleX(transformImageView.getScaleX());
-		newImageData.triangle.setScaleY(transformImageView.getScaleY());
-		transformImageViewAnchor.getChildren().add(newImageData.triangle);
-		for ( RectangleOfInterest r : newImageData.rectangles ) {
-			r.setScaleX(transformImageView.getScaleX());
-			r.setScaleY(transformImageView.getScaleY());
+		refreshTransformImage(img, fxImage);
 		}
-		transformImageViewAnchor.getChildren().addAll(newImageData.rectangles);
-		transformImageViewAnchor.getChildren().addAll(
-				Arrays.stream(newImageData.rectangles).map(r -> r.sample).toArray(Ellipse[]::new)
-		);
-		Arrays.stream(newImageData.rectangles).forEach(r -> r.setVisible(false));
+
+	private void refreshTransformImage(final TransformImageData img, final Image fxImage ) {
+		img.image = fxImage;
+		img.writableImage.set(new WritableImage(fxImage.getPixelReader(), (int) fxImage.getWidth(), (int) fxImage.getHeight()));
+		transformImageView.setImage(fxImage);
+		img.rectangles[0].setRectangle(fxImage.getWidth() * 2 / 5, fxImage.getHeight() / 5, fxImage.getWidth() / 5, fxImage.getHeight() / 5, fxImage);
+		img.rectangles[1].setRectangle(fxImage.getWidth() * 1 / 5, fxImage.getHeight() * 3 / 5, fxImage.getWidth() / 5, fxImage.getHeight() / 5, fxImage);
+		img.rectangles[2].setRectangle(fxImage.getWidth() * 3 / 5, fxImage.getHeight() * 3 / 5, fxImage.getWidth() / 5, fxImage.getHeight() / 5, fxImage);
 		transformImageView.setTranslateX(transformImageView.getImage().getWidth() * 0.5 * ( transformImageView.getScaleX() - 1.0 ));
 		transformImageView.setTranslateY(transformImageView.getImage().getHeight() * 0.5 * ( transformImageView.getScaleY() - 1.0 ));
 		recalculateTranslates(transformImageView.getScaleX());
-		transformImageSizeLabel.setText((int) newImageData.image.getWidth() + "x" + (int) newImageData.image.getHeight() + " px");
+		transformImageSizeLabel.setText((int) fxImage.getWidth() + "x" + (int) fxImage.getHeight() + " px");
 	}
 
 	@FXML
@@ -521,8 +508,7 @@ public class Controller {
 		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
 		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
-		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
-		refreshTransformImage(imageName, img, fxImage, newImageData);
+		refreshTransformImage(img, fxImage);
 	}
 
 	private void createHistoryCharts() {
@@ -990,8 +976,7 @@ public class Controller {
 		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
 		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
-		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
-		refreshTransformImage(imageName, img, fxImage, newImageData);
+		refreshTransformImage(img, fxImage);
 	}
 
 	@FXML
@@ -1004,8 +989,7 @@ public class Controller {
 		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
 		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
 				img.imageData.channels(), PixelFormat.getByteRgbInstance());
-		final TransformImageData newImageData = new TransformImageData(fxImage, img.imageData);
-		refreshTransformImage(imageName, img, fxImage, newImageData);
+		refreshTransformImage(img, fxImage);
 	}
 
 	@FXML
@@ -1219,114 +1203,116 @@ public class Controller {
 		});
 
 		transformImageViewGroup.setOnMouseMoved(event -> {
-			RectangleOfInterest rectangle = State.INSTANCE.selectedRectangle.get();
-			transformMousePositionLabel.setText((int) ( event.getX() / transformImageView.getScaleX() ) + " : " + (int) ( event.getY() / transformImageView
-					.getScaleY() ));
-			if ( rectangle != null && State.INSTANCE.getRectangleSelection() != State.RectangleSelection.DRAG ) {
-				double dX = event.getX() / transformImageView.getScaleX() - rectangle.getX();
-				double dY = event.getY() / transformImageView.getScaleY() - rectangle.getY();
-				if ( dX >= -7.0 / rectangle.getScaleX() && dY >= -7.0 / rectangle.getScaleX() && dX <= rectangle.getWidth() + 7.0 / rectangle.getScaleX() &&
-						dY <= rectangle.getHeight() + 7.0 / rectangle.getScaleX() ) {
-					if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX
-							() ) {
-						transformImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SE);
-					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
-						transformImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NW);
-					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
-						transformImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NE);
-					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
-						transformImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SW);
-					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() ) {
-						transformImageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.E);
-					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() ) {
-						transformImageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.W);
-					} else if ( Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
-						transformImageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.S);
-					} else if ( Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
-						transformImageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.N);
-					} else {
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
-						transformImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
-					}
-				} else {
-					State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
-					transformImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
-				}
-			}
-		});
-		transformImageViewGroup.setOnMouseExited(event -> {
-			if ( !State.INSTANCE.dragStarted ) {
-				State.INSTANCE.setNoSelection();
-				transformImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
-			}
-		});
-		transformImageViewGroup.setOnMouseDragged(event -> {
-			double x = event.getX();
-			double y = event.getY();
-			State.INSTANCE.dragStarted = true;
-			System.out.println("(x,y)=(" + x + "," + y + ")");
-			System.out.println("(state.x,state.y)=(" + State.INSTANCE.x + "," + State.INSTANCE.y + ")");
-			final double dX = ( x - State.INSTANCE.x ) / transformImageView.getScaleX();
-			final double dY = ( y - State.INSTANCE.y ) / transformImageView.getScaleY();
-			System.out.println("(dX,dY)=(" + dX + "," + dY + ")");
-			State.INSTANCE.x = x;
-			State.INSTANCE.y = y;
-			RectangleOfInterest rectangle = State.INSTANCE.selectedRectangle.get();
-			Image image = transformImageView.getImage();
-			switch ( State.INSTANCE.getRectangleSelection() ) {
-				case NW:
-					resizeNW(rectangle, image, dX, dY);
-					break;
-				case NE:
-					resizeNE(rectangle, image, dX, dY);
-					break;
-				case SE:
-					resizeSE(rectangle, image, dX, dY);
-					break;
-				case SW:
-					resizeSW(rectangle, image, dX, dY);
-					break;
-				case W:
-					resizeW(rectangle, image, dX, dY);
-					break;
-				case E:
-					resizeE(rectangle, image, dX, dY);
-					break;
-				case S:
-					resizeS(rectangle, image, dX, dY);
-					break;
-				case N:
-					resizeN(rectangle, image, dX, dY);
-					break;
-				case DRAG:
-					drag(rectangle, image, dX, dY);
-					break;
-				default:
-					State.INSTANCE.dragStarted = false;
-					break;
-			}
-			recalculateTranslates(transformImageView.getScaleX());
-		});
-		transformImageViewGroup.setOnMousePressed(event -> {
-			if ( State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE ) {
-				State.INSTANCE.x = event.getX();
-				State.INSTANCE.y = event.getY();
-			}
-		});
-		transformImageViewGroup.setOnMouseReleased(event -> {
-			if ( State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE ) {
-				State.INSTANCE.x = 0;
-				State.INSTANCE.y = 0;
-			}
-		});
+					transformMousePositionLabel.setText((int) ( event.getX() / transformImageView.getScaleX() ) + " : " + (int) ( event.getY() / transformImageView
+							.getScaleY() ));
+
+				});
+		//			RectangleOfInterest rectangle = State.INSTANCE.selectedRectangle.get();
+					//			if ( rectangle != null && State.INSTANCE.getRectangleSelection() != State.RectangleSelection.DRAG ) {
+					//				double dX = event.getX() / transformImageView.getScaleX() - rectangle.getX();
+					//				double dY = event.getY() / transformImageView.getScaleY() - rectangle.getY();
+					//				if ( dX >= -7.0 / rectangle.getScaleX() && dY >= -7.0 / rectangle.getScaleX() && dX <= rectangle.getWidth() + 7.0 / rectangle.getScaleX() &&
+					//						dY <= rectangle.getHeight() + 7.0 / rectangle.getScaleX() ) {
+					//					if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX
+					//							() ) {
+					//						transformImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+					//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SE);
+					//					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
+					//						transformImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+					//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NW);
+					//					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
+					//						transformImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+					//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NE);
+					//					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
+					//						transformImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+					//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SW);
+					//					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() ) {
+					//						transformImageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
+					//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.E);
+					//					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() ) {
+					//						transformImageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
+					//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.W);
+					//					} else if ( Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
+					//						transformImageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
+					//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.S);
+					//					} else if ( Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
+					//						transformImageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
+					//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.N);
+					//					} else {
+					//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
+					//						transformImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+					//					}
+					//				} else {
+					//					State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
+					//					transformImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+					//				}
+					//			}
+					//		});
+					//		transformImageViewGroup.setOnMouseExited(event -> {
+					//			if ( !State.INSTANCE.dragStarted ) {
+					//				State.INSTANCE.setNoSelection();
+					//				transformImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+					//			}
+					//		});
+					//		transformImageViewGroup.setOnMouseDragged(event -> {
+					//			double x = event.getX();
+					//			double y = event.getY();
+					//			State.INSTANCE.dragStarted = true;
+					//			System.out.println("(x,y)=(" + x + "," + y + ")");
+					//			System.out.println("(state.x,state.y)=(" + State.INSTANCE.x + "," + State.INSTANCE.y + ")");
+					//			final double dX = ( x - State.INSTANCE.x ) / transformImageView.getScaleX();
+					//			final double dY = ( y - State.INSTANCE.y ) / transformImageView.getScaleY();
+					//			System.out.println("(dX,dY)=(" + dX + "," + dY + ")");
+					//			State.INSTANCE.x = x;
+					//			State.INSTANCE.y = y;
+					//			RectangleOfInterest rectangle = State.INSTANCE.selectedRectangle.get();
+					//			Image image = transformImageView.getImage();
+					//			switch ( State.INSTANCE.getRectangleSelection() ) {
+					//				case NW:
+					//					resizeNW(rectangle, image, dX, dY);
+					//					break;
+					//				case NE:
+					//					resizeNE(rectangle, image, dX, dY);
+					//					break;
+					//				case SE:
+					//					resizeSE(rectangle, image, dX, dY);
+					//					break;
+					//				case SW:
+					//					resizeSW(rectangle, image, dX, dY);
+					//					break;
+					//				case W:
+					//					resizeW(rectangle, image, dX, dY);
+					//					break;
+					//				case E:
+					//					resizeE(rectangle, image, dX, dY);
+					//					break;
+					//				case S:
+					//					resizeS(rectangle, image, dX, dY);
+					//					break;
+					//				case N:
+					//					resizeN(rectangle, image, dX, dY);
+					//					break;
+					//				case DRAG:
+					//					drag(rectangle, image, dX, dY);
+					//					break;
+					//				default:
+					//					State.INSTANCE.dragStarted = false;
+					//					break;
+					//			}
+					//			recalculateTranslates(transformImageView.getScaleX());
+					//		});
+//		transformImageViewGroup.setOnMousePressed(event -> {
+//			if ( State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE ) {
+//				State.INSTANCE.x = event.getX();
+//				State.INSTANCE.y = event.getY();
+//			}
+//		});
+//		transformImageViewGroup.setOnMouseReleased(event -> {
+//			if ( State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE ) {
+//				State.INSTANCE.x = 0;
+//				State.INSTANCE.y = 0;
+//			}
+//		});
 
 		samplesImageViewGroup.setOnMouseClicked(event -> {
 			if ( createRadioButton.isSelected() ) {
@@ -1340,7 +1326,7 @@ public class Controller {
 				final double width = Math.min(100, image.getWidth() - recX);
 				final double height = Math.min(100, image.getHeight() - recY);
 				for ( SamplesImageData img : State.INSTANCE.samplesImages.values() ) {
-					RectangleOfInterest r = new RectangleOfInterest(recX, recY, width, height);
+					RectangleOfInterest r = new RectangleOfInterest(recX, recY, width, height, img.image);
 					r.setScaleX(img.scale);
 					r.setScaleY(img.scale);
 					img.add(r);
@@ -1356,269 +1342,270 @@ public class Controller {
 		});
 
 		samplesImageViewGroup.setOnMouseMoved(event -> {
-			RectangleOfInterest rectangle = State.INSTANCE.selectedSample.get();
-			samplesMousePositionLabel.setText((int) ( event.getX() / samplesImageView.getScaleX() ) + " : " + (int) ( event.getY() / samplesImageView
-					.getScaleY() ));
-			if ( rectangle != null && State.INSTANCE.getRectangleSelection() != State.RectangleSelection.DRAG ) {
-				double dX = event.getX() / samplesImageView.getScaleX() - rectangle.getX();
-				double dY = event.getY() / samplesImageView.getScaleY() - rectangle.getY();
-				if ( dX >= -7.0 / rectangle.getScaleX() && dY >= -7.0 / rectangle.getScaleX() && dX <= rectangle.getWidth() + 7.0 / rectangle.getScaleX() &&
-						dY <= rectangle.getHeight() + 7.0 / rectangle.getScaleX() ) {
-					if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX
-							() ) {
-						samplesImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SE);
-					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
-						samplesImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NW);
-					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
-						samplesImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NE);
-					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
-						samplesImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SW);
-					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() ) {
-						samplesImageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.E);
-					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() ) {
-						samplesImageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.W);
-					} else if ( Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
-						samplesImageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.S);
-					} else if ( Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
-						samplesImageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.N);
-					} else {
-						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
-						samplesImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
-					}
-				} else {
-					State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
-					samplesImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
-				}
-			}
-		});
-		samplesImageViewGroup.setOnMouseExited(event -> {
-			if ( !State.INSTANCE.dragStarted ) {
-				State.INSTANCE.setNoSelection();
-				samplesImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
-			}
-		});
-		samplesImageViewGroup.setOnMouseDragged(event -> {
-			double x = event.getX();
-			double y = event.getY();
-			State.INSTANCE.dragStarted = true;
-			final double dX = ( x - State.INSTANCE.x ) / samplesImageView.getScaleX();
-			final double dY = ( y - State.INSTANCE.y ) / samplesImageView.getScaleY();
-			State.INSTANCE.x = x;
-			State.INSTANCE.y = y;
-			RectangleOfInterest rectangle = State.INSTANCE.selectedSample.get();
-			Image image = samplesImageView.getImage();
-			if (event.isControlDown()) {
-				switch ( State.INSTANCE.getRectangleSelection() ) {
-					case NW:
-							resizeNW(rectangle, image, dX, dY);
-						break;
-					case NE:
-							resizeNE(rectangle, image, dX, dY);
-						break;
-					case SE:
-							resizeSE(rectangle, image, dX, dY);
-						break;
-					case SW:
-							resizeSW(rectangle, image, dX, dY);
-						break;
-					case W:
-							resizeW(rectangle, image, dX, dY);
-						break;
-					case E:
-							resizeE(rectangle, image, dX, dY);
-						break;
-					case S:
-							resizeS(rectangle, image, dX, dY);
-						break;
-					case N:
-							resizeN(rectangle, image, dX, dY);
-						break;
-					case DRAG:
-							drag(rectangle, image, dX, dY);
-						break;
-					default:
-						State.INSTANCE.dragStarted = false;
-						break;
-				}
-			} else {
-				int i = -1;
-				for (SamplesImageData img : State.INSTANCE.samplesImages.values()) {
-					i = img.rectangles.indexOf(rectangle);
-					if (i >= 0) break;
-				}
-				final int index = i;
-				switch ( State.INSTANCE.getRectangleSelection() ) {
-					case NW:
-							State.INSTANCE.samplesImages.values().forEach(
-									img -> resizeNW(img.rectangles.get(index), image, dX, dY)
-							);
-						break;
-					case NE:
-							State.INSTANCE.samplesImages.values().forEach(
-									img -> resizeNE(img.rectangles.get(index), image, dX, dY)
-							);
-						break;
-					case SE:
-							State.INSTANCE.samplesImages.values().forEach(
-									img -> resizeSE(img.rectangles.get(index), image, dX, dY)
-							);
-						break;
-					case SW:
-							State.INSTANCE.samplesImages.values().forEach(
-									img -> resizeSW(img.rectangles.get(index), image, dX, dY)
-							);
-						break;
-					case W:
-							State.INSTANCE.samplesImages.values().forEach(
-									img -> resizeW(img.rectangles.get(index), image, dX, dY)
-							);
-						break;
-					case E:
-							State.INSTANCE.samplesImages.values().forEach(
-									img -> resizeE(img.rectangles.get(index), image, dX, dY)
-							);
-						break;
-					case S:
-							State.INSTANCE.samplesImages.values().forEach(
-									img -> resizeS(img.rectangles.get(index), image, dX, dY)
-							);
-						break;
-					case N:
-							State.INSTANCE.samplesImages.values().forEach(
-									img -> resizeN(img.rectangles.get(index), image, dX, dY)
-							);
-						break;
-					case DRAG:
-							State.INSTANCE.samplesImages.values().forEach(
-									img -> drag(img.rectangles.get(index), image, dX, dY)
-							);
-						break;
-					default:
-						State.INSTANCE.dragStarted = false;
-						break;
-				}
-			}
-			recalculateTranslates(samplesImageView.getScaleX());
-		});
-		samplesImageViewGroup.setOnMousePressed(event -> {
-			if ( State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE ) {
-				State.INSTANCE.x = event.getX();
-				State.INSTANCE.y = event.getY();
-			}
-		});
-		samplesImageViewGroup.setOnMouseReleased(event -> {
-			if ( State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE ) {
-				State.INSTANCE.x = 0;
-				State.INSTANCE.y = 0;
-			}
-		});
+					samplesMousePositionLabel.setText((int) ( event.getX() / samplesImageView.getScaleX() ) + " : " + (int) ( event.getY() / samplesImageView
+							.getScaleY() ));
+				});
+//			RectangleOfInterest rectangle = State.INSTANCE.selectedSample.get();
+//			if ( rectangle != null && State.INSTANCE.getRectangleSelection() != State.RectangleSelection.DRAG ) {
+//				double dX = event.getX() / samplesImageView.getScaleX() - rectangle.getX();
+//				double dY = event.getY() / samplesImageView.getScaleY() - rectangle.getY();
+//				if ( dX >= -7.0 / rectangle.getScaleX() && dY >= -7.0 / rectangle.getScaleX() && dX <= rectangle.getWidth() + 7.0 / rectangle.getScaleX() &&
+//						dY <= rectangle.getHeight() + 7.0 / rectangle.getScaleX() ) {
+//					if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX
+//							() ) {
+//						samplesImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SE);
+//					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
+//						samplesImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NW);
+//					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() && Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
+//						samplesImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NE);
+//					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() && Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
+//						samplesImageViewGroup.getScene().setCursor(Cursor.CROSSHAIR);
+//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.SW);
+//					} else if ( Math.abs(rectangle.getWidth() - dX) < 7.0 / rectangle.getScaleX() ) {
+//						samplesImageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
+//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.E);
+//					} else if ( Math.abs(dX) < 7.0 / rectangle.getScaleX() ) {
+//						samplesImageViewGroup.getScene().setCursor(Cursor.H_RESIZE);
+//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.W);
+//					} else if ( Math.abs(rectangle.getHeight() - dY) < 7.0 / rectangle.getScaleX() ) {
+//						samplesImageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
+//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.S);
+//					} else if ( Math.abs(dY) < 7.0 / rectangle.getScaleX() ) {
+//						samplesImageViewGroup.getScene().setCursor(Cursor.V_RESIZE);
+//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.N);
+//					} else {
+//						State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
+//						samplesImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+//					}
+//				} else {
+//					State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
+//					samplesImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+//				}
+//			}
+//		});
+//		samplesImageViewGroup.setOnMouseExited(event -> {
+//			if ( !State.INSTANCE.dragStarted ) {
+//				State.INSTANCE.setNoSelection();
+//				samplesImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
+//			}
+//		});
+//		samplesImageViewGroup.setOnMouseDragged(event -> {
+//			double x = event.getX();
+//			double y = event.getY();
+//			State.INSTANCE.dragStarted = true;
+//			final double dX = ( x - State.INSTANCE.x ) / samplesImageView.getScaleX();
+//			final double dY = ( y - State.INSTANCE.y ) / samplesImageView.getScaleY();
+//			State.INSTANCE.x = x;
+//			State.INSTANCE.y = y;
+//			RectangleOfInterest rectangle = State.INSTANCE.selectedSample.get();
+//			Image image = samplesImageView.getImage();
+//			if (event.isControlDown()) {
+//				switch ( State.INSTANCE.getRectangleSelection() ) {
+//					case NW:
+//							resizeNW(rectangle, image, dX, dY);
+//						break;
+//					case NE:
+//							resizeNE(rectangle, image, dX, dY);
+//						break;
+//					case SE:
+//							resizeSE(rectangle, image, dX, dY);
+//						break;
+//					case SW:
+//							resizeSW(rectangle, image, dX, dY);
+//						break;
+//					case W:
+//							resizeW(rectangle, image, dX, dY);
+//						break;
+//					case E:
+//							resizeE(rectangle, image, dX, dY);
+//						break;
+//					case S:
+//							resizeS(rectangle, image, dX, dY);
+//						break;
+//					case N:
+//							resizeN(rectangle, image, dX, dY);
+//						break;
+//					case DRAG:
+//							drag(rectangle, image, dX, dY);
+//						break;
+//					default:
+//						State.INSTANCE.dragStarted = false;
+//						break;
+//				}
+//			} else {
+//				int i = -1;
+//				for (SamplesImageData img : State.INSTANCE.samplesImages.values()) {
+//					i = img.rectangles.indexOf(rectangle);
+//					if (i >= 0) break;
+//				}
+//				final int index = i;
+//				switch ( State.INSTANCE.getRectangleSelection() ) {
+//					case NW:
+//							State.INSTANCE.samplesImages.values().forEach(
+//									img -> resizeNW(img.rectangles.get(index), image, dX, dY)
+//							);
+//						break;
+//					case NE:
+//							State.INSTANCE.samplesImages.values().forEach(
+//									img -> resizeNE(img.rectangles.get(index), image, dX, dY)
+//							);
+//						break;
+//					case SE:
+//							State.INSTANCE.samplesImages.values().forEach(
+//									img -> resizeSE(img.rectangles.get(index), image, dX, dY)
+//							);
+//						break;
+//					case SW:
+//							State.INSTANCE.samplesImages.values().forEach(
+//									img -> resizeSW(img.rectangles.get(index), image, dX, dY)
+//							);
+//						break;
+//					case W:
+//							State.INSTANCE.samplesImages.values().forEach(
+//									img -> resizeW(img.rectangles.get(index), image, dX, dY)
+//							);
+//						break;
+//					case E:
+//							State.INSTANCE.samplesImages.values().forEach(
+//									img -> resizeE(img.rectangles.get(index), image, dX, dY)
+//							);
+//						break;
+//					case S:
+//							State.INSTANCE.samplesImages.values().forEach(
+//									img -> resizeS(img.rectangles.get(index), image, dX, dY)
+//							);
+//						break;
+//					case N:
+//							State.INSTANCE.samplesImages.values().forEach(
+//									img -> resizeN(img.rectangles.get(index), image, dX, dY)
+//							);
+//						break;
+//					case DRAG:
+//							State.INSTANCE.samplesImages.values().forEach(
+//									img -> drag(img.rectangles.get(index), image, dX, dY)
+//							);
+//						break;
+//					default:
+//						State.INSTANCE.dragStarted = false;
+//						break;
+//				}
+//			}
+//			recalculateTranslates(samplesImageView.getScaleX());
+//		});
+//		samplesImageViewGroup.setOnMousePressed(event -> {
+//			if ( State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE ) {
+//				State.INSTANCE.x = event.getX();
+//				State.INSTANCE.y = event.getY();
+//			}
+//		});
+//		samplesImageViewGroup.setOnMouseReleased(event -> {
+//			if ( State.INSTANCE.getRectangleSelection() != State.RectangleSelection.NONE ) {
+//				State.INSTANCE.x = 0;
+//				State.INSTANCE.y = 0;
+//			}
+//		});
 
 	}
 
-	public void resizeNW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
-		System.out.println("Resize NW by: [" + deltaX + "," + deltaY + "]");
-		final double newWidth = rectangle.getWidth() - deltaX;
-		final double newHeight = rectangle.getHeight() - deltaY;
-
-		if ( !( Math.abs(rectangle.getX()) < 0.000001 ) || newWidth < rectangle.getWidth() ) {
-			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
-			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
-		}
-		if ( !( Math.abs(rectangle.getY()) < 0.000001 ) || newHeight < rectangle.getHeight() ) {
-			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
-			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
-		}
-	}
-
-	public void resizeSE( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
-		System.out.println("Resize SE by: [" + deltaX + "," + deltaY + "]");
-		final double newWidth = rectangle.getWidth() + deltaX;
-		final double newHeight = rectangle.getHeight() + deltaY;
-
-		if ( !( rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0 ) || newWidth < rectangle.getWidth() )
-			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
-		if ( !( rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0 ) || newHeight < rectangle.getHeight() )
-			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
-	}
-
-	public void resizeSW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
-		System.out.println("Resize SW by: [" + deltaX + "," + deltaY + "]");
-		final double newWidth = rectangle.getWidth() - deltaX;
-		final double newHeight = rectangle.getHeight() + deltaY;
-
-		if ( !( Math.abs(rectangle.getX()) < 0.000001 ) || newWidth < rectangle.getWidth() ) {
-			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
-			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
-		}
-		if ( !( rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0 ) || newHeight < rectangle.getHeight() )
-			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
-
-	}
-
-	public void resizeNE( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
-		System.out.println("Resize NE by: [" + deltaX + "," + deltaY + "]");
-		final double newWidth = rectangle.getWidth() + deltaX;
-		final double newHeight = rectangle.getHeight() - deltaY;
-
-		if ( !( Math.abs(rectangle.getY()) < 0.000001 ) || newHeight < rectangle.getHeight() ) {
-			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
-			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
-		}
-		if ( !( rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0 ) || newWidth < rectangle.getWidth() )
-			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
-	}
-
-	public void resizeE( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
-		System.out.println("Resize E by: [" + deltaX + "," + deltaY + "]");
-		final double newWidth = rectangle.getWidth() + deltaX;
-
-		if ( !( rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0 ) || newWidth < rectangle.getWidth() )
-			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
-	}
-
-	public void resizeW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
-		System.out.println("Resize W by: [" + deltaX + "," + deltaY + "]");
-		final double newWidth = rectangle.getWidth() - deltaX;
-
-		if ( !( Math.abs(rectangle.getX()) < 0.000001 ) || newWidth < rectangle.getWidth()) {
-			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
-			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
-		}
-	}
-
-	public void resizeS( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
-		System.out.println("Resize S by: [" + deltaX + "," + deltaY + "]");
-		final double newHeight = rectangle.getHeight() + deltaY;
-
-		if ( !( rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0 ) || newHeight < rectangle.getHeight() )
-			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
-
-	}
-
-	public void resizeN( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
-		System.out.println("Resize N by: [" + deltaX + "," + deltaY + "]");
-		final double newHeight = rectangle.getHeight() - deltaY;
-
-		if ( !( Math.abs(rectangle.getY()) < 0.000001 ) || newHeight < rectangle.getHeight() ) {
-			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
-			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
-		}
-	}
-
-	public void drag( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
-		if ( !( rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0 ) || deltaX < 0 )
-			rectangle.setX(Math.min(Math.max(rectangle.getX() + deltaX, 0), image.getWidth() - rectangle.getWidth()));
-		if ( !( rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0 ) || deltaY < 0 )
-			rectangle.setY(Math.min(Math.max(rectangle.getY() + deltaY, 0), image.getHeight() - rectangle.getHeight()));
-	}
+//	public void resizeNW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+//		System.out.println("Resize NW by: [" + deltaX + "," + deltaY + "]");
+//		final double newWidth = rectangle.getWidth() - deltaX;
+//		final double newHeight = rectangle.getHeight() - deltaY;
+//
+//		if ( !( Math.abs(rectangle.getX()) < 0.000001 ) || newWidth < rectangle.getWidth() ) {
+//			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
+//			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//		}
+//		if ( !( Math.abs(rectangle.getY()) < 0.000001 ) || newHeight < rectangle.getHeight() ) {
+//			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
+//			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
+//		}
+//	}
+//
+//	public void resizeSE( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+//		System.out.println("Resize SE by: [" + deltaX + "," + deltaY + "]");
+//		final double newWidth = rectangle.getWidth() + deltaX;
+//		final double newHeight = rectangle.getHeight() + deltaY;
+//
+//		if ( !( rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0 ) || newWidth < rectangle.getWidth() )
+//			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//		if ( !( rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0 ) || newHeight < rectangle.getHeight() )
+//			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
+//	}
+//
+//	public void resizeSW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+//		System.out.println("Resize SW by: [" + deltaX + "," + deltaY + "]");
+//		final double newWidth = rectangle.getWidth() - deltaX;
+//		final double newHeight = rectangle.getHeight() + deltaY;
+//
+//		if ( !( Math.abs(rectangle.getX()) < 0.000001 ) || newWidth < rectangle.getWidth() ) {
+//			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
+//			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//		}
+//		if ( !( rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0 ) || newHeight < rectangle.getHeight() )
+//			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
+//
+//	}
+//
+//	public void resizeNE( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+//		System.out.println("Resize NE by: [" + deltaX + "," + deltaY + "]");
+//		final double newWidth = rectangle.getWidth() + deltaX;
+//		final double newHeight = rectangle.getHeight() - deltaY;
+//
+//		if ( !( Math.abs(rectangle.getY()) < 0.000001 ) || newHeight < rectangle.getHeight() ) {
+//			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
+//			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
+//		}
+//		if ( !( rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0 ) || newWidth < rectangle.getWidth() )
+//			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//	}
+//
+//	public void resizeE( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+//		System.out.println("Resize E by: [" + deltaX + "," + deltaY + "]");
+//		final double newWidth = rectangle.getWidth() + deltaX;
+//
+//		if ( !( rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0 ) || newWidth < rectangle.getWidth() )
+//			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//	}
+//
+//	public void resizeW( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+//		System.out.println("Resize W by: [" + deltaX + "," + deltaY + "]");
+//		final double newWidth = rectangle.getWidth() - deltaX;
+//
+//		if ( !( Math.abs(rectangle.getX()) < 0.000001 ) || newWidth < rectangle.getWidth()) {
+//			rectangle.setX(Math.max(rectangle.getX() + deltaX, 0));
+//			rectangle.setWidth(Math.min(newWidth, image.getWidth()));
+//		}
+//	}
+//
+//	public void resizeS( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+//		System.out.println("Resize S by: [" + deltaX + "," + deltaY + "]");
+//		final double newHeight = rectangle.getHeight() + deltaY;
+//
+//		if ( !( rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0 ) || newHeight < rectangle.getHeight() )
+//			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
+//
+//	}
+//
+//	public void resizeN( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+//		System.out.println("Resize N by: [" + deltaX + "," + deltaY + "]");
+//		final double newHeight = rectangle.getHeight() - deltaY;
+//
+//		if ( !( Math.abs(rectangle.getY()) < 0.000001 ) || newHeight < rectangle.getHeight() ) {
+//			rectangle.setY(Math.max(rectangle.getY() + deltaY, 0));
+//			rectangle.setHeight(Math.min(newHeight, image.getHeight()));
+//		}
+//	}
+//
+//	public void drag( final RectangleOfInterest rectangle, final Image image, final double deltaX, final double deltaY ) {
+//		if ( !( rectangle.getX() + rectangle.getWidth() - image.getWidth() > 0 ) || deltaX < 0 )
+//			rectangle.setX(Math.min(Math.max(rectangle.getX() + deltaX, 0), image.getWidth() - rectangle.getWidth()));
+//		if ( !( rectangle.getY() + rectangle.getHeight() - image.getHeight() > 0 ) || deltaY < 0 )
+//			rectangle.setY(Math.min(Math.max(rectangle.getY() + deltaY, 0), image.getHeight() - rectangle.getHeight()));
+//	}
 
 	private void setTooltips() {
 		horizontalFlipButton.setTooltip(new Tooltip("Flip horizontally"));
