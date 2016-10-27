@@ -120,6 +120,8 @@ public class TransformImageData extends ImageData {
 		triangle.pointsProperty[5].bind(rectangles[2].yProperty().add(rectangles[2].heightProperty().divide(2.0)));
 
 		rectangles[0].sample.setOnMouseClicked(event -> {
+			if (event.isAltDown())
+				State.INSTANCE.zoom = true;
 			State.INSTANCE.selectedRectangle.set(rectangles[0]);
 			rectangles[0].setVisible(true);
 			rectangles[1].setVisible(false);
@@ -127,6 +129,8 @@ public class TransformImageData extends ImageData {
 			registerDoubleClickListener(event, 0);
 		});
 		rectangles[1].sample.setOnMouseClicked(event -> {
+			if (event.isAltDown())
+				State.INSTANCE.zoom = true;
 			State.INSTANCE.selectedRectangle.set(rectangles[1]);
 			rectangles[1].setVisible(true);
 			rectangles[0].setVisible(false);
@@ -134,6 +138,8 @@ public class TransformImageData extends ImageData {
 			registerDoubleClickListener(event, 1);
 		});
 		rectangles[2].sample.setOnMouseClicked(event -> {
+			if (event.isAltDown())
+				State.INSTANCE.zoom = true;
 			State.INSTANCE.selectedRectangle.set(rectangles[2]);
 			rectangles[2].setVisible(true);
 			rectangles[0].setVisible(false);
@@ -186,6 +192,7 @@ public class TransformImageData extends ImageData {
 				view.setViewport(rec2D);
 			});
 			view.setOnMouseClicked(event -> {
+				State.INSTANCE.zoom = true;
 				State.INSTANCE.selectedRectangle.set(r);
 				triangle.pointsProperty[index * 2].unbind();
 				triangle.pointsProperty[index * 2 + 1].unbind();
@@ -205,8 +212,10 @@ public class TransformImageData extends ImageData {
 	}
 
 	private void changeColor( final int oldX, final int oldY, final int newX, final int newY, final Color color ) {
-		writableImage.get().getPixelWriter().setColor(oldX, oldY,
-				this.image.getPixelReader().getColor(oldX, oldY));
+		if (oldX < image.getWidth() && oldY < image.getHeight())
+			writableImage.get().getPixelWriter().setColor(oldX, oldY,
+					this.image.getPixelReader().getColor(oldX, oldY));
+		if (newX < image.getWidth() && newY < image.getHeight())
 		writableImage.get().getPixelWriter().setColor(newX, newY, color);
 	}
 

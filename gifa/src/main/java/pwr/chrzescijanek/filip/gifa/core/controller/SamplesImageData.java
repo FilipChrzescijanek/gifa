@@ -46,6 +46,8 @@ public class SamplesImageData extends ImageData {
 		r.sample.setFill(Color.color(0.3, 0.3, 0.3, 0.5));
 		r.sample.setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
 		r.sample.setOnMouseClicked(event -> {
+			if (event.isAltDown())
+				State.INSTANCE.zoom = true;
 			State.INSTANCE.selectedSample.set(r);
 			rectangles.forEach(rec -> rec.setVisible(false));
 			r.setVisible(true);
@@ -77,6 +79,7 @@ public class SamplesImageData extends ImageData {
 			view.setViewport(rec2D);
 		});
 		view.setOnMouseClicked(event -> {
+			State.INSTANCE.zoom = true;
 			State.INSTANCE.selectedSample.set(r);
 		});
 		views.get(index).add(view);
@@ -105,6 +108,7 @@ public class SamplesImageData extends ImageData {
 			State.INSTANCE.samplesImages.values().forEach(
 														img ->  {
 															img.rectangles.get(index).resizeShape(deltaX, deltaY);
+															recalculateForSamplesImage(img.rectangles.get(index), img.rectangles.get(index).getScaleX());
 														}
 												);
 		}

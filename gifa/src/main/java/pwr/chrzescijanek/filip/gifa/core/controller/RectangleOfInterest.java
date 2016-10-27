@@ -42,7 +42,7 @@ public class RectangleOfInterest extends Rectangle {
 		});
 
 		sample.setOnMouseMoved(event -> {
-			if (State.INSTANCE.selectedRectangle.get() == this) {
+			if (State.INSTANCE.selectedRectangle.get() == this || State.INSTANCE.selectedSample.get() == this) {
 				double dX = event.getX() - this.getX();
 				double dY = event.getY() - this.getY();
 				if ( this.getWidth() - dX < 7 / this.getScaleX() && this.getHeight() - dY < 7 / this.getScaleY()
@@ -79,7 +79,7 @@ public class RectangleOfInterest extends Rectangle {
 		});
 
 		this.setOnMouseMoved(event -> {
-			if (State.INSTANCE.selectedRectangle.get() == this) {
+			if (State.INSTANCE.selectedRectangle.get() == this || State.INSTANCE.selectedSample.get() == this) {
 				double dX = event.getX() - this.getX();
 				double dY = event.getY() - this.getY();
 				if ( this.getWidth() - dX < 7 / this.getScaleX() && this.getHeight() - dY < 7 / this.getScaleY()
@@ -139,55 +139,10 @@ public class RectangleOfInterest extends Rectangle {
 			this.getScene().setCursor(Cursor.DEFAULT);
 		});
 
-//		sample.setOnMouseMoved(event -> {
-//			if (State.INSTANCE.selectedRectangle.get() == this || State.INSTANCE.selectedSample.get() == this) {
-//				double dX = event.getX() - this.getX();
-//				double dY = event.getY() - this.getY();
-//				if ( dX > 7.0 / this.getScaleX() && dY > 7.0 / this.getScaleY() && this.getWidth() - dX > 7.0 / this.getScaleX()
-//						&& this.getHeight() - dY > 7.0 / this.getScaleY() &&
-//						State.INSTANCE.getRectangleSelection() == State.RectangleSelection.NONE ) {
-//					State.INSTANCE.setRectangleSelection(State.RectangleSelection.DRAG);
-//					this.getScene().setCursor(Cursor.MOVE);
-//				}
-//			}
-//		});
-//		sample.setOnMouseExited(event -> {
-//			State.INSTANCE.setRectangleSelection(State.RectangleSelection.NONE);
-//			if (getScene() != null)
-//				getScene().setCursor(Cursor.DEFAULT);
-//		});
+
 	}
 
 	public void resizeShape(final double deltaX, final double deltaY) {
-//		double dX = event.getX() - this.getX();
-//		double dY = event.getY() - this.getY();
-
-//		if (this.getWidth() - dX < 7 / this.getScaleX() && this.getHeight() - dY < 7 / this.getScaleY()
-//				&& State.INSTANCE.getRectangleSelection() != State.RectangleSelection.DRAG) {
-//			this.getScene().setCursor(Cursor.CROSSHAIR);
-//			State.INSTANCE.setRectangleSelection(State.RectangleSelection.SE);
-//		} else if (dX < 7 / this.getScaleX() && dY < 7 / this.getScaleY()) {
-//			this.getScene().setCursor(Cursor.CROSSHAIR);
-//			State.INSTANCE.setRectangleSelection(State.RectangleSelection.NW);
-//		} else if (this.getWidth() - dX < 7 / this.getScaleX() && dY < 7 / this.getScaleY()) {
-//			this.getScene().setCursor(Cursor.CROSSHAIR);
-//			State.INSTANCE.setRectangleSelection(State.RectangleSelection.NE);
-//		} else if (dX < 7 / this.getScaleX() && this.getHeight() - dY < 7 / this.getScaleY()) {
-//			this.getScene().setCursor(Cursor.CROSSHAIR);
-//			State.INSTANCE.setRectangleSelection(State.RectangleSelection.SW);
-//		} else if (this.getWidth() - dX < 7 / this.getScaleX()) {
-//			this.getScene().setCursor(Cursor.H_RESIZE);
-//			State.INSTANCE.setRectangleSelection(State.RectangleSelection.E);
-//		} else if (dX < 7 / this.getScaleX()) {
-//			this.getScene().setCursor(Cursor.H_RESIZE);
-//			State.INSTANCE.setRectangleSelection(State.RectangleSelection.W);
-//		} else if (this.getHeight() - dY < 7 / this.getScaleY()) {
-//			this.getScene().setCursor(Cursor.V_RESIZE);
-//			State.INSTANCE.setRectangleSelection(State.RectangleSelection.S);
-//		} else if (dY < 7 / this.getScaleY()) {
-//			this.getScene().setCursor(Cursor.V_RESIZE);
-//			State.INSTANCE.setRectangleSelection(State.RectangleSelection.N);
-//		}
 
 		switch (State.INSTANCE.getRectangleSelection()) {
 			case NW:

@@ -42,6 +42,7 @@ public enum State {
 	public Map<String, Color > resultsSeriesColors = new HashMap<>();
 	public double x, y;
 	public boolean dragStarted;
+	public boolean zoom;
 
 	public void setRectangleSelection( final RectangleSelection rectangleSelection ) {
 		this.rectangleSelection = rectangleSelection;
