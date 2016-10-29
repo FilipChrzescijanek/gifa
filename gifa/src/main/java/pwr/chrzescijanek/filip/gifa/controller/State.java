@@ -1,15 +1,10 @@
-package pwr.chrzescijanek.filip.gifa.core.controller;
+package pwr.chrzescijanek.filip.gifa.controller;
 
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.IntegerBinding;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
@@ -18,9 +13,8 @@ import javafx.scene.paint.Color;
 import pwr.chrzescijanek.filip.gifa.core.util.Result;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static pwr.chrzescijanek.filip.gifa.core.controller.State.TriangleSelection.*;
+import static pwr.chrzescijanek.filip.gifa.controller.State.TriangleSelection.*;
 
 public enum State {
 

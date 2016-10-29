@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.core.controller;
+package pwr.chrzescijanek.filip.gifa.controller;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;

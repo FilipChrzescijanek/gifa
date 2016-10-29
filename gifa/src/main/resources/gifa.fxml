@@ -6,7 +6,7 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <GridPane fx:id="root" styleClass="root" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1"
-		  fx:controller="pwr.chrzescijanek.filip.gifa.core.controller.Controller">
+		  fx:controller="pwr.chrzescijanek.filip.gifa.controller.Controller">
 	<columnConstraints>
 		<ColumnConstraints hgrow="SOMETIMES"/>
 	</columnConstraints>
@@ -47,7 +47,7 @@
 			<MenuItem fx:id="navMenuAllCharts" onAction="#allCharts" text="_All charts" accelerator="Shortcut+Shift+A"/>
 		</Menu>
 		<Menu fx:id="runMenu" text="_Run">
-			<MenuItem fx:id="runMenuResultsButton" onAction="#getResults" text="_Get results" accelerator="F2"/>
+			<MenuItem fx:id="runMenuResultsButton" onAction="#calculateResults" text="_Get results" accelerator="F2"/>
 			<MenuItem fx:id="runMenuTransformButton" onAction="#transform" text="_Transform images" accelerator="F3"/>
 		</Menu>
 		<Menu fx:id="optionsMenu" text="_Options">
@@ -407,13 +407,13 @@
 										<Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAllFunctions"
 												text="Select all">
 											<HBox.margin>
-												<Insets left="5.0" right="20.0" />
+												<Insets left="5.0" right="15.0" />
 											</HBox.margin>
 										</Button>
 										<Button fx:id="deselectAllButton" mnemonicParsing="false"
 												onAction="#deselectAllFunctions" text="Deselect all">
 											<HBox.margin>
-												<Insets left="20.0" right="5.0" />
+												<Insets left="15.0" right="5.0" />
 											</HBox.margin>
 										</Button>
 									</HBox>
@@ -421,7 +421,7 @@
 							</BorderPane>
 						</Tab>
 					</TabPane>
-					<Button fx:id="resultsButton" mnemonicParsing="false" onAction="#getResults" text="Get results">
+					<Button fx:id="resultsButton" mnemonicParsing="false" onAction="#calculateResults" text="Get results">
 						<VBox.margin>
 							<Insets bottom="25.0" top="25.0"/>
 						</VBox.margin>

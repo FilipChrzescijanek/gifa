@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.core.controller;
+package pwr.chrzescijanek.filip.gifa.controller;
 
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.ObjectProperty;
@@ -14,10 +14,10 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Ellipse;
 import javafx.stage.Stage;
 import org.opencv.core.Mat;
 import pwr.chrzescijanek.filip.gifa.Main;
+import pwr.chrzescijanek.filip.gifa.view.FxmlView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -234,14 +234,9 @@ public class TransformImageData extends ImageData {
 		if(event.getButton().equals(MouseButton.PRIMARY)){
 			if(event.getClickCount() > 1){
 				final Stage newStage = new Stage();
-				final FXMLLoader loader = new FXMLLoader(getClass().getResource("/gifa-panel.fxml"));
-				Parent root = null;
-				try {
-					root = loader.load();
-				} catch ( IOException e ) {
-					e.printStackTrace();
-				}
-				final PanelController controller = loader.getController();
+				FxmlView appView = new FxmlView("/gifa-panel.fxml");
+				final Parent root = appView.getView();
+				final PanelController controller = (PanelController) appView.getViewModel();
 				controller.setIndex(i);
 				newStage.setTitle("gifa");
 				newStage.getIcons().clear();

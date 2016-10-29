@@ -6,7 +6,6 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.video.Video;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -14,19 +13,6 @@ import java.util.Arrays;
 public final class ImageUtils {
 
 	private ImageUtils() { }
-
-	public static boolean pixelIsShared( final boolean[] mask, final int arrayIndex, final int channels ) {
-		if ( arrayIndex % channels != 0 )
-			throw new IllegalArgumentException("Pixel index (arrayIndex / channels) is not an integer!");
-		return !mask[arrayIndex / channels];
-	}
-
-	public static boolean pixelIsShared( final boolean[] mask, final int row, final int column, final int width, final int channels ) {
-		int arrayIndex = column + row * width;
-		if ( arrayIndex % channels != 0 )
-			throw new IllegalArgumentException("Pixel index ((column + row * width) / channels) is not an integer!");
-		return !mask[arrayIndex / channels];
-	}
 
 	public static void convertType( final Mat[] images, final int type ) {
 		for ( final Mat m : images )
@@ -53,10 +39,6 @@ public final class ImageUtils {
 		return imageData;
 	}
 
-	public static boolean[] getMaskCopy( final boolean[] mask ) {
-		return Arrays.copyOf(mask, mask.length);
-	}
-
 	public static Mat[] getImagesCopy( final Mat[] images ) {
 		final Mat[] imagesCopy = new Mat[images.length];
 		for ( int i = 0; i < images.length; i++ ) {
@@ -71,28 +53,8 @@ public final class ImageUtils {
 		return imageCopy;
 	}
 
-	public static void performAffineTransformations( final Mat[] images, int interpolation) {
-		final int noOfImages = images.length;
-		for ( final Mat m : images )
-			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2BGRA);
-		for ( int i = 1; i < noOfImages; i++ ) {
-			images[i] = transformToSize(images[i], images[0]);
-			final Mat warpMat = Video.estimateRigidTransform(images[i], images[0], false);
-			Imgproc.warpAffine(images[i], images[i], warpMat, images[0].size(),
-					interpolation, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
-		}
-	}
-
-	public static Mat transformToSize( final Mat src, final Mat dst ) {
-		final MatOfPoint2f srcPoints = new MatOfPoint2f(new Point(0, 0), new Point(src.width(), 0), new Point(src.width(), src.height()));
-		final MatOfPoint2f dstPoints = new MatOfPoint2f(new Point(0, 0), new Point(dst.width(), 0), new Point(dst.width(), dst.height()));
-		final Mat warpMat = Imgproc.getAffineTransform(srcPoints, dstPoints);
-		final Mat result = new Mat(dst.size(), dst.type());
-		Imgproc.warpAffine(src, result, warpMat, result.size(), Imgproc.INTER_NEAREST, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
-		return result;
-	}
-
 	public static void performAffineTransformations( final Mat[] images, final MatOfPoint2f[] points, int interpolation) {
+		checkIfLengthsMatch(images, points);
 		final int noOfImages = images.length;
 		for ( final Mat m : images )
 			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2BGRA);
@@ -103,6 +65,13 @@ public final class ImageUtils {
 		}
 	}
 
+	private static void checkIfLengthsMatch( final Mat[] images, final MatOfPoint2f[] points ) {
+		if ( images.length != points.length )
+			throw new IllegalArgumentException(
+					String.format("Images count: %d does not match passed triangles count: %d!", images.length, points.length)
+			);
+	}
+
 	public static Image createImage( final byte[] data, final int width, final int height, final int noOfChannels, final PixelFormat format ) {
 		final WritableImage img = new WritableImage(width, height);
 		final PixelWriter pw = img.getPixelWriter();
@@ -111,16 +80,15 @@ public final class ImageUtils {
 		return img;
 	}
 
-	public static ResultImage getResultImage( final Mat[] images ) {
-		final int noOfImages = images.length;
+	public static Mat[] extractMeaningfulPixels( final Mat[] images ) {
+		checkIfChannelsMatch(images, 4);
+
 		final Mat referenceImage = images[0];
-
+		final int noOfChannels = 4;
+		final int noOfResultChannels = 3;
+		final int noOfImages = images.length;
 		final int noOfPixels = (int) referenceImage.total();
-		final int noOfChannels = referenceImage.channels();
 		final int noOfBytes = noOfPixels * noOfChannels;
-
-		final byte[] resultData = new byte[noOfBytes];
-		final boolean[] mask = new boolean[noOfPixels];
 
 		final byte[][] imagesData = getImagesData(images);
 
@@ -129,28 +97,46 @@ public final class ImageUtils {
 		final int redIndex = 2;
 		final int alphaIndex = 3;
 
+		final boolean[] mask = new boolean[noOfPixels];
+
 		for ( int i = 0; i < noOfImages; i++ ) {
 			final byte[] currentImage = imagesData[i];
-			for ( int j = 0; j < noOfBytes; j += 4 ) {
-				final int opacity = Byte.toUnsignedInt(currentImage[j + alphaIndex]);
-				final double constant = opacity / ( noOfImages * 255.0 );
-				int blue = Byte.toUnsignedInt(resultData[j + blueIndex]);
-				int green = Byte.toUnsignedInt(resultData[j + greenIndex]);
-				int red = Byte.toUnsignedInt(resultData[j + redIndex]);
-				blue += Byte.toUnsignedInt(currentImage[j + blueIndex]) * constant;
-				green += Byte.toUnsignedInt(currentImage[j + greenIndex]) * constant;
-				red += Byte.toUnsignedInt(currentImage[j + redIndex]) * constant;
-				resultData[j + blueIndex] = (byte) blue;
-				resultData[j + greenIndex] = (byte) green;
-				resultData[j + redIndex] = (byte) red;
-				resultData[j + alphaIndex] = -1;
-				if ( opacity == 0 ) {
-					final int pixel = j / 4;
-					mask[pixel] = true;
-				}
+			for ( int j = 0; j < noOfPixels; j++ ) {
+				mask[j] = Byte.toUnsignedInt(currentImage[j * noOfChannels + alphaIndex]) == 0;
 			}
 		}
 
-		return new ResultImage(resultData, mask, referenceImage.width(), referenceImage.height(), noOfChannels);
+		int resultLength = 0;
+		for (boolean b : mask) if (!b) resultLength++;
+
+		final Mat[] resultImages = new Mat[noOfImages];
+
+		for ( int i = 0; i < noOfImages; i++ ) {
+			final byte[] currentImage = imagesData[i];
+			final byte[] currentResultImage = new byte[resultLength * noOfResultChannels];
+			int index = 0;
+			for ( int j = 0; j < noOfBytes; j += noOfChannels ) {
+				if (!mask[j / noOfChannels]) {
+					currentResultImage[index + blueIndex] = currentImage[j + blueIndex];
+					currentResultImage[index + greenIndex] = currentImage[j + greenIndex];
+					currentResultImage[index + redIndex] = currentImage[j + redIndex];
+					index += noOfResultChannels;
+				}
+			}
+			final Mat current = new Mat(resultLength, 1, CvType.CV_8UC3);
+			current.put(0, 0, currentResultImage);
+			resultImages[i] = current;
+		}
+
+		return resultImages;
+	}
+
+	private static void checkIfChannelsMatch( final Mat[] images, final int channels ) {
+		for (Mat image : images)
+			if ( image.channels() != channels )
+				throw new IllegalArgumentException(
+						String.format("Received an image with number of channels equal to %d " +
+								"- all passed images pixels have to be in a BGRA format!", image.channels())
+				);
 	}
 }

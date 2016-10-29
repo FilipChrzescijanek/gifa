@@ -1,6 +1,5 @@
-package pwr.chrzescijanek.filip.gifa.core.controller;
+package pwr.chrzescijanek.filip.gifa.controller;
 
-import javafx.beans.binding.DoubleBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -14,10 +13,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Ellipse;
 import javafx.stage.Stage;
 import org.opencv.core.Mat;
 import pwr.chrzescijanek.filip.gifa.Main;
+import pwr.chrzescijanek.filip.gifa.view.FxmlView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -118,15 +117,9 @@ public class SamplesImageData extends ImageData {
 		if ( event.getButton().equals(MouseButton.PRIMARY) ) {
 			if ( event.getClickCount() > 1 ) {
 				final Stage newStage = new Stage();
-				newStage.initOwner(r.getScene().getWindow());
-				final FXMLLoader loader = new FXMLLoader(getClass().getResource("/gifa-samples-panel.fxml"));
-				Parent root = null;
-				try {
-					root = loader.load();
-				} catch ( IOException e ) {
-					e.printStackTrace();
-				}
-				final SamplesPanelController controller = loader.getController();
+				FxmlView appView = new FxmlView("/gifa-samples-panel.fxml");
+				final Parent root = appView.getView();
+				final SamplesPanelController controller = (SamplesPanelController) appView.getViewModel();
 				controller.setIndex(i);
 				newStage.setTitle("gifa");
 				newStage.getIcons().clear();

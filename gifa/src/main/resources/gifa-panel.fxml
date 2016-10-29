@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <BorderPane fx:id="root" styleClass="root" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1"
-			fx:controller="pwr.chrzescijanek.filip.gifa.core.controller.PanelController">
+			fx:controller="pwr.chrzescijanek.filip.gifa.controller.PanelController">
 	<top>
 		<HBox fx:id="panelHBox" alignment="CENTER">
 			<Label fx:id="panelInfo" text="Click on any image to move according triangle point."/>

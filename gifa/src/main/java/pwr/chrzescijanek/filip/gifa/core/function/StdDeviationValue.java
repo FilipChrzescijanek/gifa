@@ -5,14 +5,12 @@ import org.opencv.imgproc.Imgproc;
 import pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils;
 import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
 
-public enum StdDeviationValue implements EvaluationFunction {
-
-	INSTANCE;
+public final class StdDeviationValue implements EvaluationFunction {
 
 	@Override
-	public double[] evaluate( final Mat[] images, final boolean[] mask ) {
+	public double[] evaluate( final Mat[] images) {
 		ImageUtils.convertType(images, Imgproc.COLOR_RGB2HSV_FULL);
-		return FunctionUtils.calculateStdDeviations(images, mask, 2);
+		return FunctionUtils.calculateStdDeviations(images, 2);
 	}
 
 }

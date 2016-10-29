@@ -1,8 +1,7 @@
-package pwr.chrzescijanek.filip.gifa.core.controller;
+package pwr.chrzescijanek.filip.gifa.controller;
 
 import javafx.scene.image.Image;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 
 public class ImageData {
 

@@ -1,5 +1,6 @@
-package pwr.chrzescijanek.filip.gifa.core.controller;
+package pwr.chrzescijanek.filip.gifa.controller;
 
+import com.sun.javafx.UnmodifiableArrayList;
 import com.sun.javafx.charts.Legend;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -10,6 +11,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -28,12 +30,12 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import pwr.chrzescijanek.filip.gifa.Main;
+import pwr.chrzescijanek.filip.gifa.core.generator.DataGeneratorFactory;
 import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
 import pwr.chrzescijanek.filip.gifa.core.util.Result;
-import pwr.chrzescijanek.filip.gifa.generator.DataGenerator;
 
+import javax.inject.Inject;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -47,7 +49,7 @@ import java.util.stream.IntStream;
 
 import static org.opencv.imgproc.Imgproc.*;
 
-public class Controller {
+public class Controller implements Initializable {
 
 	//static strings
 	public static final String THEME_PREFERENCE_KEY = "gifa.theme";
@@ -56,6 +58,7 @@ public class Controller {
 	public static final String GRAPH_SELECTION_STYLE = "-fx-border-color: yellow; -fx-border-width: 3px;";
 
 	//fields
+	@Inject private DataGeneratorFactory factory;
 	public MenuItem fileMenuRemoveImage;
 	public MenuItem fileMenuClear;
 	public MenuItem editMenuVerticalFlip;
@@ -382,7 +385,7 @@ public class Controller {
 	private void applyTheme( final String theme ) {
 		Preferences prefs = Preferences.userNodeForPackage(Main.class);
 		prefs.put(THEME_PREFERENCE_KEY, theme);
-		ObservableList< String > stylesheets = root.getScene().getStylesheets();
+		ObservableList< String > stylesheets = root.getStylesheets();
 		stylesheets.clear();
 		stylesheets.add(theme);
 	}
@@ -424,7 +427,7 @@ public class Controller {
 		for ( Node chb : featuresVBox.getChildren() ) {
 			( (CheckBox) chb ).setSelected(false);
 		}
-		DataGenerator.INSTANCE.clearChosenFunctions();
+		factory.clearChosenFunctions();
 	}
 
 	@FXML
@@ -450,7 +453,7 @@ public class Controller {
 
 	private String createCsvContents() {
 		final Set< String > collect = State.INSTANCE.results.get().stream()
-				.flatMap(r -> r.results.keySet().stream()).collect(Collectors.toSet());
+				.flatMap(r -> r.getResults().keySet().stream()).collect(Collectors.toSet());
 		TreeSet< String > functions = new TreeSet<>(collect);
 		String csvContents = "Sample,Image";
 		for ( String s : functions )
@@ -458,12 +461,12 @@ public class Controller {
 		int no = 0;
 		for ( Result r : State.INSTANCE.results.get() ) {
 			no++;
-			Map< String, double[] > results = r.results;
-			final List< String > images = r.imageNames;
+			Map< String, UnmodifiableArrayList<Double> > results = r.getResults();
+			final List< String > images = r.getImageNames();
 			for ( int i = 0; i < images.size(); i++ ) {
 				csvContents += "\r\n" + no + ",\"" + images.get(i) + "\"";
 				for ( String s : functions ) {
-					final double[] doubles = results.get(s);
+					final double[] doubles = results.get(s).stream().mapToDouble(Double::doubleValue).toArray();
 					if ( doubles == null )
 						csvContents += ",";
 					else
@@ -514,7 +517,7 @@ public class Controller {
 	private void createHistoryCharts() {
 		List< LineChart< String, Number > > charts = new ArrayList<>();
 		List< Result > history = State.INSTANCE.results.get();
-		final Set< String > collect = history.stream().flatMap(r -> r.results.keySet().stream()).collect(Collectors.toSet());
+		final Set< String > collect = history.stream().flatMap(r -> r.getResults().keySet().stream()).collect(Collectors.toSet());
 		Set< String > functions = new TreeSet<>(collect);
 		for ( String s : functions ) {
 			final CategoryAxis xAxis = new CategoryAxis();
@@ -523,12 +526,12 @@ public class Controller {
 			lc.setTitle(s);
 			yAxis.setLabel("Value");
 			xAxis.setLabel("Sample");
-			List< double[] > results = history.stream().map(r -> r.results.get(s)).collect(Collectors.toList());
+			List< Double[] > results = history.stream().map(r -> r.getResults().get(s).toArray(new Double[]{})).collect(Collectors.toList());
 			List< Series > series = new ArrayList<>();
 			for ( int i = 0; i < results.size(); i++ ) {
-				double[] r = results.get(i);
+				double[] r = Arrays.stream(results.get(i)).mapToDouble(Double::doubleValue).toArray();
 				if ( r != null ) {
-					List< String > names = history.stream().findFirst().map(result -> result.imageNames).orElse(
+					List< String > names = history.stream().findFirst().map(result -> result.getImageNames()).orElse(
 						IntStream.range(1, r.length + 1).mapToObj(n -> "Series " + n).collect(Collectors.toList())
 					);
 					for ( int j = 0; j < r.length; j++ ) {
@@ -678,13 +681,13 @@ public class Controller {
 		}
 	}
 
-	private List< Series > generateSeries( final Map< String, double[] > results ) {
+	private List< Series > generateSeries( final Map< String, UnmodifiableArrayList<Double> > results ) {
 		List< Series > series = new ArrayList<>();
-		for ( Map.Entry< String, double[] > e : results.entrySet() ) {
+		for ( Map.Entry< String, UnmodifiableArrayList<Double> > e : results.entrySet() ) {
 			Series series1 = new Series();
 			series1.setName(e.getKey());
-			for ( int i = 0; i < e.getValue().length; i++ ) {
-				series1.getData().add(new XYChart.Data(samplesImageList.getItems().get(i), e.getValue()[i]));
+			for ( int i = 0; i < e.getValue().size(); i++ ) {
+				series1.getData().add(new XYChart.Data(samplesImageList.getItems().get(i), e.getValue().get(i)));
 			}
 			series.add(series1);
 		}
@@ -698,7 +701,7 @@ public class Controller {
 		for ( Node chb : featuresVBox.getChildren() ) {
 			( (CheckBox) chb ).setSelected(true);
 		}
-		DataGenerator.INSTANCE.chooseAllAvailableFunctions();
+		factory.chooseAllAvailableFunctions();
 	}
 
 	private void addNumberTextFieldListener( TextField textField ) {
@@ -709,12 +712,12 @@ public class Controller {
 	}
 
 	private void createCheckBoxes() {
-		for ( String s : DataGenerator.INSTANCE.getAllAvailableFunctions() ) {
+		for ( String s : factory.getAvailableFunctionsNames() ) {
 			final CheckBox checkBox = new CheckBox(s);
 			featuresVBox.getChildren().add(checkBox);
 			checkBox.selectedProperty().addListener(( observable, oldValue, newValue ) -> {
-				if ( newValue ) DataGenerator.INSTANCE.chooseFunction(s);
-				else DataGenerator.INSTANCE.deselectFunction(s);
+				if ( newValue ) factory.chooseFunction(s);
+				else factory.deselectFunction(s);
 			});
 			checkBox.setSelected(true);
 		}
@@ -863,7 +866,7 @@ public class Controller {
 	}
 
 	@FXML
-	void getResults( ActionEvent event ) {
+	void calculateResults() {
 		State.INSTANCE.setNoSelection();
 		samplesImageViewGroup.getScene().setCursor(Cursor.DEFAULT);
 		doSample();
@@ -893,10 +896,9 @@ public class Controller {
 //						Imgcodecs.imwrite("img" + i + ".png", images[i]);
 						i++;
 					}
-					final Result result = DataGenerator.INSTANCE.generateData(ImageUtils.getImagesCopy(images));
-					result.imageNames.addAll(samplesImageList.getItems());
+					final Result result = new Result(samplesImageList.getItems(), factory.createGenerator().generateData(ImageUtils.getImagesCopy(images)));
 					State.INSTANCE.results.get().add(result);
-					State.INSTANCE.series.get().add(generateSeries(result.results));
+					State.INSTANCE.series.get().add(generateSeries(result.getResults()));
 					State.INSTANCE.charts.get().add(new ArrayList<>());
 					State.INSTANCE.seriesColors.add(new HashMap<>());
 					createCharts(j);
@@ -1015,8 +1017,18 @@ public class Controller {
 		State.INSTANCE.imageViews.clear();
 	}
 
-	@FXML
-	void initialize() {
+	@Override
+	public void initialize( final URL location, final ResourceBundle resources ) {
+
+		Preferences prefs = Preferences.userNodeForPackage(Main.class);
+		String s = prefs.get(Controller.THEME_PREFERENCE_KEY, Controller.THEME_LIGHT);
+		if (s.equals(Controller.THEME_LIGHT)) {
+			getThemeToggleGroup().selectToggle(getLightThemeToggle());
+			root.getStylesheets().add(Controller.THEME_LIGHT);
+		} else {
+			getThemeToggleGroup().selectToggle(getDarkThemeToggle());
+			root.getStylesheets().add(Controller.THEME_DARK);
+		}
 		//assertions
 		assert root != null : "fx:id=\"root\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert menuBar != null : "fx:id=\"menuBar\" was not injected: check your FXML file 'gifa-gui.fxml'.";
@@ -1614,7 +1626,7 @@ public class Controller {
 				points[i] = State.INSTANCE.transformImages.get(key).triangle.getMatOfPoints();
 				i++;
 			}
-			final SamplesImageData[] result = DataGenerator.INSTANCE.transform(ImageUtils.getImagesCopy(images), points, interpolation);
+			final SamplesImageData[] result = transform(ImageUtils.getImagesCopy(images), points, interpolation);
 			samplesImageList.getItems().addAll(transformImageList.getItems());
 			for ( int j = 0; j < result.length; j++ )
 				State.INSTANCE.samplesImages.put(samplesImageList.getItems().get(j), result[j]);
@@ -1623,6 +1635,20 @@ public class Controller {
 		} catch ( CvException e ) {
 			showAlert("Transforming transformImages failed! Please check selected points.");
 		}
+	}
+
+	private SamplesImageData[] transform( final Mat[] images, final MatOfPoint2f[] points, int interpolation) {
+		if ( images.length != points.length )
+			throw new IllegalArgumentException("Images count does not match passed vertices count!");
+		ImageUtils.performAffineTransformations(images, points, interpolation);
+		return Arrays.stream(images)
+				.map(i ->
+						new SamplesImageData(
+								ImageUtils.createImage(
+										ImageUtils.getImageData(i), i.width(), i.height(), i.channels(), PixelFormat.getByteBgraPreInstance()
+								), i
+						)
+				).toArray(SamplesImageData[]::new);
 	}
 
 	public void deleteSample( ActionEvent actionEvent ) {
@@ -1650,4 +1676,5 @@ public class Controller {
 	public void setSelectMode( ActionEvent actionEvent ) {
 		if (!selectRadioButton.isSelected()) selectRadioButton.setSelected(true);
 	}
+
 }

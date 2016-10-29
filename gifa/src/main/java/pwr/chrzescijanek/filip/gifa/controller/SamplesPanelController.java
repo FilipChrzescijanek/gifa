@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.core.controller;
+package pwr.chrzescijanek.filip.gifa.controller;
 
 import javafx.beans.binding.DoubleBinding;
 import javafx.fxml.FXML;
@@ -11,15 +11,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Ellipse;
+import pwr.chrzescijanek.filip.gifa.core.generator.DataGeneratorFactory;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PanelController {
+public class SamplesPanelController {
 
 	public BorderPane root;
 	public HBox panelHBox;
-	public Label panelInfo;
 	public HBox panelControls;
 	public Label panelColumnsLabel;
 	public TextField panelColumnsTextField;
@@ -31,7 +32,6 @@ public class PanelController {
 	void initialize() {
 		assert root != null : "fx:id=\"root\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert panelHBox != null : "fx:id=\"panelHBox\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert panelInfo != null : "fx:id=\"panelInfo\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert panelControls != null : "fx:id=\"panelControls\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert panelColumnsLabel != null : "fx:id=\"panelColumnsLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert panelColumnsTextField != null : "fx:id=\"panelColumnsTextField\" was not injected: check your FXML file 'gifa-gui.fxml'.";
@@ -46,12 +46,12 @@ public class PanelController {
 		root.layoutBoundsProperty().addListener(( observable, oldValue, newValue ) -> placeImages());
 	}
 
-	public void setIndex( int index ) {
+	public void setIndex(int index) {
 		this.index = index;
 	}
 
 	public void placeImages() {
-		List< ImageView > imageViews = State.INSTANCE.imageViews.get(index);
+		List< ImageView > imageViews = State.INSTANCE.sampleImageViews.get(index);
 		if ( imageViews != null ) {
 			panelGrid.getChildren().clear();
 			panelGrid.getColumnConstraints().clear();
@@ -65,7 +65,7 @@ public class PanelController {
 					columnConstraints.setHalignment(HPos.CENTER);
 					panelGrid.getColumnConstraints().add(columnConstraints);
 				}
-				final int noOfRows = imageViews.size() / noOfColumns + ( imageViews.size() % noOfColumns == 0 ? 0 : 1 );
+				final int noOfRows = imageViews.size() / noOfColumns + (imageViews.size() % noOfColumns == 0 ? 0 : 1);
 				for ( int i = 0; i < noOfRows; i++ ) {
 					final RowConstraints rowConstraints = new RowConstraints();
 					rowConstraints.setPercentHeight(100.0 / noOfRows);
@@ -122,6 +122,5 @@ public class PanelController {
 			}
 		}
 	}
-
 
 }

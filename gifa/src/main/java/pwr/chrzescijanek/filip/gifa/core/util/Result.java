@@ -1,21 +1,25 @@
 package pwr.chrzescijanek.filip.gifa.core.util;
 
-import javafx.scene.image.Image;
+import com.sun.javafx.UnmodifiableArrayList;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 public final class Result {
 
-	public final List<String> imageNames = new ArrayList<>();
-	public final Map<String, double[]> results = new TreeMap<>();
-//	public final Image resultImage;
+	private final List<String> imageNames;
+	private final Map<String, UnmodifiableArrayList<Double>> results;
 
-//	public Result( final Image resultImage ) {this.resultImage = resultImage;}
-
-	public void putResults(Map<String, double[]> results) {
-		this.results.putAll(results);
+	public Result( final List< String > imageNames, final Map< String, UnmodifiableArrayList< Double > > results ) {
+		this.imageNames = Collections.unmodifiableList(imageNames);
+		this.results = Collections.unmodifiableMap(results);
 	}
+
+	public List< String > getImageNames() {
+		return imageNames;
+	}
+
+	public Map< String, UnmodifiableArrayList< Double > > getResults() { return results; }
+
 }

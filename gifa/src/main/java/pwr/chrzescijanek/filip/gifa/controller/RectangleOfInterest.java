@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.core.controller;
+package pwr.chrzescijanek.filip.gifa.controller;
 
 import javafx.scene.Cursor;
 import javafx.scene.image.Image;

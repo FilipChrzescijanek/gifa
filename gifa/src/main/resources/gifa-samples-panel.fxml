@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <BorderPane fx:id="root" styleClass="root" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1"
-			fx:controller="pwr.chrzescijanek.filip.gifa.core.controller.SamplesPanelController">
+			fx:controller="pwr.chrzescijanek.filip.gifa.controller.SamplesPanelController">
 	<bottom>
 		<HBox fx:id="panelControls" alignment="CENTER" minHeight="40.0">
 			<Label fx:id="panelColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns">
