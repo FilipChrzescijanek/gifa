@@ -27,11 +27,11 @@ public class TransformImageData extends ImageData {
 
 	private void initializeVertexSamples( final Image image, final SampleFactory sampleFactory ) {
 		vertexSamples[0] = sampleFactory.createNewVertexSample(
-				this, image.getWidth() * 2 / 5, image.getHeight() / 5, image.getWidth() / 5, image.getHeight() / 5);
+				this, image.getWidth() * 1 / 2, image.getHeight() * 3 / 10, image.getWidth() / 10, image.getHeight() / 10);
 		vertexSamples[1] = sampleFactory.createNewVertexSample(
-				this, image.getWidth() * 1 / 5, image.getHeight() * 3 / 5, image.getWidth() / 5, image.getHeight() / 5);
+				this, image.getWidth() * 3 / 10, image.getHeight() * 7 / 10, image.getWidth() / 10, image.getHeight() / 10);
 		vertexSamples[2] = sampleFactory.createNewVertexSample(
-				this, image.getWidth() * 3 / 5, image.getHeight() * 3 / 5, image.getWidth() / 5, image.getHeight() / 5);
+				this, image.getWidth() * 7 / 10, image.getHeight() * 7 / 10, image.getWidth() / 10, image.getHeight() / 10);
 	}
 
 	private void initializeTriangle() {
@@ -47,11 +47,11 @@ public class TransformImageData extends ImageData {
 	}
 
 	private void bindPoints() {
-		triangle.pointsProperty[0].bind(vertexSamples[0].xProperty().add(vertexSamples[0].widthProperty().divide(2.0)));
-		triangle.pointsProperty[1].bind(vertexSamples[0].yProperty().add(vertexSamples[0].heightProperty().divide(2.0)));
-		triangle.pointsProperty[2].bind(vertexSamples[1].xProperty().add(vertexSamples[1].widthProperty().divide(2.0)));
-		triangle.pointsProperty[3].bind(vertexSamples[1].yProperty().add(vertexSamples[1].heightProperty().divide(2.0)));
-		triangle.pointsProperty[4].bind(vertexSamples[2].xProperty().add(vertexSamples[2].widthProperty().divide(2.0)));
-		triangle.pointsProperty[5].bind(vertexSamples[2].yProperty().add(vertexSamples[2].heightProperty().divide(2.0)));
+		triangle.pointsProperty[0].bind(vertexSamples[0].centerXProperty());
+		triangle.pointsProperty[1].bind(vertexSamples[0].centerYProperty());
+		triangle.pointsProperty[2].bind(vertexSamples[1].centerXProperty());
+		triangle.pointsProperty[3].bind(vertexSamples[1].centerYProperty());
+		triangle.pointsProperty[4].bind(vertexSamples[2].centerXProperty());
+		triangle.pointsProperty[5].bind(vertexSamples[2].centerYProperty());
 	}
 }

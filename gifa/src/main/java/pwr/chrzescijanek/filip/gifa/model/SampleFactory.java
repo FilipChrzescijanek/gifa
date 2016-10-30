@@ -15,16 +15,16 @@ public class SampleFactory {
 		this.panelViewFactory = panelViewFactory;
 		this.state = SharedState.INSTANCE; }
 
-	public Sample createNewSample( SamplesImageData imageData, double x, double y, double width, double height ) {
+	public Sample createNewSample( SamplesImageData imageData, double x, double y, double radiusX, double radiusY ) {
 		final Image image = imageData.image;
-		Sample sample = new Sample(imageData, x, y, width, height, state, panelViewFactory, image.getWidth(), image.getHeight());
+		Sample sample = new Sample(imageData, x, y, radiusX, radiusY, state, panelViewFactory, image.getWidth(), image.getHeight());
 		imageData.add(sample);
 		return sample;
 	}
 
-	public VertexSample createNewVertexSample( TransformImageData imageData, double x, double y, double width, double height ) {
+	public VertexSample createNewVertexSample( TransformImageData imageData, double x, double y, double radiusX, double radiusY ) {
 		final Image image = imageData.image;
-		VertexSample sample = new VertexSample(imageData, x, y, width, height, state, panelViewFactory, image.getWidth(), image.getHeight());
+		VertexSample sample = new VertexSample(imageData, x, y, radiusX, radiusY, state, panelViewFactory, image.getWidth(), image.getHeight());
 		return sample;
 	}
 }

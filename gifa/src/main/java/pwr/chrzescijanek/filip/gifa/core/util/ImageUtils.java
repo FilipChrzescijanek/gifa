@@ -7,11 +7,14 @@ import javafx.scene.image.WritableImage;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Scalar;
 
+import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 
+import static org.opencv.imgcodecs.Imgcodecs.imencode;
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2BGRA;
 import static org.opencv.imgproc.Imgproc.cvtColor;
 import static org.opencv.imgproc.Imgproc.getAffineTransform;
@@ -77,6 +80,12 @@ public final class ImageUtils {
 			throw new IllegalArgumentException(
 					String.format("Images count: %d does not match passed triangles count: %d", images.length, points.length)
 			);
+	}
+
+	public static Image createImage( final Mat image ) {
+		MatOfByte byteMat = new MatOfByte();
+		imencode(".png", image, byteMat);
+		return new Image(new ByteArrayInputStream(byteMat.toArray()));
 	}
 
 	public static Image createImage( final byte[] data, final int width, final int height, final int noOfChannels, final PixelFormat format ) {

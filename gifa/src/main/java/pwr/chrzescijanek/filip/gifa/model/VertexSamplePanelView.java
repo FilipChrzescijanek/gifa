@@ -9,11 +9,20 @@ public class VertexSamplePanelView extends PanelView {
 
 	VertexSamplePanelView( final Image image, final VertexSample sample ) {
 		super(image, sample);
+	}
+
+	@Override
+	void setOnMouseClicked() {
 		setOnMouseClicked(event -> {
 			SharedState.INSTANCE.zoom = true;
 			SharedState.INSTANCE.selectedRectangle.set(this.sample);
 			bindToNewPosition(event);
 		});
+	}
+
+	@Override
+	void setOnMouseDragged() {
+		setOnMouseDragged(this::moveSampleCenter);
 	}
 
 	private void bindToNewPosition( final MouseEvent event ) {
@@ -29,14 +38,13 @@ public class VertexSamplePanelView extends PanelView {
 
 	private DoubleBinding getWidthBinding( final MouseEvent event ) {
 		return Math.abs(event.getX()) < 0.00001 ?
-					sample.xProperty().add(0)
-					: sample.xProperty().add(sample.widthProperty().divide(getBoundsInParent().getWidth() / event.getX()));
+				sample.sampleArea.xProperty().add(0)
+				: sample.sampleArea.xProperty().add(sample.sampleArea.widthProperty().divide(getBoundsInParent().getWidth() / event.getX()));
 	}
 
 	private DoubleBinding getHeightBinding( final MouseEvent event ) {
 		return Math.abs(event.getY()) < 0.00001 ?
-				sample.yProperty().add(0)
-				: sample.yProperty().add(sample.heightProperty().divide(getBoundsInParent().getHeight() / event.getY()));
+				sample.sampleArea.yProperty().add(0)
+				: sample.sampleArea.yProperty().add(sample.sampleArea.heightProperty().divide(getBoundsInParent().getHeight() / event.getY()));
 	}
-
 }

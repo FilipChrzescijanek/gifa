@@ -23,18 +23,18 @@ import static javafx.scene.Cursor.SE_RESIZE;
 import static javafx.scene.Cursor.SW_RESIZE;
 import static javafx.scene.Cursor.S_RESIZE;
 import static javafx.scene.Cursor.W_RESIZE;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.DRAG;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.E;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.N;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.NE;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.NIL;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.NW;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.S;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.SE;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.SW;
-import static pwr.chrzescijanek.filip.gifa.controller.SharedState.RectangleSelection.W;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.DRAG;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.E;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.N;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.NE;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.NIL;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.NW;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.S;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.SE;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.SW;
+import static pwr.chrzescijanek.filip.gifa.controller.SharedState.SampleSelection.W;
 
-public abstract class BaseSample extends Rectangle {
+public abstract class BaseSample extends Ellipse {
 
 	static final String STROKE_STYLE = "-fx-stroke-type: inside;\n" +
 			"    -fx-stroke-width: 2;\n" +
@@ -42,7 +42,7 @@ public abstract class BaseSample extends Rectangle {
 			"    -fx-stroke-dash-offset: 6;\n" +
 			"    -fx-stroke-line-cap: butt;";
 
-	public final Ellipse sampleArea = new Ellipse();
+	public final Rectangle sampleArea = new Rectangle();
 
 	final ImageData imageData;
 	final SharedState state;
@@ -53,10 +53,10 @@ public abstract class BaseSample extends Rectangle {
 	private double startX;
 	private double startY;
 
-	BaseSample( final ImageData imageData, double x, double y, double width, double height,
+	BaseSample( final ImageData imageData, double x, double y, double radiusX, double radiusY,
 				final SharedState state, final PanelViewFactory panelViewFactory,
 				final double xBound, final double yBound ) {
-		super(x, y, width, height);
+		super(x, y, radiusX, radiusY);
 		this.imageData = imageData;
 		this.state = state;
 		this.panelViewFactory = panelViewFactory;
@@ -68,11 +68,11 @@ public abstract class BaseSample extends Rectangle {
 		bindProperties(this.imageData);
 	}
 
-	public void setRectangle( double x, double y, double width, double height, final double xBound, final double yBound ) {
-		setX(x);
-		setY(y);
-		setWidth(width);
-		setHeight(height);
+	public void setSample( double x, double y, double radiusX, double radiusY, final double xBound, final double yBound ) {
+		setCenterX(x);
+		setCenterY(y);
+		setRadiusX(radiusX);
+		setRadiusY(radiusY);
 		this.xBound = xBound;
 		this.yBound = yBound;
 		recalculateTranslates();
@@ -83,6 +83,11 @@ public abstract class BaseSample extends Rectangle {
 	abstract void handleDoubleClick( final MouseEvent event );
 
 	abstract int getIndexOf();
+
+	void moveCenterBy( double dX, double dY) {
+		drag(dX, dY);
+		recalculateTranslates();
+	}
 
 	void setStartPosition( final MouseEvent event ) {
 		startX = event.getX();
@@ -117,10 +122,10 @@ public abstract class BaseSample extends Rectangle {
 	}
 
 	private void bindToBounds() {
-		sampleArea.centerXProperty().bind(this.xProperty().add(this.widthProperty().divide(2.0)));
-		sampleArea.centerYProperty().bind(this.yProperty().add(this.heightProperty().divide(2.0)));
-		sampleArea.radiusXProperty().bind(this.widthProperty().divide(2.0));
-		sampleArea.radiusYProperty().bind(this.heightProperty().divide(2.0));
+		sampleArea.xProperty().bind(this.centerXProperty().subtract(this.radiusXProperty()));
+		sampleArea.yProperty().bind(this.centerYProperty().subtract(this.radiusYProperty()));
+		sampleArea.widthProperty().bind(this.radiusXProperty().multiply(2.0));
+		sampleArea.heightProperty().bind(this.radiusYProperty().multiply(2.0));
 		sampleArea.translateXProperty().bind(this.translateXProperty());
 		sampleArea.translateYProperty().bind(this.translateYProperty());
 		sampleArea.scaleXProperty().bind(this.scaleXProperty());
@@ -141,16 +146,13 @@ public abstract class BaseSample extends Rectangle {
 	private void setStyle() {
 		setStyle(STROKE_STYLE);
 		sampleArea.setStyle(STROKE_STYLE);
-		setFill(Color.color(0.0, 0.0, 0.0, 0.0));
-		setStroke(Color.color(1.0, 1.0, 1.0, 0.9));
-		sampleArea.setFill(Color.color(0.3, 0.3, 0.3, 0.5));
-		sampleArea.setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
+		setFill(Color.color(0.3, 0.3, 0.3, 0.5));
+		setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
+		sampleArea.setFill(Color.color(0.0, 0.0, 0.0, 0.0));
+		sampleArea.setStroke(Color.color(1.0, 1.0, 1.0, 0.9));
 	}
 
-	private void bindProperties( final ImageData imageData ) {
-		scaleXProperty().bind(imageData.scale);
-		setVisible(false);
-	}
+	abstract void bindProperties( final ImageData imageData );
 
 	private void onScaleChanged() {
 		scaleXProperty().addListener(( observable, oldValue, newValue ) -> {
@@ -165,33 +167,33 @@ public abstract class BaseSample extends Rectangle {
 	}
 
 	private void onMouseClicked() {
-		sampleArea.setOnMouseClicked(event -> {
+		setOnMouseClicked(event -> {
 			handleSingleClick(event);
 			handleDoubleClick(event);
 		});
 	}
 
 	private void onMouseMoved() {
-		sampleArea.setOnMouseMoved(this::checkForResizeOrDrag);
-		this.setOnMouseMoved(this::checkForResize);
+		sampleArea.setOnMouseMoved(this::checkForResize);
+		this.setOnMouseMoved(this::checkForResizeOrDrag);
 	}
 
 	private void checkForResizeOrDrag( final MouseEvent event ) {
 		if ( isSelected() ) {
-			double dX = event.getX() - getX();
-			double dY = event.getY() - getY();
+			double dX = event.getX() - sampleArea.getX();
+			double dY = event.getY() - sampleArea.getY();
 			if ( !checkForResize(dX, dY) && dX > 14 / getScaleX() && dY > 14 / getScaleY()
-					&& getWidth() - dX > 14 / getScaleX() && getHeight() - dY > 14 / getScaleY() ) {
+					&& sampleArea.getWidth() - dX > 14 / getScaleX() && sampleArea.getHeight() - dY > 14 / getScaleY() ) {
 				getScene().setCursor(MOVE);
-				state.setRectangleSelection(DRAG);
+				state.setSampleSelection(DRAG);
 			}
 		}
 	}
 
 	private void checkForResize( final MouseEvent event ) {
 		if ( isSelected() ) {
-			double dX = event.getX() - getX();
-			double dY = event.getY() - getY();
+			double dX = event.getX() - sampleArea.getX();
+			double dY = event.getY() - sampleArea.getY();
 			checkForResize(dX, dY);
 		}
 	}
@@ -199,31 +201,34 @@ public abstract class BaseSample extends Rectangle {
 	private boolean isSelected() {return state.selectedRectangle.get() == this || state.selectedSample.get() == this;}
 
 	private boolean checkForResize( final double dX, final double dY ) {
-		if ( getWidth() - dX < 7 / getScaleX() && getHeight() - dY < 7 / getScaleY() ) {
+		if ( sampleArea.getWidth() - dX < 7 / getScaleX() && sampleArea.getHeight() - dY < 7 / getScaleY() ) {
 			getScene().setCursor(SE_RESIZE);
-			state.setRectangleSelection(SE);
+			state.setSampleSelection(SE);
 		} else if ( dX < 7 / getScaleX() && dY < 7 / getScaleY() ) {
 			getScene().setCursor(NW_RESIZE);
-			state.setRectangleSelection(NW);
-		} else if ( getWidth() - dX < 7 / getScaleX() && dY < 7 / getScaleY() ) {
+			state.setSampleSelection(NW);
+		} else if ( sampleArea.getWidth() - dX < 7 / getScaleX() && dY < 7 / getScaleY() ) {
 			getScene().setCursor(NE_RESIZE);
-			state.setRectangleSelection(NE);
-		} else if ( dX < 7 / getScaleX() && getHeight() - dY < 7 / getScaleY() ) {
+			state.setSampleSelection(NE);
+		} else if ( dX < 7 / getScaleX() && sampleArea.getHeight() - dY < 7 / getScaleY() ) {
 			getScene().setCursor(SW_RESIZE);
-			state.setRectangleSelection(SW);
-		} else if ( getWidth() - dX < 7 / getScaleX() ) {
+			state.setSampleSelection(SW);
+		} else if ( sampleArea.getWidth() - dX < 7 / getScaleX() ) {
 			getScene().setCursor(E_RESIZE);
-			state.setRectangleSelection(E);
+			state.setSampleSelection(E);
 		} else if ( dX < 7 / getScaleX() ) {
 			getScene().setCursor(W_RESIZE);
-			state.setRectangleSelection(W);
-		} else if ( getHeight() - dY < 7 / getScaleY() ) {
+			state.setSampleSelection(W);
+		} else if ( sampleArea.getHeight() - dY < 7 / getScaleY() ) {
 			getScene().setCursor(S_RESIZE);
-			state.setRectangleSelection(S);
+			state.setSampleSelection(S);
 		} else if ( dY < 7 / getScaleY() ) {
 			getScene().setCursor(N_RESIZE);
-			state.setRectangleSelection(N);
-		} else return false;
+			state.setSampleSelection(N);
+		} else {
+			setNoSelection();
+			return false;
+		}
 		return true;
 	}
 
@@ -234,9 +239,9 @@ public abstract class BaseSample extends Rectangle {
 
 	private void recalculateTranslates() {
 		setTranslateX(( xBound * 0.5 * ( getScaleX() - 1.0 ) ) -
-				( xBound * 0.5 - ( getX() + getWidth() * 0.5 ) ) * ( getScaleX() - 1.0 ));
+				( xBound * 0.5 - getCenterX() ) * ( getScaleX() - 1.0 ));
 		setTranslateY(( yBound * 0.5 * ( getScaleY() - 1.0 ) ) -
-				( yBound * 0.5 - ( getY() + getHeight() * 0.5 ) ) * ( getScaleY() - 1.0 ));
+				( yBound * 0.5 - getCenterY() ) * ( getScaleY() - 1.0 ));
 	}
 
 	private void onDragExited() {
@@ -250,7 +255,7 @@ public abstract class BaseSample extends Rectangle {
 	}
 
 	private void setNoSelection() {
-		state.setRectangleSelection(NIL);
+		state.setSampleSelection(NIL);
 		getScene().setCursor(DEFAULT);
 	}
 
@@ -264,7 +269,7 @@ public abstract class BaseSample extends Rectangle {
 		final double deltaY = event.getY() - startY;
 		startX = event.getX();
 		startY = event.getY();
-		switch ( state.getRectangleSelection() ) {
+		switch ( state.getSampleSelection() ) {
 			case NW:
 				resizeNW(deltaX, deltaY);
 				break;
@@ -298,88 +303,94 @@ public abstract class BaseSample extends Rectangle {
 	}
 
 	private void resizeNW( final double deltaX, final double deltaY ) {
-		final double newWidth = getWidth() - deltaX;
-		final double newHeight = getHeight() - deltaY;
+		final double newWidth = sampleArea.getWidth() - deltaX;
+		final double newHeight = sampleArea.getHeight() - deltaY;
 
-		if ( !( getX() + deltaX < 0 || getY() + deltaY < 0 ) ) {
-			setX(newWidth > 6 ? getX() + deltaX : getX());
-			setY(newHeight > 6 ? getY() + deltaY : getY());
-			setWidth(newWidth > 6 ? newWidth : 6);
-			setHeight(newHeight > 6 ? newHeight : 6);
+		if ( !( sampleArea.getX() + deltaX < 0 || sampleArea.getY() + deltaY < 0 ) ) {
+			setCenterX(newWidth > 6 ? getCenterX() + deltaX / 2.0 : getCenterX());
+			setRadiusX(newWidth > 6 ? newWidth / 2.0 : 3.0);
+			setCenterY(newHeight > 6 ? getCenterY() + deltaY / 2.0 : getCenterY());
+			setRadiusY(newHeight > 6 ? newHeight / 2.0 : 3.0);
 		}
 	}
 
 	private void resizeSE( final double deltaX, final double deltaY ) {
-		final double newWidth = getWidth() + deltaX;
-		final double newHeight = getHeight() + deltaY;
+		final double newWidth = sampleArea.getWidth() + deltaX;
+		final double newHeight = sampleArea.getHeight() + deltaY;
 
-		if ( !( newWidth + getX() + deltaX > xBound || newHeight + getY() + deltaY > yBound ) ) {
-			setWidth(newWidth > 6 ? newWidth : 6);
-			setHeight(newHeight > 6 ? newHeight : 6);
+		if ( !( newWidth + sampleArea.getX() + deltaX > xBound || newHeight + sampleArea.getY() + deltaY > yBound ) ) {
+			setCenterX(newWidth > 6 ? getCenterX() + deltaX / 2.0 : getCenterX());
+			setRadiusX(newWidth > 6 ? newWidth / 2.0 : 3.0);
+			setCenterY(newHeight > 6 ? getCenterY() + deltaY / 2.0 : getCenterY());
+			setRadiusY(newHeight > 6 ? newHeight / 2.0 : 3.0);
 		}
 	}
 
 	private void resizeSW( final double deltaX, final double deltaY ) {
-		final double newWidth = getWidth() - deltaX;
-		final double newHeight = getHeight() + deltaY;
+		final double newWidth = sampleArea.getWidth() - deltaX;
+		final double newHeight = sampleArea.getHeight() + deltaY;
 
-		if ( !( getX() + deltaX < 0 || newHeight + getY() + deltaY > yBound ) ) {
-			setX(newWidth > 6 ? getX() + deltaX : getX());
-			setWidth(newWidth > 6 ? newWidth : 6);
-			setHeight(newHeight > 6 ? newHeight : 6);
+		if ( !( sampleArea.getX() + deltaX < 0 || newHeight + sampleArea.getY() + deltaY > yBound ) ) {
+			setCenterX(newWidth > 6 ? getCenterX() + deltaX / 2.0 : getCenterX());
+			setCenterY(newHeight > 6 ? getCenterY() + deltaY / 2.0 : getCenterY());
+			setRadiusX(newWidth > 6 ? newWidth / 2.0 : 3.0);
+			setRadiusY(newHeight > 6 ? newHeight / 2.0 : 3.0);
 		}
 	}
 
 	private void resizeNE( final double deltaX, final double deltaY ) {
-		final double newWidth = getWidth() + deltaX;
-		final double newHeight = getHeight() - deltaY;
+		final double newWidth = sampleArea.getWidth() + deltaX;
+		final double newHeight = sampleArea.getHeight() - deltaY;
 
-		if ( !( newWidth + getX() + deltaX > xBound || getY() + deltaY < 0 ) ) {
-			setY(newHeight > 6 ? getY() + deltaY : getY());
-			setWidth(newWidth > 6 ? newWidth : 6);
-			setHeight(newHeight > 6 ? newHeight : 6);
+		if ( !( newWidth + sampleArea.getX() + deltaX > xBound || sampleArea.getY() + deltaY < 0 ) ) {
+			setCenterX(newWidth > 6 ? getCenterX() + deltaX / 2.0 : getCenterX());
+			setCenterY(newHeight > 6 ? getCenterY() + deltaY / 2.0 : getCenterY());
+			setRadiusX(newWidth > 6 ? newWidth / 2.0 : 3.0);
+			setRadiusY(newHeight > 6 ? newHeight / 2.0 : 3.0);
 		}
 	}
 
 	private void resizeE( final double deltaX ) {
-		final double newWidth = getWidth() + deltaX;
+		final double newWidth = sampleArea.getWidth() + deltaX;
 
-		if ( !( newWidth + getX() + deltaX > xBound ) ) {
-			setWidth(newWidth > 6 ? newWidth : 6);
+		if ( !( newWidth + sampleArea.getX() + deltaX > xBound ) ) {
+			setRadiusX(newWidth > 6 ? newWidth / 2.0 : 3.0);
+			setCenterX(newWidth > 6 ? getCenterX() + deltaX / 2.0 : getCenterX());
 		}
 	}
 
 	private void resizeW( final double deltaX ) {
-		final double newWidth = getWidth() - deltaX;
+		final double newWidth = sampleArea.getWidth() - deltaX;
 
-		if ( !( getX() + deltaX < 0 ) ) {
-			setX(newWidth > 6 ? getX() + deltaX : getX());
-			setWidth(newWidth > 6 ? newWidth : 6);
+		if ( !( sampleArea.getX() + deltaX < 0 ) ) {
+			setCenterX(newWidth > 6 ? getCenterX() + deltaX / 2.0 : getCenterX());
+			setRadiusX(newWidth > 6 ? newWidth / 2.0 : 3.0);
 		}
 	}
 
 	private void resizeS( final double deltaY ) {
-		final double newHeight = getHeight() + deltaY;
+		final double newHeight =sampleArea. getHeight() + deltaY;
 
-		if ( !( newHeight + getY() + deltaY > yBound ) ) {
-			setHeight(newHeight > 6 ? newHeight : 6);
+		if ( !( newHeight + sampleArea.getY() + deltaY > yBound ) ) {
+			setRadiusY(newHeight > 6 ? newHeight / 2.0 : 3.0);
+			setCenterY(newHeight > 6 ? getCenterY() + deltaY / 2.0 : getCenterY());
 		}
 	}
 
 	private void resizeN( final double deltaY ) {
-		final double newHeight = getHeight() - deltaY;
+		final double newHeight = sampleArea.getHeight() - deltaY;
 
-		if ( !( getY() + deltaY < 0 ) ) {
-			setY(newHeight > 6 ? getY() + deltaY : getY());
-			setHeight(newHeight > 6 ? newHeight : 6);
+		if ( !( sampleArea.getY() + deltaY < 0 ) ) {
+			setCenterY(newHeight > 6 ? getCenterY() + deltaY / 2.0 : getCenterY());
+			setRadiusY(newHeight > 6 ? newHeight / 2.0 : 3.0);
 		}
 	}
 
 	private void drag( final double deltaX, final double deltaY ) {
-		if ( !( getX() + deltaX + getWidth() > xBound || getX() + deltaX < 0
-				|| getY() + deltaY + getHeight() > yBound || getY() + deltaY < 0 ) ) {
-			setX(getX() + deltaX);
-			setY(getY() + deltaY);
+		if ( !( sampleArea.getX() + deltaX + sampleArea.getWidth() > xBound || sampleArea.getX() + deltaX < 0
+				|| sampleArea.getY() + deltaY + sampleArea.getHeight() > yBound || sampleArea.getY() + deltaY < 0 ) ) {
+			setCenterX(getCenterX() + deltaX);
+			setCenterY(getCenterY() + deltaY);
 		}
 	}
 

@@ -17,7 +17,8 @@
 	<MenuBar fx:id="menuBar">
 		<Menu fx:id="fileMenu" text="_File">
 			<MenuItem fx:id="fileMenuLoadImages" onAction="#loadImages" text="_Load images" accelerator="Shortcut+L"/>
-			<MenuItem fx:id="fileMenuExportToCsv" onAction="#exportToCsv" text="_Export to CSV" accelerator="Shortcut+S"/>
+			<MenuItem fx:id="fileMenuExportToCsv" onAction="#exportToCsv" text="_Export to CSV" accelerator="Shortcut+E"/>
+			<MenuItem fx:id="fileMenuExportToPng" onAction="#exportToPng" text="_Save samples" accelerator="Shortcut+S"/>
 			<MenuItem fx:id="fileMenuRemoveImage" text="_Remove image" onAction="#deleteImage" accelerator="Shortcut+Delete"/>
 			<MenuItem fx:id="fileMenuClear" text="_Clear image list" onAction="#clearImages" accelerator="Shortcut+Alt+Delete"/>
 			<MenuItem fx:id="fileMenuExit" onAction="#exit" text="E_xit"/>
@@ -170,7 +171,7 @@
 							<RowConstraints valignment="CENTER" percentHeight="20.0" vgrow="SOMETIMES"/>
 						</rowConstraints>
 						<ColorPicker fx:id="transformTriangleFillColor" maxWidth="40.0"
-									 GridPane.columnIndex="1" />
+									 GridPane.columnIndex="1"/>
 						<ColorPicker fx:id="transformTriangleStrokeColor" maxWidth="40.0"
 									 GridPane.columnIndex="1"
 									 GridPane.rowIndex="1"/>
@@ -291,7 +292,7 @@
 						<Insets left="10" right="10" bottom="30"/>
 					</padding>
 					<columnConstraints>
-						<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER" />
+						<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER"/>
 					</columnConstraints>
 					<rowConstraints>
 						<RowConstraints valignment="CENTER" percentHeight="40.0" vgrow="SOMETIMES"/>
@@ -334,7 +335,7 @@
 									 GridPane.columnIndex="1"
 									 GridPane.rowIndex="2"/>
 						<Label fx:id="samplesFillLabel" text="Fill"
-							   />
+						/>
 						<Label fx:id="samplesStrokeLabel" text="Stroke"
 							   GridPane.rowIndex="1"/>
 						<Label fx:id="samplesBorderLabel" text="Border"
@@ -407,13 +408,13 @@
 										<Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAllFunctions"
 												text="Select all">
 											<HBox.margin>
-												<Insets left="5.0" right="15.0" />
+												<Insets left="5.0" right="15.0"/>
 											</HBox.margin>
 										</Button>
 										<Button fx:id="deselectAllButton" mnemonicParsing="false"
 												onAction="#deselectAllFunctions" text="Deselect all">
 											<HBox.margin>
-												<Insets left="15.0" right="5.0" />
+												<Insets left="15.0" right="5.0"/>
 											</HBox.margin>
 										</Button>
 									</HBox>
@@ -458,13 +459,13 @@
 						<TextField fx:id="chartsColumnsTextField" alignment="CENTER" text="3" GridPane.columnIndex="1"/>
 						<Label fx:id="chartsSampleLabel" alignment="CENTER_RIGHT" text="Sample" GridPane.columnIndex="2"/>
 						<ComboBox fx:id="chartsSampleComboBox" editable="false" visibleRowCount="5" GridPane.columnIndex="3"/>
-						<RadioButton fx:id="chartsBySampleRadioButton" mnemonicParsing="false" text="By Sample"
+						<RadioButton fx:id="chartsBySampleRadioButton" mnemonicParsing="false" text="Charts" selected="true"
 									 GridPane.columnIndex="4">
 							<toggleGroup>
 								<ToggleGroup fx:id="result"/>
 							</toggleGroup>
 						</RadioButton>
-						<RadioButton fx:id="allChartsRadioButton" mnemonicParsing="false" text="All"
+						<RadioButton fx:id="imagesBySampleRadioButton" mnemonicParsing="false" text="Images"
 									 toggleGroup="$result" GridPane.columnIndex="5"/>
 						<HBox alignment="CENTER" fx:id="chartsGraphsToolbar" GridPane.columnIndex="6">
 							<Button fx:id="chartsRefreshButton" onAction="#refresh" alignment="CENTER">
@@ -512,34 +513,50 @@
 					</GridPane>
 				</bottom>
 				<center>
-					<GridPane BorderPane.alignment="CENTER">
-						<columnConstraints>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="100.0"/>
-						</columnConstraints>
-						<rowConstraints>
-							<RowConstraints percentHeight="100.0" vgrow="SOMETIMES"/>
-						</rowConstraints>
-						<ScrollPane fx:id="chartsBySampleGridScrollPane" fitToWidth="true">
-							<GridPane fx:id="chartsBySampleGrid">
-								<rowConstraints>
-									<RowConstraints vgrow="SOMETIMES"/>
-								</rowConstraints>
+					<TabPane fx:id="chartsTabPane" side="RIGHT" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+						<Tab fx:id="allChartsTab" text="Summary">
+							<ScrollPane fx:id="allChartsGridScrollPane" fitToWidth="true">
+								<GridPane fx:id="allChartsGrid">
+									<rowConstraints>
+										<RowConstraints vgrow="SOMETIMES"/>
+									</rowConstraints>
+									<columnConstraints>
+										<ColumnConstraints/>
+									</columnConstraints>
+								</GridPane>
+							</ScrollPane>
+						</Tab>
+						<Tab fx:id="bySampleTab" text="Samples">
+							<GridPane>
 								<columnConstraints>
-									<ColumnConstraints/>
+									<ColumnConstraints hgrow="SOMETIMES" percentWidth="100.0"/>
 								</columnConstraints>
-							</GridPane>
-						</ScrollPane>
-						<ScrollPane fx:id="allChartsGridScrollPane" fitToWidth="true">
-							<GridPane fx:id="allChartsGrid">
 								<rowConstraints>
-									<RowConstraints vgrow="SOMETIMES"/>
+									<RowConstraints percentHeight="100.0" vgrow="SOMETIMES"/>
 								</rowConstraints>
-								<columnConstraints>
-									<ColumnConstraints/>
-								</columnConstraints>
+								<ScrollPane fx:id="chartsBySampleGridScrollPane" fitToWidth="true">
+									<GridPane fx:id="chartsBySampleGrid">
+										<rowConstraints>
+											<RowConstraints vgrow="SOMETIMES"/>
+										</rowConstraints>
+										<columnConstraints>
+											<ColumnConstraints/>
+										</columnConstraints>
+									</GridPane>
+								</ScrollPane>
+								<ScrollPane fx:id="imagesBySampleGridScrollPane" fitToWidth="true">
+									<GridPane fx:id="imagesBySampleGrid">
+										<rowConstraints>
+											<RowConstraints vgrow="SOMETIMES"/>
+										</rowConstraints>
+										<columnConstraints>
+											<ColumnConstraints/>
+										</columnConstraints>
+									</GridPane>
+								</ScrollPane>
 							</GridPane>
-						</ScrollPane>
-					</GridPane>
+						</Tab>
+					</TabPane>
 				</center>
 			</BorderPane>
 		</Tab>

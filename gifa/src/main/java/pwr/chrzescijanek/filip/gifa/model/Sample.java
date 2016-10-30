@@ -1,5 +1,6 @@
 package pwr.chrzescijanek.filip.gifa.model;
 
+import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.scene.input.MouseButton;
@@ -12,9 +13,9 @@ import java.util.stream.Collectors;
 
 public class Sample extends BaseSample {
 
-	Sample( final SamplesImageData imageData, final double x, final double y, final double width, final double height,
+	Sample( final SamplesImageData imageData, final double x, final double y, final double radiusX, final double radiusY,
 			final SharedState state, final PanelViewFactory panelViewFactory, final double xBound, final double yBound ) {
-		super(imageData, x, y, width, height, state, panelViewFactory, xBound, yBound);
+		super(imageData, x, y, radiusX, radiusY, state, panelViewFactory, xBound, yBound);
 		overwriteListeners();
 	}
 
@@ -51,11 +52,18 @@ public class Sample extends BaseSample {
 	}
 
 	@Override
+	void bindProperties( final ImageData imageData ) {
+		scaleXProperty().bind(imageData.scale);
+		sampleArea.visibleProperty().bind(Bindings.equal(state.selectedSample, this));
+//		sampleArea.setVisible(false);
+	}
+
+	@Override
 	void handleSingleClick( final MouseEvent event ) {
 		if ( event.isAltDown() ) state.zoom = true;
 		state.selectedSample.set(this);
-		((SamplesImageData) imageData).samples.forEach(s -> s.setVisible(false));
-		setVisible(true);
+//		((SamplesImageData) imageData).samples.forEach(s -> s.sampleArea.setVisible(false));
+//		sampleArea.setVisible(true);
 	}
 
 	@Override

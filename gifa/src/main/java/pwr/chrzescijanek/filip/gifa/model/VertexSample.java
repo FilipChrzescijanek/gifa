@@ -1,5 +1,6 @@
 package pwr.chrzescijanek.filip.gifa.model;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.MapChangeListener;
@@ -27,9 +28,9 @@ public class VertexSample extends BaseSample {
 	private final List< List< NumberChangeListener > > vertexChangeListeners = new ArrayList<>();
 	private final List< List< ColorChangeListener > > strokeChangeListeners = new ArrayList<>();
 
-	VertexSample( final TransformImageData imageData, final double x, final double y, final double width, final double height,
+	VertexSample( final TransformImageData imageData, final double x, final double y, final double radiusX, final double radiusY,
 				  final SharedState state, final PanelViewFactory panelViewFactory, final double xBound, final double yBound ) {
-		super(imageData, x, y, width, height, state, panelViewFactory, xBound, yBound);
+		super(imageData, x, y, radiusX, radiusY, state, panelViewFactory, xBound, yBound);
 	}
 
 	@Override
@@ -38,11 +39,17 @@ public class VertexSample extends BaseSample {
 	}
 
 	@Override
+	void bindProperties( final ImageData imageData ) {
+		scaleXProperty().bind(imageData.scale);
+		sampleArea.visibleProperty().bind(Bindings.equal(state.selectedRectangle, this));
+	}
+
+	@Override
 	void handleSingleClick( final MouseEvent event ) {
 		if ( event.isAltDown() ) state.zoom = true;
 		state.selectedRectangle.set(this);
-		Arrays.stream(( (TransformImageData) imageData ).vertexSamples).forEach(s -> s.setVisible(false));
-		setVisible(true);
+//		Arrays.stream(( (TransformImageData) imageData ).vertexSamples).forEach(s -> s.sampleArea.setVisible(false));
+//		sampleArea.setVisible(true);
 	}
 
 	@Override
@@ -98,7 +105,7 @@ public class VertexSample extends BaseSample {
 		for ( TransformImageData imageData : state.transformImages.values() ) {
 			VertexSample[] vertexSamples = imageData.vertexSamples;
 			for ( int i = 0; i < vertexSamples.length; i++ )
-				vertexSamples[i].sampleArea.strokeProperty().addListener(strokeChangeListeners.get(index).get(i));
+				vertexSamples[i].strokeProperty().addListener(strokeChangeListeners.get(index).get(i));
 			index++;
 		}
 	}
@@ -111,7 +118,7 @@ public class VertexSample extends BaseSample {
 			for (int i = 0; i < vertexSamples.length; i++) {
 				writableImage.getPixelWriter().setColor(
 						pointsProperty[i * 2].intValue(), pointsProperty[i * 2 + 1].intValue(),
-						(Color) vertexSamples[i].sampleArea.getStroke()
+						(Color) vertexSamples[i].getStroke()
 				);
 			}
 		}
@@ -147,7 +154,7 @@ public class VertexSample extends BaseSample {
 		for ( TransformImageData imageData : state.transformImages.values() ) {
 			VertexSample[] vertexSamples = imageData.vertexSamples;
 			for ( int i = 0; i < vertexSamples.length; i++ )
-				vertexSamples[i].sampleArea.strokeProperty().removeListener(strokeChangeListeners.get(index).get(i));
+				vertexSamples[i].strokeProperty().removeListener(strokeChangeListeners.get(index).get(i));
 			index++;
 		}
 		strokeChangeListeners.clear();
@@ -166,37 +173,37 @@ public class VertexSample extends BaseSample {
 				int oldX = oldValue.intValue();
 				int y = triangle.pointsProperty[1].intValue();
 				int newX = newValue.intValue();
-				changeColor(imageData, oldX, y, newX, y, (Color) vertexSamples[0].sampleArea.getStroke());
+				changeColor(imageData, oldX, y, newX, y, (Color) vertexSamples[0].getStroke());
 			});
 			listeners.add(( observable, oldValue, newValue ) -> {
 				int oldY = oldValue.intValue();
 				int x = triangle.pointsProperty[0].intValue();
 				int newY = newValue.intValue();
-				changeColor(imageData, x, oldY, x, newY, (Color) vertexSamples[0].sampleArea.getStroke());
+				changeColor(imageData, x, oldY, x, newY, (Color) vertexSamples[0].getStroke());
 			});
 			listeners.add(( observable, oldValue, newValue ) -> {
 				int oldX = oldValue.intValue();
 				int y = triangle.pointsProperty[3].intValue();
 				int newX = newValue.intValue();
-				changeColor(imageData, oldX, y, newX, y, (Color) vertexSamples[1].sampleArea.getStroke());
+				changeColor(imageData, oldX, y, newX, y, (Color) vertexSamples[1].getStroke());
 			});
 			listeners.add(( observable, oldValue, newValue ) -> {
 				int oldY = oldValue.intValue();
 				int x = triangle.pointsProperty[2].intValue();
 				int newY = newValue.intValue();
-				changeColor(imageData, x, oldY, x, newY, (Color) vertexSamples[1].sampleArea.getStroke());
+				changeColor(imageData, x, oldY, x, newY, (Color) vertexSamples[1].getStroke());
 			});
 			listeners.add(( observable, oldValue, newValue ) -> {
 				int oldX = oldValue.intValue();
 				int y = triangle.pointsProperty[5].intValue();
 				int newX = newValue.intValue();
-				changeColor(imageData, oldX, y, newX, y, (Color) vertexSamples[2].sampleArea.getStroke());
+				changeColor(imageData, oldX, y, newX, y, (Color) vertexSamples[2].getStroke());
 			});
 			listeners.add(( observable, oldValue, newValue ) -> {
 				int oldY = oldValue.intValue();
 				int x = triangle.pointsProperty[4].intValue();
 				int newY = newValue.intValue();
-				changeColor(imageData, x, oldY, x, newY, (Color) vertexSamples[2].sampleArea.getStroke());
+				changeColor(imageData, x, oldY, x, newY, (Color) vertexSamples[2].getStroke());
 			});
 
 			index++;
