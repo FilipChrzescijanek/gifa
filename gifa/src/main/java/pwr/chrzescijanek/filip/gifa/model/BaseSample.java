@@ -75,6 +75,7 @@ public abstract class BaseSample extends Rectangle {
 		setHeight(height);
 		this.xBound = xBound;
 		this.yBound = yBound;
+		recalculateTranslates();
 	}
 
 	abstract void handleSingleClick( final MouseEvent event );
