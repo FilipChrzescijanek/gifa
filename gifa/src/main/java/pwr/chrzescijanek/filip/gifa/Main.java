@@ -8,7 +8,8 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.opencv.core.Core;
 import pwr.chrzescijanek.filip.gifa.inject.Injector;
-import pwr.chrzescijanek.filip.gifa.view.FxmlView;
+import pwr.chrzescijanek.filip.gifa.util.StageUtils;
+import pwr.chrzescijanek.filip.gifa.view.FXView;
 
 public class Main extends Application {
 
@@ -22,22 +23,11 @@ public class Main extends Application {
 
 	@Override
 	public void start( final Stage primaryStage ) throws Exception {
-		prepareStage(primaryStage);
-		primaryStage.show();
-	}
-
-	private void prepareStage( final Stage primaryStage ) {
-		primaryStage.setTitle("gifa");
-		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon-small.png")));
-		setScene(primaryStage);
+		Image icon = new Image(getClass().getResourceAsStream("/images/icon-small.png"));
+		FXView fxView = new FXView("/static/gifa.fxml");
+		StageUtils.prepareStage(primaryStage, "gifa", icon, fxView);
 		primaryStage.setOnCloseRequest(event -> Platform.exit());
-	}
-
-	private void setScene( final Stage primaryStage ) {
-		FxmlView appView = new FxmlView("/gifa.fxml");
-		final Parent root = appView.getView();
-		Scene scene = new Scene(root, root.minWidth(-1), root.minHeight(-1));
-		primaryStage.setScene(scene);
+		primaryStage.show();
 	}
 
 	@Override

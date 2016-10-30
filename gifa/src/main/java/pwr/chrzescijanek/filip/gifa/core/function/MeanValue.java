@@ -1,16 +1,17 @@
 package pwr.chrzescijanek.filip.gifa.core.function;
 
 import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-import pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils;
-import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
+
+import static org.opencv.imgproc.Imgproc.COLOR_RGB2HSV_FULL;
+import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateMeans;
+import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
 
 public final class MeanValue implements EvaluationFunction {
 
 	@Override
 	public double[] evaluate( final Mat[] images ) {
-		ImageUtils.convertType(images, Imgproc.COLOR_RGB2HSV_FULL);
-		return FunctionUtils.calculateMeans(images, 2);
+		convertType(images, COLOR_RGB2HSV_FULL);
+		return calculateMeans(images, 2);
 	}
 
 }

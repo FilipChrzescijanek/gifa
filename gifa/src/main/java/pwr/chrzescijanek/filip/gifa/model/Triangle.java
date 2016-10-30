@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.controller;
+package pwr.chrzescijanek.filip.gifa.model;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -10,39 +10,72 @@ import org.opencv.core.Point;
 public class Triangle extends Polygon {
 
 	public final DoubleProperty[] pointsProperty;
+	private double xBound;
+	private double yBound;
 
-	public Triangle() {
+	public Triangle(final double xBound, final double yBound) {
 		super(0,0,0,0,0,0);
+		this.xBound = xBound;
+		this.yBound = yBound;
 		this.pointsProperty = new DoubleProperty[6];
-		for ( int i = 0; i < pointsProperty.length; i++)
-			pointsProperty[i] = new SimpleDoubleProperty(0.0);
-		registerListeners();
+		initializePointsWithZeros();
+		registerPointsListeners();
+		registerScaleListeners();
 	}
 
-	public Triangle( final Point p1, final Point p2, final Point p3) {
+	private void initializePointsWithZeros() {
+		for ( int i = 0; i < pointsProperty.length; i++)
+			pointsProperty[i] = new SimpleDoubleProperty(0.0);
+	}
+
+	public Triangle( final Point p1, final Point p2, final Point p3, final double xBound, final double yBound) {
 		super(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+		this.xBound = xBound;
+		this.yBound = yBound;
 		this.pointsProperty = new DoubleProperty[6];
+		initializePoints();
+		registerPointsListeners();
+		registerScaleListeners();
+	}
+
+	private void initializePoints() {
 		final ObservableList< Double > points = getPoints();
 		for ( int i = 0; i < pointsProperty.length; i++)
 			pointsProperty[i] = new SimpleDoubleProperty(points.get(i));
-		registerListeners();
 	}
 
-	private void registerListeners() {
+	private void registerPointsListeners() {
 		for ( int i = 0; i < pointsProperty.length; i++) {
 			final int index = i;
 			pointsProperty[index].addListener(( observable, oldValue, newValue ) -> {
 				final double value = newValue.doubleValue();
 				getPoints().set(index, value);
+				if (index % 2 == 0) recalculateTranslateX();
+				else recalculateTranslateY();
 			});
 		}
 	}
 
-	public void recalculateTranslates(double width, double height) {
-		setTranslateX(( width * 0.5 * ( getScaleX() - 1.0 ) ) -
-				( width * 0.5 - getTriangleMiddleX() ) * ( getScaleX() - 1.0 ));
-		setTranslateY(( height * 0.5 * ( getScaleY() - 1.0 ) ) -
-				( height * 0.5 - getTriangleMiddleY() ) * ( getScaleY() - 1.0 ));
+	private void registerScaleListeners() {
+		scaleXProperty().addListener(( observable, oldValue, newValue ) -> {
+			setScaleY(newValue.doubleValue());
+			recalculateTranslates();
+		});
+	}
+
+	private void recalculateTranslates() {
+		recalculateTranslateX();
+		recalculateTranslateY();
+	}
+
+	private void recalculateTranslateX() {
+		setTranslateX(( xBound * 0.5 * ( getScaleX() - 1.0 ) ) -
+				( xBound * 0.5 - getTriangleMiddleX() ) * ( getScaleX() - 1.0 ));
+	}
+
+	private void recalculateTranslateY() {
+		setTranslateY(( yBound * 0.5 * ( getScaleY() - 1.0 ) ) -
+				( yBound * 0.5 - getTriangleMiddleY() ) * ( getScaleY() - 1.0 ));
 	}
 
 	public double getTriangleMiddleX() {

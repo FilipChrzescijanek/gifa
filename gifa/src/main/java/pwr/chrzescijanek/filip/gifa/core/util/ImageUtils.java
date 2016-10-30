@@ -4,11 +4,18 @@ import javafx.scene.image.Image;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
-import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Scalar;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
+
+import static org.opencv.imgproc.Imgproc.COLOR_BGR2BGRA;
+import static org.opencv.imgproc.Imgproc.cvtColor;
+import static org.opencv.imgproc.Imgproc.getAffineTransform;
+import static org.opencv.imgproc.Imgproc.warpAffine;
 
 public final class ImageUtils {
 
@@ -20,7 +27,7 @@ public final class ImageUtils {
 	}
 
 	public static void convertType( final Mat image, final int type ) {
-		Imgproc.cvtColor(image, image, type);
+		cvtColor(image, image, type);
 	}
 
 	public static byte[][] getImagesData( final Mat[] images ) {
@@ -53,14 +60,14 @@ public final class ImageUtils {
 		return imageCopy;
 	}
 
-	public static void performAffineTransformations( final Mat[] images, final MatOfPoint2f[] points, int interpolation) {
+	public static void performAffineTransformations( final Mat[] images, final MatOfPoint2f[] points, int interpolation ) {
 		checkIfLengthsMatch(images, points);
 		final int noOfImages = images.length;
 		for ( final Mat m : images )
-			Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2BGRA);
+			cvtColor(m, m, COLOR_BGR2BGRA);
 		for ( int i = 1; i < noOfImages; i++ ) {
-			final Mat warpMat = Imgproc.getAffineTransform(points[i], points[0]);
-			Imgproc.warpAffine(images[i], images[i], warpMat, images[0].size(),
+			final Mat warpMat = getAffineTransform(points[i], points[0]);
+			warpAffine(images[i], images[i], warpMat, images[0].size(),
 					interpolation, Core.BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
 		}
 	}
@@ -68,15 +75,14 @@ public final class ImageUtils {
 	private static void checkIfLengthsMatch( final Mat[] images, final MatOfPoint2f[] points ) {
 		if ( images.length != points.length )
 			throw new IllegalArgumentException(
-					String.format("Images count: %d does not match passed triangles count: %d!", images.length, points.length)
+					String.format("Images count: %d does not match passed triangles count: %d", images.length, points.length)
 			);
 	}
 
 	public static Image createImage( final byte[] data, final int width, final int height, final int noOfChannels, final PixelFormat format ) {
 		final WritableImage img = new WritableImage(width, height);
 		final PixelWriter pw = img.getPixelWriter();
-		pw.setPixels(0, 0, width, height, format, ByteBuffer.wrap(data),
-				width * noOfChannels);
+		pw.setPixels(0, 0, width, height, format, ByteBuffer.wrap(data), width * noOfChannels);
 		return img;
 	}
 
@@ -107,7 +113,7 @@ public final class ImageUtils {
 		}
 
 		int resultLength = 0;
-		for (boolean b : mask) if (!b) resultLength++;
+		for ( boolean b : mask ) if ( !b ) resultLength++;
 
 		final Mat[] resultImages = new Mat[noOfImages];
 
@@ -116,7 +122,7 @@ public final class ImageUtils {
 			final byte[] currentResultImage = new byte[resultLength * noOfResultChannels];
 			int index = 0;
 			for ( int j = 0; j < noOfBytes; j += noOfChannels ) {
-				if (!mask[j / noOfChannels]) {
+				if ( !mask[j / noOfChannels] ) {
 					currentResultImage[index + blueIndex] = currentImage[j + blueIndex];
 					currentResultImage[index + greenIndex] = currentImage[j + greenIndex];
 					currentResultImage[index + redIndex] = currentImage[j + redIndex];
@@ -132,11 +138,11 @@ public final class ImageUtils {
 	}
 
 	private static void checkIfChannelsMatch( final Mat[] images, final int channels ) {
-		for (Mat image : images)
+		for ( Mat image : images )
 			if ( image.channels() != channels )
 				throw new IllegalArgumentException(
 						String.format("Received an image with number of channels equal to %d " +
-								"- all passed images pixels have to be in a BGRA format!", image.channels())
+								"- all passed images pixels have to be in a BGRA format", image.channels())
 				);
 	}
 }

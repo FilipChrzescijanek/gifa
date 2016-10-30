@@ -1,21 +1,24 @@
 package pwr.chrzescijanek.filip.gifa.controller;
 
-import javafx.beans.binding.DoubleBinding;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
-import javafx.scene.shape.Ellipse;
-import pwr.chrzescijanek.filip.gifa.core.generator.DataGeneratorFactory;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.RowConstraints;
+import pwr.chrzescijanek.filip.gifa.Main;
+import pwr.chrzescijanek.filip.gifa.model.PanelView;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 public class PanelController {
 
@@ -27,7 +30,15 @@ public class PanelController {
 	public TextField panelColumnsTextField;
 	public ScrollPane panelGridScrollPane;
 	public GridPane panelGrid;
-	private int index = -1;
+	private List< ? extends PanelView > imageViews = null;
+
+	public void setImageViews( final List< ? extends PanelView > imageViews ) {
+		this.imageViews = imageViews;
+	}
+
+	public void setInfo( String info ) {
+		panelInfo.setText(info);
+	}
 
 	@FXML
 	void initialize() {
@@ -39,21 +50,26 @@ public class PanelController {
 		assert panelColumnsTextField != null : "fx:id=\"panelColumnsTextField\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert panelGridScrollPane != null : "fx:id=\"panelGridScrollPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert panelGrid != null : "fx:id=\"panelGrid\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+
+		Preferences prefs = Preferences.userNodeForPackage(Main.class);
+		String s = prefs.get(Controller.THEME_PREFERENCE_KEY, Controller.THEME_LIGHT);
+		if ( s.equals(Controller.THEME_LIGHT) ) {
+			root.getStylesheets().add(Controller.THEME_LIGHT);
+		} else {
+			root.getStylesheets().add(Controller.THEME_DARK);
+		}
+
 		panelColumnsTextField.textProperty().addListener(( observable, oldValue, newValue ) -> {
 			if ( !newValue.matches("\\d+") )
 				panelColumnsTextField.setText(oldValue);
 			else
 				placeImages();
 		});
+		panelHBox.visibleProperty().bind(panelInfo.textProperty().isNotNull());
 		root.layoutBoundsProperty().addListener(( observable, oldValue, newValue ) -> placeImages());
 	}
 
-	public void setIndex( int index ) {
-		this.index = index;
-	}
-
 	public void placeImages() {
-		List< ImageView > imageViews = State.INSTANCE.imageViews.get(index);
 		if ( imageViews != null ) {
 			panelGrid.getChildren().clear();
 			panelGrid.getColumnConstraints().clear();
@@ -74,52 +90,19 @@ public class PanelController {
 					rowConstraints.setValignment(VPos.CENTER);
 					panelGrid.getRowConstraints().add(rowConstraints);
 				}
-				double fitWidth = Math.max((bounds.getWidth() - 50.0) / noOfColumns, 150.0);
-				double fitHeight = Math.max((bounds.getHeight() - 50.0) / noOfRows, 150.0);
+				double fitWidth = Math.max(( bounds.getWidth() - 50.0 ) / noOfColumns, 150.0);
+				double fitHeight = Math.max(( bounds.getHeight() - 50.0 ) / noOfRows, 150.0);
 				for ( int i = 0; i < noOfRows; i++ ) {
-					List< ImageView > imageViewsInRow = new ArrayList<>();
+					List< PanelView > imageViewsInRow = new ArrayList<>();
 					int n = 0;
 					while ( i * noOfColumns + n < imageViews.size() && n < noOfColumns ) {
-						final ImageView view = imageViews.get(i * noOfColumns + n);
-						view.setPreserveRatio(true);
+						final PanelView view = imageViews.get(i * noOfColumns + n);
 						view.setFitWidth(fitWidth);
 						view.setFitHeight(fitHeight);
-						Ellipse e = new Ellipse();
-						e.centerXProperty().bind(e.radiusXProperty());
-						e.centerYProperty().bind(e.radiusYProperty());
-						e.radiusXProperty().bind(new DoubleBinding() {
-
-							{
-								super.bind(view.viewportProperty());
-							}
-
-							@Override
-							protected double computeValue() {
-								final double radiusX = view.getFitWidth() / view.getFitHeight() > view.getViewport().getWidth() / view.getViewport().getHeight() ?
-										( view.getFitHeight() * view.getViewport().getWidth() / view.getViewport().getHeight() ) / 2
-										: view.getFitWidth() / 2;
-								return radiusX;
-							}
-						});
-						e.radiusYProperty().bind(new DoubleBinding() {
-
-							{
-								super.bind(view.viewportProperty());
-							}
-
-							@Override
-							protected double computeValue() {
-								final double radiusY = view.getFitWidth() / view.getFitHeight() > view.getViewport().getWidth() / view.getViewport().getHeight() ?
-										view.getFitHeight() / 2
-										: ( view.getFitWidth() * view.getViewport().getHeight() / view.getViewport().getWidth() ) / 2;
-								return radiusY;
-							}
-						});
-						view.setClip(e);
 						imageViewsInRow.add(view);
 						n++;
 					}
-					panelGrid.addRow(i, imageViewsInRow.toArray(new ImageView[0]));
+					panelGrid.addRow(i, (Node[]) imageViewsInRow.toArray(new PanelView[0]));
 				}
 			}
 		}

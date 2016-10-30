@@ -7,7 +7,7 @@
 			fx:controller="pwr.chrzescijanek.filip.gifa.controller.PanelController">
 	<top>
 		<HBox fx:id="panelHBox" alignment="CENTER">
-			<Label fx:id="panelInfo" text="Click on any image to move according triangle point."/>
+			<Label fx:id="panelInfo"/>
 		</HBox>
 	</top>
 	<bottom>

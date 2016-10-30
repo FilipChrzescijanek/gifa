@@ -93,7 +93,7 @@
 							<graphic>
 								<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
 										   preserveRatio="true">
-									<Image url="@vertical-flip.png"/>
+									<Image url="@../images/vertical-flip.png"/>
 								</ImageView>
 							</graphic>
 							<VBox.margin>
@@ -104,7 +104,7 @@
 							<graphic>
 								<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
 										   preserveRatio="true">
-									<Image url="@horizontal-flip.png"/>
+									<Image url="@../images/horizontal-flip.png"/>
 								</ImageView>
 							</graphic>
 							<VBox.margin>
@@ -115,7 +115,7 @@
 							<graphic>
 								<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
 										   preserveRatio="true">
-									<Image url="@undo.png"/>
+									<Image url="@../images/undo.png"/>
 								</ImageView>
 							</graphic>
 							<VBox.margin>
@@ -126,7 +126,7 @@
 							<graphic>
 								<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
 										   preserveRatio="true">
-									<Image url="@redo.png"/>
+									<Image url="@../images/redo.png"/>
 								</ImageView>
 							</graphic>
 							<VBox.margin>
@@ -245,7 +245,7 @@
 							<graphic>
 								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
 										   preserveRatio="true">
-									<Image url="@plus.png"/>
+									<Image url="@../images/plus.png"/>
 								</ImageView>
 							</graphic>
 							<HBox.margin>
@@ -256,7 +256,7 @@
 							<graphic>
 								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
 										   preserveRatio="true">
-									<Image url="@minus.png"/>
+									<Image url="@../images/minus.png"/>
 								</ImageView>
 							</graphic>
 							<HBox.margin>
@@ -267,7 +267,7 @@
 							<graphic>
 								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
 										   preserveRatio="true">
-									<Image url="@trash.png"/>
+									<Image url="@../images/trash.png"/>
 								</ImageView>
 							</graphic>
 						</Button>
@@ -471,7 +471,7 @@
 								<graphic>
 									<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
 											   preserveRatio="true">
-										<Image url="@refresh.png"/>
+										<Image url="@../images/refresh.png"/>
 									</ImageView>
 								</graphic>
 								<HBox.margin>
@@ -482,7 +482,7 @@
 								<graphic>
 									<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
 											   preserveRatio="true">
-										<Image url="@merge.png"/>
+										<Image url="@../images/merge.png"/>
 									</ImageView>
 								</graphic>
 								<HBox.margin>
@@ -493,7 +493,7 @@
 								<graphic>
 									<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
 											   preserveRatio="true">
-										<Image url="@shift.png"/>
+										<Image url="@../images/shift.png"/>
 									</ImageView>
 								</graphic>
 								<HBox.margin>
@@ -504,7 +504,7 @@
 								<graphic>
 									<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
 											   preserveRatio="true">
-										<Image url="@trash.png"/>
+										<Image url="@../images/trash.png"/>
 									</ImageView>
 								</graphic>
 							</Button>

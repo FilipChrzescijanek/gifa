@@ -5,7 +5,10 @@ import pwr.chrzescijanek.filip.gifa.core.function.MeanRed;
 import pwr.chrzescijanek.filip.gifa.core.function.MeanValue;
 import pwr.chrzescijanek.filip.gifa.core.function.StdDeviationValue;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class DataGeneratorFactory {
 
@@ -34,7 +37,7 @@ public class DataGeneratorFactory {
 		availableFunctions.clear();
 	}
 
-	public Set<String> getAvailableFunctionsNames() { return new TreeSet<>(availableFunctions.keySet()); }
+	public Set< String > getAvailableFunctionsNames() { return new TreeSet<>(availableFunctions.keySet()); }
 
 	public void chooseAllAvailableFunctions() {
 		chosenFunctions.putAll(availableFunctions);
@@ -44,7 +47,7 @@ public class DataGeneratorFactory {
 		chosenFunctions.put(key, availableFunctions.get(key));
 	}
 
-	public void deselectFunction (final String key) { chosenFunctions.remove(key); }
+	public void deselectFunction( final String key ) { chosenFunctions.remove(key); }
 
 	public void clearChosenFunctions() {
 		chosenFunctions.clear();
