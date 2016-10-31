@@ -25,6 +25,9 @@ public class VertexSamplePanelView extends PanelView {
 		setOnMouseDragged(this::moveSampleCenter);
 	}
 
+	@Override
+	void setOnScroll() { }
+
 	private void bindToNewPosition( final MouseEvent event ) {
 		final int index = sample.getIndexOf();
 		final Triangle triangle = ( (TransformImageData) sample.imageData ).triangle;

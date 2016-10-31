@@ -1,6 +1,8 @@
 package pwr.chrzescijanek.filip.gifa.controller;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
@@ -38,6 +40,7 @@ public enum SharedState {
 	public List< Map< String, Color > > seriesColors = new ArrayList<>();
 	public Map< String, Color > resultsSeriesColors = new HashMap<>();
 	public boolean zoom;
+	public BooleanProperty rotate = new SimpleBooleanProperty(false);
 
 	public void setSampleSelection( final SampleSelection sampleSelection ) {
 		this.sampleSelection = sampleSelection;

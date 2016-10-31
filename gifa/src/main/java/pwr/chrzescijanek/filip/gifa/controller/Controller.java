@@ -20,24 +20,39 @@ import javafx.geometry.VPos;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.chart.*;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
-import org.opencv.core.*;
+import org.opencv.core.Core;
+import org.opencv.core.CvException;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import pwr.chrzescijanek.filip.gifa.Main;
 import pwr.chrzescijanek.filip.gifa.core.generator.DataGeneratorFactory;
 import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
@@ -58,12 +73,24 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.opencv.imgproc.Imgproc.*;
+import static org.opencv.imgproc.Imgproc.INTER_CUBIC;
+import static org.opencv.imgproc.Imgproc.INTER_LINEAR;
+import static org.opencv.imgproc.Imgproc.INTER_NEAREST;
+import static org.opencv.imgproc.Imgproc.ellipse;
 
 public class Controller implements Initializable {
 
@@ -78,13 +105,14 @@ public class Controller implements Initializable {
 	public ScrollPane imagesBySampleGridScrollPane;
 	public GridPane imagesBySampleGrid;
 	public MenuItem fileMenuExportToPng;
+	public RadioButton rotateRadioButton;
 
 	//fields
 	private DataGeneratorFactory generatorFactory;
 	private SampleFactory sampleFactory;
 	private ImageDataFactory imageDataFactory;
 
-	private List<List< Pair<String, ImageView>>> samples = new ArrayList<>();
+	private List< List< Pair< String, ImageView > > > samples = new ArrayList<>();
 
 	@Inject
 	public Controller( DataGeneratorFactory generatorFactory, final SampleFactory sampleFactory,
@@ -484,7 +512,7 @@ public class Controller implements Initializable {
 		int no = 0;
 		for ( Result r : SharedState.INSTANCE.results.get() ) {
 			no++;
-			Map< String, UnmodifiableArrayList<Double> > results = r.getResults();
+			Map< String, UnmodifiableArrayList< Double > > results = r.getResults();
 			final List< String > images = r.getImageNames();
 			for ( int i = 0; i < images.size(); i++ ) {
 				csvContents += "\r\n" + no + ",\"" + images.get(i) + "\"";
@@ -506,20 +534,23 @@ public class Controller implements Initializable {
 		TransformImageData img = SharedState.INSTANCE.transformImages.get(imageName);
 		Core.flip(img.imageData, img.imageData, 1);
 		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-//		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
-//		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
-//				img.imageData.channels(), PixelFormat.getByteRgbInstance());
+		//		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
+		//		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
+		//				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		Image fxImage = ImageUtils.createImage(imageCopy);
 		refreshTransformImage(img, fxImage);
 	}
 
-	private void refreshTransformImage(final TransformImageData img, final Image fxImage ) {
+	private void refreshTransformImage( final TransformImageData img, final Image fxImage ) {
 		img.image = fxImage;
 		img.writableImage.set(new WritableImage(fxImage.getPixelReader(), (int) fxImage.getWidth(), (int) fxImage.getHeight()));
 		transformImageView.setImage(fxImage);
-		img.vertexSamples[0].setSample(fxImage.getWidth() * 1 / 2, fxImage.getHeight() * 3 / 10, fxImage.getWidth() / 10, fxImage.getHeight() / 10, fxImage.getWidth(), fxImage.getHeight());
-		img.vertexSamples[1].setSample(fxImage.getWidth() * 3 / 10, fxImage.getHeight() * 7 / 10, fxImage.getWidth() / 10, fxImage.getHeight() / 10, fxImage.getWidth(), fxImage.getHeight());
-		img.vertexSamples[2].setSample(fxImage.getWidth() * 7 / 10, fxImage.getHeight() * 7 / 10, fxImage.getWidth() / 10, fxImage.getHeight() / 10, fxImage.getWidth(), fxImage.getHeight());
+		img.vertexSamples[0].setSample(fxImage.getWidth() * 1 / 2, fxImage.getHeight() * 3 / 10, fxImage.getWidth() / 10, fxImage.getHeight() / 10, fxImage
+				.getWidth(), fxImage.getHeight());
+		img.vertexSamples[1].setSample(fxImage.getWidth() * 3 / 10, fxImage.getHeight() * 7 / 10, fxImage.getWidth() / 10, fxImage.getHeight() / 10, fxImage
+				.getWidth(), fxImage.getHeight());
+		img.vertexSamples[2].setSample(fxImage.getWidth() * 7 / 10, fxImage.getHeight() * 7 / 10, fxImage.getWidth() / 10, fxImage.getHeight() / 10, fxImage
+				.getWidth(), fxImage.getHeight());
 		transformImageView.setTranslateX(transformImageView.getImage().getWidth() * 0.5 * ( transformImageView.getScaleX() - 1.0 ));
 		transformImageView.setTranslateY(transformImageView.getImage().getHeight() * 0.5 * ( transformImageView.getScaleY() - 1.0 ));
 		transformImageSizeLabel.setText((int) fxImage.getWidth() + "x" + (int) fxImage.getHeight() + " px");
@@ -531,9 +562,9 @@ public class Controller implements Initializable {
 		TransformImageData img = SharedState.INSTANCE.transformImages.get(imageName);
 		Core.flip(img.imageData, img.imageData, 0);
 		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-//		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
-//		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
-//				img.imageData.channels(), PixelFormat.getByteRgbInstance());
+		//		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
+		//		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
+		//				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		Image fxImage = ImageUtils.createImage(imageCopy);
 		refreshTransformImage(img, fxImage);
 	}
@@ -550,13 +581,13 @@ public class Controller implements Initializable {
 			lc.setTitle(s);
 			yAxis.setLabel("Value");
 			xAxis.setLabel("Sample");
-			List< Double[] > results = history.stream().map(r -> r.getResults().get(s).toArray(new Double[]{})).collect(Collectors.toList());
+			List< Double[] > results = history.stream().map(r -> r.getResults().get(s).toArray(new Double[] {})).collect(Collectors.toList());
 			List< Series > series = new ArrayList<>();
 			for ( int i = 0; i < results.size(); i++ ) {
 				double[] r = Arrays.stream(results.get(i)).mapToDouble(Double::doubleValue).toArray();
 				if ( r != null ) {
 					List< String > names = history.stream().findFirst().map(result -> result.getImageNames()).orElse(
-						IntStream.range(1, r.length + 1).mapToObj(n -> "Series " + n).collect(Collectors.toList())
+							IntStream.range(1, r.length + 1).mapToObj(n -> "Series " + n).collect(Collectors.toList())
 					);
 					for ( int j = 0; j < r.length; j++ ) {
 						if ( series.size() == j ) {
@@ -597,7 +628,8 @@ public class Controller implements Initializable {
 					});
 					final List< Color > defaultColors = Arrays.asList(Color.web("#f3622d"), Color.web("#fba71b"), Color.web("#57b757"), Color.web("#41a9c9"),
 							Color.web("#4258c9"), Color.web("#9a42c8"), Color.web("#c84164"), Color.web("#888888"));
-					e.setValue(SharedState.INSTANCE.resultsSeriesColors.get(lc.getTitle() + "/" + s.getName()) == null ? defaultColors.get(index % defaultColors
+					e.setValue(SharedState.INSTANCE.resultsSeriesColors.get(lc.getTitle() + "/" + s.getName()) == null ? defaultColors.get(index %
+							defaultColors
 							.size()) : SharedState.INSTANCE.resultsSeriesColors.get(lc.getTitle() + "/" + s.getName()));
 					item.setSymbol(e);
 				}
@@ -635,31 +667,31 @@ public class Controller implements Initializable {
 
 	private void placeCharts() {
 		final Integer index = chartsSampleComboBox.getValue() - 1;
-			List< BarChart< String, Number > > charts = SharedState.INSTANCE.charts.get().get(index);
-			if ( charts != null ) {
-				chartsBySampleGrid.getChildren().clear();
-				chartsBySampleGrid.getColumnConstraints().clear();
-				chartsBySampleGrid.getRowConstraints().clear();
-				final int noOfColumns = Math.min(Integer.parseInt(chartsColumnsTextField.getText()), charts.size());
-				if ( noOfColumns > 0 ) {
-					for ( int i = 0; i < noOfColumns; i++ ) {
-						final ColumnConstraints columnConstraints = new ColumnConstraints();
-						columnConstraints.setPercentWidth(100.0 / noOfColumns);
-						chartsBySampleGrid.getColumnConstraints().add(columnConstraints);
+		List< BarChart< String, Number > > charts = SharedState.INSTANCE.charts.get().get(index);
+		if ( charts != null ) {
+			chartsBySampleGrid.getChildren().clear();
+			chartsBySampleGrid.getColumnConstraints().clear();
+			chartsBySampleGrid.getRowConstraints().clear();
+			final int noOfColumns = Math.min(Integer.parseInt(chartsColumnsTextField.getText()), charts.size());
+			if ( noOfColumns > 0 ) {
+				for ( int i = 0; i < noOfColumns; i++ ) {
+					final ColumnConstraints columnConstraints = new ColumnConstraints();
+					columnConstraints.setPercentWidth(100.0 / noOfColumns);
+					chartsBySampleGrid.getColumnConstraints().add(columnConstraints);
+				}
+				final int noOfRows = charts.size() / noOfColumns + ( charts.size() % noOfColumns == 0 ? 0 : 1 );
+				for ( int i = 0; i < noOfRows; i++ ) {
+					List< BarChart< String, Number > > chartsInRow = new ArrayList<>();
+					int n = 0;
+					while ( i * noOfColumns + n < charts.size() && n < noOfColumns ) {
+						chartsInRow.add(charts.get(i * noOfColumns + n));
+						n++;
 					}
-					final int noOfRows = charts.size() / noOfColumns + ( charts.size() % noOfColumns == 0 ? 0 : 1 );
-					for ( int i = 0; i < noOfRows; i++ ) {
-						List< BarChart< String, Number > > chartsInRow = new ArrayList<>();
-						int n = 0;
-						while ( i * noOfColumns + n < charts.size() && n < noOfColumns ) {
-							chartsInRow.add(charts.get(i * noOfColumns + n));
-							n++;
-						}
-						chartsBySampleGrid.addRow(i, chartsInRow.toArray(new BarChart[0]));
-					}
+					chartsBySampleGrid.addRow(i, chartsInRow.toArray(new BarChart[0]));
 				}
 			}
-			colorSeries(index);
+		}
+		colorSeries(index);
 	}
 
 	private void colorSeries( int idx ) {
@@ -697,16 +729,17 @@ public class Controller implements Initializable {
 				});
 				final List< Color > defaultColors = Arrays.asList(Color.web("#f3622d"), Color.web("#fba71b"), Color.web("#57b757"), Color.web("#41a9c9"),
 						Color.web("#4258c9"), Color.web("#9a42c8"), Color.web("#c84164"), Color.web("#888888"));
-				e.setValue(SharedState.INSTANCE.seriesColors.get(idx).get(s.getName()) == null ? defaultColors.get(index % defaultColors.size()) : SharedState.INSTANCE
+				e.setValue(SharedState.INSTANCE.seriesColors.get(idx).get(s.getName()) == null ? defaultColors.get(index % defaultColors.size()) : SharedState
+						.INSTANCE
 						.seriesColors.get(idx).get(s.getName()));
 				item.setSymbol(e);
 			}
 		}
 	}
 
-	private List< Series > generateSeries( final Map< String, UnmodifiableArrayList<Double> > results ) {
+	private List< Series > generateSeries( final Map< String, UnmodifiableArrayList< Double > > results ) {
 		List< Series > series = new ArrayList<>();
-		for ( Map.Entry< String, UnmodifiableArrayList<Double> > e : results.entrySet() ) {
+		for ( Map.Entry< String, UnmodifiableArrayList< Double > > e : results.entrySet() ) {
 			Series series1 = new Series();
 			series1.setName(e.getKey());
 			for ( int i = 0; i < e.getValue().size(); i++ ) {
@@ -764,9 +797,11 @@ public class Controller implements Initializable {
 
 			validateChartsControlsDisableProperties();
 		});
-		Optional< Integer > index = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> SharedState.INSTANCE
+		Optional< Integer > index = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> SharedState
+				.INSTANCE
 				.charts.get().get(chartsSampleComboBox.getValue() - 1).indexOf(n)).min(Integer::compareTo);
-		SharedState.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
+		SharedState.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle
+				().equals
 				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
 		SharedState.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).add(index.orElse(0), bc);
 		placeCharts();
@@ -799,7 +834,8 @@ public class Controller implements Initializable {
 		BarChart< String, Number > chart = (BarChart< String, Number >) chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
 				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()).get(0); //.map(n -> ((BarChart<String, Number>) n).getData()).forEach(series -> {
 		final Integer index = chartsSampleComboBox.getValue() - 1;
-		Series s = SharedState.INSTANCE.series.get().get(index).stream().filter(n -> n.getName().equals(chart.getData().get(chart.getData().size() - 1).getName())).collect
+		Series s = SharedState.INSTANCE.series.get().get(index).stream().filter(n -> n.getName().equals(chart.getData().get(chart.getData().size() - 1)
+				.getName())).collect
 				(Collectors.toList()).get(0);
 		List< String > names = chart.getData().stream().filter(n -> !n.getName().equals(chart.getData().get(chart.getData().size() - 1).getName())).map(n -> n
 				.getName()).collect(Collectors.toList());
@@ -828,7 +864,8 @@ public class Controller implements Initializable {
 
 		});
 		//								bc1.setLegendVisible(false);
-		Optional< Integer > idx = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> SharedState.INSTANCE
+		Optional< Integer > idx = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals(GRAPH_SELECTION_STYLE)).map(n -> SharedState
+				.INSTANCE
 				.charts.get().get(chartsSampleComboBox.getValue() - 1).indexOf(n)).min(Integer::compareTo);
 		//								SharedState.INSTANCE.chartsBySample.get().removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle()
 		// .equals(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
@@ -844,14 +881,15 @@ public class Controller implements Initializable {
 
 	@FXML
 	void delete( ActionEvent actionEvent ) {
-		SharedState.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
+		SharedState.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle
+				().equals
 				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
 		placeCharts();
 		validateChartsControlsDisableProperties();
 	}
 
 	@FXML
-	void showAllCharts( ActionEvent actionEvent ) {	}
+	void showAllCharts( ActionEvent actionEvent ) { }
 
 	public void transformTab( ActionEvent actionEvent ) {
 		if ( !transformTab.isSelected() ) mainTabPane.getSelectionModel().select(transformTab);
@@ -861,7 +899,8 @@ public class Controller implements Initializable {
 		if ( !samplesTab.isSelected() ) mainTabPane.getSelectionModel().select(samplesTab);
 	}
 
-	public void chartsTab( ActionEvent actionEvent ) {if ( !chartsTab.isSelected() ) mainTabPane.getSelectionModel().select(chartsTab);
+	public void chartsTab( ActionEvent actionEvent ) {
+		if ( !chartsTab.isSelected() ) mainTabPane.getSelectionModel().select(chartsTab);
 	}
 
 	public void chartsBySample( ActionEvent actionEvent ) {
@@ -905,21 +944,29 @@ public class Controller implements Initializable {
 			SharedState.INSTANCE.seriesColors.clear();
 			SharedState.INSTANCE.resultsSeriesColors.clear();
 			samples.clear();
-			if (img != null) {
-				for ( int j = 0; j < img.samples.size(); j++) {
+			if ( img != null ) {
+				for ( int j = 0; j < img.samples.size(); j++ ) {
 					int i = 0;
 					samples.add(new ArrayList<>());
 					BaseSample r = img.samples.get(j);
 					final Mat[] images = new Mat[SharedState.INSTANCE.samplesImages.size()];
 					for ( String key : samplesImageList.getItems() ) {
 						final SamplesImageData samplesImageData = SharedState.INSTANCE.samplesImages.get(key);
+						final int x = (int) Math.max(r.sampleArea.getX(), 0);
+						final int y = (int) Math.max(r.sampleArea.getY(), 0);
+						int width = (int) Math.min(r.sampleArea.getWidth(), samplesImageData.imageData.width() - x);
+						int height = (int) Math.min(r.sampleArea.getHeight(), samplesImageData.imageData.height() - y);
+						if (r.sampleArea.getX() < 0) width += r.sampleArea.getX();
+						if (r.sampleArea.getY() < 0) height += r.sampleArea.getY();
 						images[i] = samplesImageData.imageData
-								.submat(new Rect((int) r.sampleArea.getX(), (int) r.sampleArea.getY(), (int) r.sampleArea.getWidth(), (int) r.sampleArea.getHeight())).clone();
+								.submat(new Rect(x, y, width, height)).clone();
 						Mat zeros = Mat.zeros(images[i].rows(), images[i].cols(), images[i].type());
-						ellipse(zeros, new Point(r.getRadiusX(), r.getRadiusY()), new Size(r.getRadiusX(), r.getRadiusY()), 0.0, 0.0, 360.0, new Scalar(255, 255, 255, 255), Core.FILLED);
+						ellipse(zeros, new Point(r.getCenterX() - x, r.getCenterY() - y), new Size(r.getRadiusX(), r.getRadiusY()), r.getRotate(), 0.0, 360.0, new Scalar(255,
+								255, 255, 255), Core.FILLED);
 						Core.bitwise_and(images[i], zeros, images[i]);
-//						final ImageView view = new ImageView(ImageUtils.createImage(ImageUtils.getImageData(images[i]), images[i].width(), images[i].height(),
-//								images[i].channels(), PixelFormat.getByteBgraInstance()));
+						//						final ImageView view = new ImageView(ImageUtils.createImage(ImageUtils.getImageData(images[i]), images[i]
+						// .width(), images[i].height(),
+						//								images[i].channels(), PixelFormat.getByteBgraInstance()));
 						final ImageView view = new ImageView(ImageUtils.createImage(images[i]));
 						view.setPreserveRatio(true);
 						samples.get(j).add(new Pair<>(key, view));
@@ -932,7 +979,8 @@ public class Controller implements Initializable {
 					SharedState.INSTANCE.seriesColors.add(new HashMap<>());
 					createCharts(j);
 				}
-				chartsSampleComboBox.setItems(FXCollections.observableArrayList(IntStream.range(1, SharedState.INSTANCE.results.get().size() + 1).boxed().collect(Collectors.toList())));
+				chartsSampleComboBox.setItems(FXCollections.observableArrayList(IntStream.range(1, SharedState.INSTANCE.results.get().size() + 1).boxed()
+						.collect(Collectors.toList())));
 				chartsSampleComboBox.setValue(1);
 				createHistoryCharts();
 				validateChartsControlsDisableProperties();
@@ -945,7 +993,7 @@ public class Controller implements Initializable {
 
 	private void placeImages() {
 		final Integer index = chartsSampleComboBox.getValue() - 1;
-		List< Pair<String, ImageView >> samples = this.samples.get(index);
+		List< Pair< String, ImageView > > samples = this.samples.get(index);
 		imagesBySampleGrid.getChildren().clear();
 		imagesBySampleGrid.getColumnConstraints().clear();
 		imagesBySampleGrid.getRowConstraints().clear();
@@ -974,7 +1022,7 @@ public class Controller implements Initializable {
 					VBox vbox = new VBox();
 					vbox.setAlignment(Pos.CENTER);
 					vbox.setSpacing(10.0);
-					final Pair<String, ImageView> pair = samples.get(i * noOfColumns + n);
+					final Pair< String, ImageView > pair = samples.get(i * noOfColumns + n);
 					pair.getValue().setFitWidth(fitWidth);
 					pair.getValue().setFitHeight(fitHeight);
 					vbox.getChildren().add(pair.getValue());
@@ -1027,14 +1075,16 @@ public class Controller implements Initializable {
 				}
 				if ( image != null ) {
 					final Mat imageCopy = ImageUtils.getImageCopy(image);
-//					cvtColor(image, imageCopy, COLOR_BGR2RGB);
-//					Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), imageCopy.width(), imageCopy.height(),
-//							imageCopy.channels(), PixelFormat.getByteRgbInstance());
+					//					cvtColor(image, imageCopy, COLOR_BGR2RGB);
+					//					Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), imageCopy.width(), imageCopy.height(),
+					//							imageCopy.channels(), PixelFormat.getByteRgbInstance());
 					Image fxImage = ImageUtils.createImage(imageCopy);
 					SharedState.INSTANCE.transformImages.put(fileName, imageDataFactory.createTransformImageData(fxImage, image));
 					transformImageList.getItems().remove(fileName);
 					transformImageList.getItems().add(fileName);
 					transformImageList.getSelectionModel().selectLast();
+					transformScrollPane.setHvalue(0.5);
+					transformScrollPane.setVvalue(0.5);
 				}
 			}
 		}
@@ -1047,9 +1097,9 @@ public class Controller implements Initializable {
 		Core.transpose(img.imageData, img.imageData);
 		Core.flip(img.imageData, img.imageData, 0);
 		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-//		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
-//		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
-//				img.imageData.channels(), PixelFormat.getByteRgbInstance());
+		//		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
+		//		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
+		//				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		Image fxImage = ImageUtils.createImage(imageCopy);
 		refreshTransformImage(img, fxImage);
 	}
@@ -1061,9 +1111,9 @@ public class Controller implements Initializable {
 		Core.transpose(img.imageData, img.imageData);
 		Core.flip(img.imageData, img.imageData, 1);
 		Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-//		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
-//		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
-//				img.imageData.channels(), PixelFormat.getByteRgbInstance());
+		//		cvtColor(imageCopy, imageCopy, COLOR_BGR2RGB);
+		//		Image fxImage = ImageUtils.createImage(ImageUtils.getImageData(imageCopy), img.imageData.width(), img.imageData.height(),
+		//				img.imageData.channels(), PixelFormat.getByteRgbInstance());
 		Image fxImage = ImageUtils.createImage(imageCopy);
 		refreshTransformImage(img, fxImage);
 	}
@@ -1096,7 +1146,7 @@ public class Controller implements Initializable {
 
 		Preferences prefs = Preferences.userNodeForPackage(Main.class);
 		String s = prefs.get(Controller.THEME_PREFERENCE_KEY, Controller.THEME_LIGHT);
-		if (s.equals(Controller.THEME_LIGHT)) {
+		if ( s.equals(Controller.THEME_LIGHT) ) {
 			theme.selectToggle(optionsMenuThemeLight);
 			root.getStylesheets().add(Controller.THEME_LIGHT);
 		} else {
@@ -1194,7 +1244,7 @@ public class Controller implements Initializable {
 		editMenuExtractChart.setDisable(true);
 		editMenuRemoveCharts.setDisable(true);
 		chartsSampleComboBox.getSelectionModel().selectedItemProperty().addListener(( observable, oldValue, newValue ) -> {
-			if (newValue != null) {
+			if ( newValue != null ) {
 				placeCharts();
 				placeImages();
 				validateChartsControlsDisableProperties();
@@ -1239,7 +1289,7 @@ public class Controller implements Initializable {
 					}
 				}
 
-				if ( SharedState.INSTANCE.zoom) {
+				if ( SharedState.INSTANCE.zoom ) {
 					double newX = Math.max(0, newValue.sampleArea.getX() - 50);
 					double newY = Math.max(0, newValue.sampleArea.getY() - 50);
 					double newWidth = newValue.sampleArea.getWidth() + 100;
@@ -1253,17 +1303,19 @@ public class Controller implements Initializable {
 					double newVDenominator = calculateDenominator(
 							transformImageView.getScaleX(), transformImageView.getImage().getHeight(), transformScrollPane.getHeight());
 					transformScrollPane.setHvalue(
-							(Math.max(0, (newX + newWidth / 2) * transformImageView.getScaleX() - (transformScrollPane.getWidth() / 2)) / (transformScrollPane.getWidth() / 2))
+							( Math.max(0, ( newX + newWidth / 2 ) * transformImageView.getScaleX() - ( transformScrollPane.getWidth() / 2 )) / (
+									transformScrollPane.getWidth() / 2 ) )
 									/ newHDenominator);
 					transformScrollPane.setVvalue(
-							(Math.max(0, (newY + newHeight / 2) * transformImageView.getScaleX() - (transformScrollPane.getHeight() / 2)) / (transformScrollPane.getHeight() / 2))
-							/ newVDenominator);
+							( Math.max(0, ( newY + newHeight / 2 ) * transformImageView.getScaleX() - ( transformScrollPane.getHeight() / 2 )) / (
+									transformScrollPane.getHeight() / 2 ) )
+									/ newVDenominator);
 				}
 				SharedState.INSTANCE.zoom = false;
 			}
 		});
 		SharedState.INSTANCE.selectedSample.addListener(( observable, oldValue, newValue ) -> {
-			if (createRadioButton.isSelected()) {
+			if ( createRadioButton.isSelected() ) {
 				SharedState.INSTANCE.selectedSample.set(null);
 			} else {
 				if ( newValue != null ) {
@@ -1277,7 +1329,7 @@ public class Controller implements Initializable {
 							break;
 						}
 					}
-					if ( SharedState.INSTANCE.zoom) {
+					if ( SharedState.INSTANCE.zoom ) {
 						double newX = Math.max(0, newValue.sampleArea.getX() - 50);
 						double newY = Math.max(0, newValue.sampleArea.getY() - 50);
 						double newWidth = newValue.sampleArea.getWidth() + 100;
@@ -1291,11 +1343,13 @@ public class Controller implements Initializable {
 						double newVDenominator = calculateDenominator(
 								samplesImageView.getScaleX(), samplesImageView.getImage().getHeight(), samplesScrollPane.getHeight());
 						samplesScrollPane.setHvalue(
-								( Math.max(0, ( newX + newWidth / 2 ) * samplesImageView.getScaleX() - ( samplesScrollPane.getWidth() / 2 )) / ( transformScrollPane.getWidth() / 2 ) )
+								( Math.max(0, ( newX + newWidth / 2 ) * samplesImageView.getScaleX() - ( samplesScrollPane.getWidth() / 2 )) / (
+										transformScrollPane.getWidth() / 2 ) )
 
 										/ newHDenominator);
 						samplesScrollPane.setVvalue(
-								( Math.max(0, ( newY + newHeight / 2 ) * samplesImageView.getScaleX() - ( samplesScrollPane.getHeight() / 2 )) / ( transformScrollPane.getHeight() / 2 ) )
+								( Math.max(0, ( newY + newHeight / 2 ) * samplesImageView.getScaleX() - ( samplesScrollPane.getHeight() / 2 )) / (
+										transformScrollPane.getHeight() / 2 ) )
 										/ newVDenominator);
 					}
 					SharedState.INSTANCE.zoom = false;
@@ -1326,12 +1380,12 @@ public class Controller implements Initializable {
 		});
 
 		transformImageViewGroup.setOnMouseMoved(event -> {
-					transformMousePositionLabel.setText((int) ( event.getX() / transformImageView.getScaleX() ) + " : " + (int) ( event.getY() / transformImageView
-							.getScaleY() ));
+			transformMousePositionLabel.setText((int) ( event.getX() / transformImageView.getScaleX() ) + " : " + (int) ( event.getY() / transformImageView
+					.getScaleY() ));
 
-				});
+		});
 		transformImageViewGroup.setOnMouseClicked(event -> {
-			if (SharedState.INSTANCE.selectedRectangle.isNotNull().get()) {
+			if ( SharedState.INSTANCE.selectedRectangle.isNotNull().get() ) {
 				final Rectangle rectangle = SharedState.INSTANCE.selectedRectangle.get().sampleArea;
 				double dX = event.getX() / transformImageView.getScaleX() - rectangle.getX();
 				double dY = event.getY() / transformImageView.getScaleY() - rectangle.getY();
@@ -1357,7 +1411,7 @@ public class Controller implements Initializable {
 				samplesImageViewAnchor.getChildren().add(sample.sampleArea);
 				samplesImageViewAnchor.getChildren().add(sample);
 			} else {
-				if (SharedState.INSTANCE.selectedSample.isNotNull().get()) {
+				if ( SharedState.INSTANCE.selectedSample.isNotNull().get() ) {
 					final Rectangle rectangle = SharedState.INSTANCE.selectedSample.get().sampleArea;
 					double dX = event.getX() / samplesImageView.getScaleX() - rectangle.getX();
 					double dY = event.getY() / samplesImageView.getScaleY() - rectangle.getY();
@@ -1368,10 +1422,13 @@ public class Controller implements Initializable {
 		});
 
 		samplesImageViewGroup.setOnMouseMoved(event -> {
-					samplesMousePositionLabel.setText((int) ( event.getX() / samplesImageView.getScaleX() ) + " : " + (int) ( event.getY() / samplesImageView
-							.getScaleY() ));
-				});
+			samplesMousePositionLabel.setText((int) ( event.getX() / samplesImageView.getScaleX() ) + " : " + (int) ( event.getY() / samplesImageView
+					.getScaleY() ));
+		});
 
+		rotateRadioButton.selectedProperty().addListener(( observable, oldValue, newValue ) -> {
+			SharedState.INSTANCE.rotate.set(newValue);
+		});
 	}
 
 	private void setTooltips() {
@@ -1414,7 +1471,7 @@ public class Controller implements Initializable {
 			imageView.setScaleY(scale);
 			imageView.setTranslateX(imageView.getImage().getWidth() * 0.5 * ( scale - 1.0 ));
 			imageView.setTranslateY(imageView.getImage().getHeight() * 0.5 * ( scale - 1.0 ));
-			if (Math.round(oldScale * 100) != Math.round(scale * 100)) {
+			if ( Math.round(oldScale * 100) != Math.round(scale * 100) ) {
 				validateScrollbars(imageView, imageScrollPane, scale, oldScale, hValue, vValue);
 			}
 			String asString = String.format("%.0f%%", newValue.doubleValue() * 100);
@@ -1430,13 +1487,13 @@ public class Controller implements Initializable {
 	}
 
 	private void validateScrollbars( final ImageView imageView, final ScrollPane imageScrollPane, final double scale, final double oldScale,
-									 final double hValue, final double vValue) {
-		if ( (scale * imageView.getImage().getWidth() > imageScrollPane.getWidth())) {
+									 final double hValue, final double vValue ) {
+		if ( ( scale * imageView.getImage().getWidth() > imageScrollPane.getWidth() ) ) {
 			double oldHDenominator = calculateDenominator(oldScale, imageView.getImage().getWidth(), imageScrollPane.getWidth());
 			double newHDenominator = calculateDenominator(scale, imageView.getImage().getWidth(), imageScrollPane.getWidth());
 			imageScrollPane.setHvalue(calculateValue(scale, oldScale, hValue, oldHDenominator, newHDenominator));
 		}
-		if ((scale * imageView.getImage().getHeight() > imageScrollPane.getHeight())) {
+		if ( ( scale * imageView.getImage().getHeight() > imageScrollPane.getHeight() ) ) {
 			double oldVDenominator = calculateDenominator(oldScale, imageView.getImage().getHeight(), imageScrollPane.getHeight());
 			double newVDenominator = calculateDenominator(scale, imageView.getImage().getHeight(), imageScrollPane.getHeight());
 			imageScrollPane.setVvalue(calculateValue(scale, oldScale, vValue, oldVDenominator, newVDenominator));
@@ -1444,11 +1501,11 @@ public class Controller implements Initializable {
 	}
 
 	private double calculateValue( final double scale, final double oldScale, final double value, final double oldDenominator, final double newDenominator ) {
-		return ((scale - 1) + (value * oldDenominator - (oldScale - 1)) / oldScale * scale) / newDenominator;
+		return ( ( scale - 1 ) + ( value * oldDenominator - ( oldScale - 1 ) ) / oldScale * scale ) / newDenominator;
 	}
 
 	private double calculateDenominator( final double scale, final double imageSize, final double paneSize ) {
-		return (scale * imageSize - paneSize) * 2 / paneSize;
+		return ( scale * imageSize - paneSize ) * 2 / paneSize;
 	}
 
 	private void updateScrollbars( final ImageView imageView, final ScrollPane imageScrollPane, final double deltaY ) {
@@ -1503,16 +1560,18 @@ public class Controller implements Initializable {
 		editMenuSelectMode.disableProperty().bind(Bindings.or(samplesTab.selectedProperty().not(), selectRadioButton.selectedProperty()));
 		editMenuDeleteSample.disableProperty().bind(
 				Bindings.or(
-					Bindings.or(SharedState.INSTANCE.selectedSample.isNull(), selectRadioButton.selectedProperty().not()),
-					Bindings.or(samplesTab.selectedProperty().not(), samplesImageView.imageProperty().isNull())
+						Bindings.or(SharedState.INSTANCE.selectedSample.isNull(), selectRadioButton.selectedProperty().not()),
+						Bindings.or(samplesTab.selectedProperty().not(), samplesImageView.imageProperty().isNull())
 				)
 		);
 		editMenuSelectAllFeatures.disableProperty().bind(Bindings.or(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty().not()));
 		editMenuDeselectAllFeatures.disableProperty().bind(Bindings.or(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty().not()));
 		editMenuRestoreCharts.disableProperty().bind(Bindings.or(chartsBySampleRadioButton.selectedProperty().not(), chartsTab.selectedProperty().not()));
-		editMenuZoomIn.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(), transformTab.selectedProperty()), Bindings
+		editMenuZoomIn.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(),
+				transformTab.selectedProperty()), Bindings
 				.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty()))));
-		editMenuZoomOut.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(), transformTab.selectedProperty()),
+		editMenuZoomOut.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(),
+				transformTab.selectedProperty()),
 				Bindings.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty()))));
 		navMenuSamples.disableProperty().bind(SharedState.INSTANCE.results.isNull());
 		navMenuChartsBySample.disableProperty().bind(SharedState.INSTANCE.results.isNull());
@@ -1539,7 +1598,7 @@ public class Controller implements Initializable {
 		resultsButton.disableProperty().bind(Bindings.or(noSamplesAdded,
 				Bindings.or(Bindings.isEmpty(samplesImageList.getItems()), Bindings.or(noFeaturesAvailable, noFeaturesChosen))));
 		runMenuResultsButton.disableProperty().bind(Bindings.or(noSamplesAdded, Bindings.or(samplesTab.selectedProperty().not(),
-						Bindings.or(Bindings.isEmpty(samplesImageList.getItems()), Bindings.or(noFeaturesAvailable, noFeaturesChosen)))));
+				Bindings.or(Bindings.isEmpty(samplesImageList.getItems()), Bindings.or(noFeaturesAvailable, noFeaturesChosen)))));
 		transformImagesButton.disableProperty().bind(Bindings.isEmpty(transformImageList.getItems()));
 		runMenuTransformButton.disableProperty().bind(Bindings.or(transformTab.selectedProperty().not(),
 				Bindings.isEmpty(transformImageList.getItems())));
@@ -1570,7 +1629,7 @@ public class Controller implements Initializable {
 								Arrays.stream(img.vertexSamples).map(r -> r.sampleArea).toArray(Rectangle[]::new)
 						);
 						transformImageViewAnchor.getChildren().addAll(img.vertexSamples);
-//						Arrays.stream(img.vertexSamples).forEach(r -> r.sampleArea.setVisible(false));
+						//						Arrays.stream(img.vertexSamples).forEach(r -> r.sampleArea.setVisible(false));
 						transformImageView.setScaleX(img.scale.get());
 						transformScrollPane.setHvalue(img.hScrollPos);
 						transformScrollPane.setVvalue(img.vScrollPos);
@@ -1604,7 +1663,7 @@ public class Controller implements Initializable {
 								img.samples.stream().map(r -> r.sampleArea).toArray(Rectangle[]::new)
 						);
 						samplesImageViewAnchor.getChildren().addAll(img.samples);
-//						img.samples.forEach(r -> r.sampleArea.setVisible(false));
+						//						img.samples.forEach(r -> r.sampleArea.setVisible(false));
 						samplesImageView.setScaleX(img.scale.get());
 						samplesScrollPane.setHvalue(img.hScrollPos);
 						samplesScrollPane.setVvalue(img.vScrollPos);
@@ -1623,7 +1682,7 @@ public class Controller implements Initializable {
 		samplesImageList.getSelectionModel().clearSelection();
 		samplesImageList.getItems().clear();
 		SharedState.INSTANCE.samplesImages.clear();
-		samplesImageViewAnchor.getChildren().removeIf(n -> !(n instanceof ImageView));
+		samplesImageViewAnchor.getChildren().removeIf(n -> !( n instanceof ImageView ));
 		final Mat[] images = new Mat[SharedState.INSTANCE.transformImages.size()];
 		int interpolation = cubicRadioButton.isSelected() ?
 				INTER_CUBIC : linearRadioButton.isSelected() ?
@@ -1642,21 +1701,24 @@ public class Controller implements Initializable {
 				SharedState.INSTANCE.samplesImages.put(samplesImageList.getItems().get(j), result[j]);
 			mainTabPane.getSelectionModel().select(samplesTab);
 			samplesImageList.getSelectionModel().selectFirst();
+			samplesScrollPane.setHvalue(0.5);
+			samplesScrollPane.setVvalue(0.5);
 		} catch ( CvException e ) {
 			showAlert("Transforming transformImages failed! Please check selected points.");
 		}
 	}
 
-	private SamplesImageData[] transform( final Mat[] images, final MatOfPoint2f[] points, int interpolation) {
+	private SamplesImageData[] transform( final Mat[] images, final MatOfPoint2f[] points, int interpolation ) {
 		if ( images.length != points.length )
 			throw new IllegalArgumentException("Images count does not match passed vertices count!");
 		ImageUtils.performAffineTransformations(images, points, interpolation);
 		return Arrays.stream(images)
 				.map(i ->
 						imageDataFactory.createSamplesImageData(
-//								ImageUtils.createImage(
-//										ImageUtils.getImageData(i), i.width(), i.height(), i.channels(), PixelFormat.getByteBgraPreInstance()
-//								), i
+								//								ImageUtils.createImage(
+								//										ImageUtils.getImageData(i), i.width(), i.height(), i.channels(), PixelFormat
+								// .getByteBgraPreInstance()
+								//								), i
 								ImageUtils.createImage(i), i
 						)
 				).toArray(SamplesImageData[]::new);
@@ -1664,13 +1726,13 @@ public class Controller implements Initializable {
 
 	public void deleteSample( ActionEvent actionEvent ) {
 		BaseSample r = SharedState.INSTANCE.selectedSample.get();
-		if (r != null) {
+		if ( r != null ) {
 			int index = -1;
-			for (SamplesImageData img : SharedState.INSTANCE.samplesImages.values()) {
+			for ( SamplesImageData img : SharedState.INSTANCE.samplesImages.values() ) {
 				index = img.samples.indexOf(r);
-				if (index >= 0) break;
+				if ( index >= 0 ) break;
 			}
-			for (SamplesImageData img : SharedState.INSTANCE.samplesImages.values()) {
+			for ( SamplesImageData img : SharedState.INSTANCE.samplesImages.values() ) {
 				img.samples.remove(index);
 			}
 			SharedState.INSTANCE.selectedSample.set(null);
@@ -1679,28 +1741,38 @@ public class Controller implements Initializable {
 		}
 	}
 
+	public void clearSamples() {
+		BaseSample r = SharedState.INSTANCE.selectedSample.get();
+		for ( SamplesImageData img : SharedState.INSTANCE.samplesImages.values() ) {
+			img.samples.clear();
+		}
+		samplesImageViewAnchor.getChildren().removeIf(Sample.class::isInstance);
+		samplesImageViewAnchor.getChildren().removeIf(Rectangle.class::isInstance);
+	}
+
+
 	public void setCreateMode( ActionEvent actionEvent ) {
-		if (!createRadioButton.isSelected()) createRadioButton.setSelected(true);
+		if ( !createRadioButton.isSelected() ) createRadioButton.setSelected(true);
 	}
 
 	public void setSelectMode( ActionEvent actionEvent ) {
-		if (!selectRadioButton.isSelected()) selectRadioButton.setSelected(true);
+		if ( !selectRadioButton.isSelected() ) selectRadioButton.setSelected(true);
 	}
 
 	public void exportToPng( ActionEvent actionEvent ) {
 		DirectoryChooser chooser = new DirectoryChooser();
 		chooser.setTitle("Choose directory");
 		File selectedDirectory = chooser.showDialog(root.getScene().getWindow());
-		if (selectedDirectory != null) {
+		if ( selectedDirectory != null ) {
 			if ( selectedDirectory.canWrite() ) {
 				for ( int i = 0; i < samples.size(); i++ ) {
-					List< Pair<String, ImageView >> currentSamples = samples.get(i);
+					List< Pair< String, ImageView > > currentSamples = samples.get(i);
 					for ( int j = 0; j < currentSamples.size(); j++ ) {
 						try {
 							BufferedImage bimg = SwingFXUtils.fromFXImage(currentSamples.get(j).getValue().getImage(), null);
 							ImageIO.write(bimg, "png",
 									new File(selectedDirectory.getCanonicalPath()
-											+ File.separator +  "sample#" + (i + 1) + "_" + currentSamples.get(j).getKey() + ".png"));
+											+ File.separator + "sample#" + ( i + 1 ) + "_" + currentSamples.get(j).getKey() + ".png"));
 						} catch ( IOException e ) {
 							e.printStackTrace();
 							showAlert("Save failed! Check your write permissions.");

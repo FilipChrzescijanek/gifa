@@ -1,7 +1,11 @@
 package pwr.chrzescijanek.filip.gifa.model;
 
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
@@ -13,6 +17,13 @@ import pwr.chrzescijanek.filip.gifa.view.FXView;
 
 import java.util.List;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.atan;
+import static java.lang.Math.cos;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.sin;
+import static java.lang.Math.tan;
 import static javafx.scene.Cursor.DEFAULT;
 import static javafx.scene.Cursor.E_RESIZE;
 import static javafx.scene.Cursor.MOVE;
@@ -65,7 +76,7 @@ public abstract class BaseSample extends Ellipse {
 		bindToBounds();
 		addListeners();
 		setStyle();
-		bindProperties(this.imageData);
+		bindProperties();
 	}
 
 	public void setSample( double x, double y, double radiusX, double radiusY, final double xBound, final double yBound ) {
@@ -95,8 +106,10 @@ public abstract class BaseSample extends Ellipse {
 	}
 
 	void resizeAndPlace( final MouseEvent event ) {
-		resizeShape(event);
-		recalculateTranslates();
+		if (this instanceof VertexSample || !state.rotate.get()) {
+			resizeShape(event);
+			recalculateTranslates();
+		}
 	}
 
 	Stage getNewStage( String viewPath, String info, String title, List< ? extends PanelView > views ) {
@@ -122,14 +135,18 @@ public abstract class BaseSample extends Ellipse {
 	}
 
 	private void bindToBounds() {
-		sampleArea.xProperty().bind(this.centerXProperty().subtract(this.radiusXProperty()));
-		sampleArea.yProperty().bind(this.centerYProperty().subtract(this.radiusYProperty()));
-		sampleArea.widthProperty().bind(this.radiusXProperty().multiply(2.0));
-		sampleArea.heightProperty().bind(this.radiusYProperty().multiply(2.0));
+		defaultBound();
 		sampleArea.translateXProperty().bind(this.translateXProperty());
 		sampleArea.translateYProperty().bind(this.translateYProperty());
 		sampleArea.scaleXProperty().bind(this.scaleXProperty());
 		sampleArea.scaleYProperty().bind(this.scaleYProperty());
+	}
+
+	void defaultBound() {
+		sampleArea.xProperty().bind(this.centerXProperty().subtract(this.radiusXProperty()));
+		sampleArea.yProperty().bind(this.centerYProperty().subtract(this.radiusYProperty()));
+		sampleArea.widthProperty().bind(this.radiusXProperty().multiply(2.0));
+		sampleArea.heightProperty().bind(this.radiusYProperty().multiply(2.0));
 	}
 
 	private void addListeners() {
@@ -152,7 +169,7 @@ public abstract class BaseSample extends Ellipse {
 		sampleArea.setStroke(Color.color(1.0, 1.0, 1.0, 0.9));
 	}
 
-	abstract void bindProperties( final ImageData imageData );
+	abstract void bindProperties();
 
 	private void onScaleChanged() {
 		scaleXProperty().addListener(( observable, oldValue, newValue ) -> {
@@ -179,7 +196,7 @@ public abstract class BaseSample extends Ellipse {
 	}
 
 	private void checkForResizeOrDrag( final MouseEvent event ) {
-		if ( isSelected() ) {
+		if ( isSelected() && (this instanceof VertexSample || !state.rotate.get()) ) {
 			double dX = event.getX() - sampleArea.getX();
 			double dY = event.getY() - sampleArea.getY();
 			if ( !checkForResize(dX, dY) && dX > 10 / getScaleX() && dY > 10 / getScaleY()
@@ -191,14 +208,14 @@ public abstract class BaseSample extends Ellipse {
 	}
 
 	private void checkForResize( final MouseEvent event ) {
-		if ( isSelected() ) {
+		if ( isSelected() && (this instanceof VertexSample || !state.rotate.get()) ) {
 			double dX = event.getX() - sampleArea.getX();
 			double dY = event.getY() - sampleArea.getY();
 			checkForResize(dX, dY);
 		}
 	}
 
-	private boolean isSelected() {return state.selectedRectangle.get() == this || state.selectedSample.get() == this;}
+	boolean isSelected() {return state.selectedRectangle.get() == this || state.selectedSample.get() == this;}
 
 	private boolean checkForResize( final double dX, final double dY ) {
 		if ( sampleArea.getWidth() - dX < 7 / getScaleX() && sampleArea.getHeight() - dY < 7 / getScaleY() ) {
@@ -237,7 +254,7 @@ public abstract class BaseSample extends Ellipse {
 		this.setOnMouseDragged(this::resizeAndPlace);
 	}
 
-	private void recalculateTranslates() {
+	void recalculateTranslates() {
 		setTranslateX(( xBound * 0.5 * ( getScaleX() - 1.0 ) ) -
 				( xBound * 0.5 - getCenterX() ) * ( getScaleX() - 1.0 ));
 		setTranslateY(( yBound * 0.5 * ( getScaleY() - 1.0 ) ) -

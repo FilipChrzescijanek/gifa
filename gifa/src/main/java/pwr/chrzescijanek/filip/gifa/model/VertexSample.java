@@ -39,7 +39,7 @@ public class VertexSample extends BaseSample {
 	}
 
 	@Override
-	void bindProperties( final ImageData imageData ) {
+	void bindProperties( ) {
 		scaleXProperty().bind(imageData.scale);
 		sampleArea.visibleProperty().bind(Bindings.equal(state.selectedRectangle, this));
 	}

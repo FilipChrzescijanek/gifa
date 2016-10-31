@@ -315,6 +315,12 @@
 								<Insets top="5.0" left="20.0"/>
 							</VBox.margin>
 						</RadioButton>
+						<RadioButton fx:id="rotateRadioButton" mnemonicParsing="false"
+									 text="Rotate" toggleGroup="$drawMethod">
+							<VBox.margin>
+								<Insets top="5.0" left="20.0"/>
+							</VBox.margin>
+						</RadioButton>
 					</VBox>
 					<GridPane fx:id="samplesColorControls" GridPane.rowIndex="2">
 						<columnConstraints>

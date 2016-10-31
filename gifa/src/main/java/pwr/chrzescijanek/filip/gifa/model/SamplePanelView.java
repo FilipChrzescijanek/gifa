@@ -33,4 +33,20 @@ public class SamplePanelView extends PanelView {
 		});
 	}
 
+	@Override
+	void setOnScroll() {
+		setOnScroll(event -> {
+			if ( sample.state.rotate.get() ) {
+				if ( event.isControlDown() ) {
+					((Sample) sample).rotate(event);
+				} else {
+					final int index = sample.getIndexOf();
+					sample.state.samplesImages.values()
+							.forEach(img -> img.samples.get(index).updateRotation(event));
+					event.consume();
+				}
+		}
+		});
+	}
+
 }

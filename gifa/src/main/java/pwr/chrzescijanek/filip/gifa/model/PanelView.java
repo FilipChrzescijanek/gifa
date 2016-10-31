@@ -56,6 +56,7 @@ public abstract class PanelView extends ImageView {
 		setOnMousePressed();
 		setOnMouseClicked();
 		setOnMouseDragged();
+		setOnScroll();
 	}
 
 	private void setOnMousePressed() {
@@ -68,6 +69,8 @@ public abstract class PanelView extends ImageView {
 	abstract void setOnMouseClicked();
 
 	abstract void setOnMouseDragged();
+
+	abstract void setOnScroll();
 
 	private void setViewport() {
 		Rectangle2D rectangle2D = new Rectangle2D(sample.sampleArea.getX(), sample.sampleArea.getY(),
@@ -112,8 +115,10 @@ public abstract class PanelView extends ImageView {
 	}
 
 	private void createClip() {
-		clip.centerXProperty().bind(clip.radiusXProperty().multiply(scale));
-		clip.centerYProperty().bind(clip.radiusYProperty().multiply(scale));
+//		clip.centerXProperty().bind(clip.radiusXProperty().multiply(scale));
+//		clip.centerYProperty().bind(clip.radiusYProperty().multiply(scale));
+		clip.centerXProperty().bind(sample.sampleArea.widthProperty().divide(2.0).multiply(scale));
+		clip.centerYProperty().bind(sample.sampleArea.heightProperty().divide(2.0).multiply(scale));
 		clip.radiusXProperty().bind(sample.radiusXProperty());
 		clip.radiusYProperty().bind(sample.radiusYProperty());
 		clip.scaleXProperty().bind(scale);
