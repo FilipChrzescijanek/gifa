@@ -182,8 +182,8 @@ public abstract class BaseSample extends Ellipse {
 		if ( isSelected() ) {
 			double dX = event.getX() - sampleArea.getX();
 			double dY = event.getY() - sampleArea.getY();
-			if ( !checkForResize(dX, dY) && dX > 14 / getScaleX() && dY > 14 / getScaleY()
-					&& sampleArea.getWidth() - dX > 14 / getScaleX() && sampleArea.getHeight() - dY > 14 / getScaleY() ) {
+			if ( !checkForResize(dX, dY) && dX > 10 / getScaleX() && dY > 10 / getScaleY()
+					&& sampleArea.getWidth() - dX > 10 / getScaleX() && sampleArea.getHeight() - dY > 10 / getScaleY() ) {
 				getScene().setCursor(MOVE);
 				state.setSampleSelection(DRAG);
 			}

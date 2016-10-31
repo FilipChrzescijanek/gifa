@@ -2,6 +2,7 @@ package pwr.chrzescijanek.filip.gifa.core.util;
 
 import org.opencv.core.Mat;
 
+import static java.lang.Math.*;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.getImageData;
@@ -25,26 +26,46 @@ public final class FunctionUtils {
 	}
 
 	public static double calculateMean( final byte[] imageData, final int channels, final int valueIndex ) {
-		if ( valueIndex < 0 || valueIndex >= channels )
-			throw new IllegalArgumentException(
-					String.format("Value does not exist (index is negative or not enough channels)" +
-							"Index: %d, needed channels: %d, actual number of channels: %d", valueIndex, valueIndex + 1, channels)
-			);
+		checkIndex(channels, valueIndex);
 		double mean = 0.0;
 		int counter = 0;
-		for ( int j = 0; j < imageData.length; j += channels ) {
-			mean += Byte.toUnsignedInt(imageData[j + valueIndex]);
+		for ( int i = 0; i < imageData.length; i += channels ) {
+			mean += toDouble(imageData[i + valueIndex]);
 			counter++;
 		}
 		mean /= counter * 1.0;
 		return mean;
 	}
 
-	public static double[] calculateStdDeviations( final Mat[] images, final int valueIndex ) {
+	public static double[] calculateVariances( final Mat[] images, final int valueIndex ) {
 		final byte[][] imagesData = getImagesData(images);
-		final double[] stdDeviations = new double[images.length];
+		final double[] variances = new double[images.length];
+		for ( int i = 0; i < variances.length; i++ ) {
+			variances[i] = calculateVariance(imagesData[i], images[i].channels(), valueIndex);
+		}
+		return variances;
+	}
+
+	public static double calculateVariance( final Mat image, final int valueIndex ) {
+		return calculateVariance(getImageData(image), image.channels(), valueIndex);
+	}
+
+	public static double calculateVariance( final byte[] imageData, final int channels, final int valueIndex ) {
+		final double mean = calculateMean(imageData, channels, valueIndex);
+		double variance = 0.0;
+		int counter = 0;
+		for ( int i = 0; i < imageData.length; i += channels ) {
+			variance += pow(toDouble(imageData[i + valueIndex]) - mean, 2);
+			counter++;
+		}
+		variance /= counter * 1.0;
+		return variance;
+	}
+
+	public static double[] calculateStdDeviations( final Mat[] images, final int valueIndex ) {
+		final double[] stdDeviations = calculateVariances(images, valueIndex);
 		for ( int i = 0; i < stdDeviations.length; i++ ) {
-			stdDeviations[i] = calculateStdDeviation(imagesData[i], images[i].channels(), valueIndex);
+			stdDeviations[i] = sqrt(stdDeviations[i]);
 		}
 		return stdDeviations;
 	}
@@ -54,14 +75,119 @@ public final class FunctionUtils {
 	}
 
 	public static double calculateStdDeviation( final byte[] imageData, final int channels, final int valueIndex ) {
-		final double mean = calculateMean(imageData, channels, valueIndex);
-		double variance = 0.0;
-		int counter = 0;
-		for ( int j = 0; j < imageData.length; j += channels ) {
-			variance += pow(Byte.toUnsignedInt(imageData[j + valueIndex]) - mean, 2);
-			counter++;
+		return sqrt(calculateVariance(imageData, channels, valueIndex));
+	}
+
+	public static double[] calculateLinearFuzzinesses( final Mat[] images, final int valueIndex ) {
+		final byte[][] imagesData = getImagesData(images);
+		final double[] fuzzinesses = new double[images.length];
+		for ( int i = 0; i < fuzzinesses.length; i++ ) {
+			fuzzinesses[i] = calculateLinearFuzziness(imagesData[i], images[i].channels(), valueIndex);
 		}
-		variance /= counter * 1.0;
-		return sqrt(variance);
+		return fuzzinesses;
+	}
+
+	public static double calculateLinearFuzziness( final Mat image, final int valueIndex ) {
+		return calculateLinearFuzziness(getImageData(image), image.channels(), valueIndex);
+	}
+
+	public static double calculateLinearFuzziness( final byte[] imageData, final int channels, final int valueIndex ) {
+		final double max = calculateMax(imageData, channels, valueIndex);
+		double sum = 0.0;
+		for ( int i = 0; i < imageData.length; i += channels ) {
+			final double current = toDouble(imageData[i + valueIndex]);
+			final double functionValue = current / max;
+			if (Double.isFinite(functionValue))
+				sum += min(functionValue, 1.0 - functionValue);
+		}
+		return sum * 2 / (imageData.length / channels);
+	}
+
+	public static double[] calculateQuadraticFuzzinesses( final Mat[] images, final int valueIndex ) {
+		final byte[][] imagesData = getImagesData(images);
+		final double[] fuzzinesses = new double[images.length];
+		for ( int i = 0; i < fuzzinesses.length; i++ ) {
+			fuzzinesses[i] = calculateQuadraticFuzziness(imagesData[i], images[i].channels(), valueIndex);
+		}
+		return fuzzinesses;
+	}
+
+	public static double calculateQuadraticFuzziness( final Mat image, final int valueIndex ) {
+		return calculateQuadraticFuzziness(getImageData(image), image.channels(), valueIndex);
+	}
+
+	public static double calculateQuadraticFuzziness( final byte[] imageData, final int channels, final int valueIndex ) {
+		final double max = calculateMax(imageData, channels, valueIndex);
+		double sum = 0.0;
+		for ( int i = 0; i < imageData.length; i += channels ) {
+			final double current = toDouble(imageData[i + valueIndex]);
+			final double functionValue = current / max;
+			if (Double.isFinite(functionValue))
+				sum += pow(min(functionValue, 1.0 - functionValue), 2);
+		}
+		return sqrt(sum) * 2 / sqrt((imageData.length / channels));
+	}
+
+	public static double[] calculateEntropies( final Mat[] images, final int valueIndex ) {
+		final byte[][] imagesData = getImagesData(images);
+		final double[] entropies = new double[images.length];
+		for ( int i = 0; i < entropies.length; i++ ) {
+			entropies[i] = calculateEntropy(imagesData[i], images[i].channels(), valueIndex);
+		}
+		return entropies;
+	}
+
+	public static double calculateEntropy( final Mat image, final int valueIndex ) {
+		return calculateEntropy(getImageData(image), image.channels(), valueIndex);
+	}
+
+	public static double calculateEntropy( final byte[] imageData, final int channels, final int valueIndex ) {
+		checkIndex(channels, valueIndex);
+		double sum = 0.0;
+		double log2 = Math.log(2);
+		for ( int i = 0; i < 256; i++ ) {
+			final double current = count(i, imageData, channels, valueIndex);
+			final double log = Math.log(current) / log2;
+			if (Double.isFinite(log))
+				sum -= current * log;
+		}
+		return sum;
+	}
+
+	public static double calculateMax( final byte[] imageData, final int channels, final int valueIndex ) {
+		checkIndex(channels, valueIndex);
+		double max = Double.NEGATIVE_INFINITY;
+		for ( int i = 0; i < imageData.length; i += channels ) {
+			max = max(max, toDouble(imageData[i + valueIndex]));
+		}
+		return max;
+	}
+
+	public static double calculateMin( final byte[] imageData, final int channels, final int valueIndex ) {
+		checkIndex(channels, valueIndex);
+		double min = Double.POSITIVE_INFINITY;
+		for ( int i = 0; i < imageData.length; i += channels ) {
+			min = min(min, toDouble(imageData[i + valueIndex]));
+		}
+		return min;
+	}
+
+	private static double count( final int value, final byte[] imageData, final int channels, final int valueIndex ) {
+		int counter = 0;
+		for ( int i = 0; i < imageData.length; i += channels ) {
+			if (Byte.toUnsignedInt(imageData[i + valueIndex]) == value)
+				counter++;
+		}
+		return counter / ((imageData.length / channels) * 1.0);
+	}
+
+	private static double toDouble( final byte x ) { return Byte.toUnsignedInt(x) / 255.0; }
+
+	private static void checkIndex( final int channels, final int valueIndex ) {
+		if ( valueIndex < 0 || valueIndex >= channels )
+			throw new IllegalArgumentException(
+					String.format("Value does not exist (index is negative or not enough channels)" +
+							"Index: %d, needed channels: %d, actual number of channels: %d", valueIndex, valueIndex + 1, channels)
+			);
 	}
 }

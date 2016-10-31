@@ -112,10 +112,13 @@ public abstract class PanelView extends ImageView {
 	}
 
 	private void createClip() {
-		clip.centerXProperty().bind(clip.radiusXProperty());
-		clip.centerYProperty().bind(clip.radiusYProperty());
-		clip.radiusXProperty().bind(sample.radiusXProperty().multiply(scale));
-		clip.radiusYProperty().bind(sample.radiusYProperty().multiply(scale));
+		clip.centerXProperty().bind(clip.radiusXProperty().multiply(scale));
+		clip.centerYProperty().bind(clip.radiusYProperty().multiply(scale));
+		clip.radiusXProperty().bind(sample.radiusXProperty());
+		clip.radiusYProperty().bind(sample.radiusYProperty());
+		clip.scaleXProperty().bind(scale);
+		clip.scaleYProperty().bind(scale);
+		clip.rotateProperty().bind(sample.rotateProperty());
 		setClip(clip);
 	}
 

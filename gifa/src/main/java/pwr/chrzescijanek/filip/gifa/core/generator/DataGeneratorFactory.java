@@ -1,8 +1,10 @@
 package pwr.chrzescijanek.filip.gifa.core.generator;
 
+import pwr.chrzescijanek.filip.gifa.core.function.EntropyHue;
 import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
 import pwr.chrzescijanek.filip.gifa.core.function.MeanRed;
 import pwr.chrzescijanek.filip.gifa.core.function.MeanValue;
+import pwr.chrzescijanek.filip.gifa.core.function.QuadraticFuzzinessSaturation;
 import pwr.chrzescijanek.filip.gifa.core.function.StdDeviationValue;
 
 import java.util.Map;
@@ -27,6 +29,8 @@ public class DataGeneratorFactory {
 		injectFunction("Mean value", new MeanValue());
 		injectFunction("StdDev value", new StdDeviationValue());
 		injectFunction("Mean red", new MeanRed());
+		injectFunction("Entropy hue", new EntropyHue());
+		injectFunction("Quad. fuzz. saturation", new QuadraticFuzzinessSaturation());
 	}
 
 	public void injectFunction( final String key, final EvaluationFunction function ) {

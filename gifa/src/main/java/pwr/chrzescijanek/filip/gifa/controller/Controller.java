@@ -1347,8 +1347,9 @@ public class Controller implements Initializable {
 				final double y = event.getY() / samplesImageView.getScaleY();
 				final double centerX = Math.max(x, 0);
 				final double centerY = Math.max(y, 0);
-				final double radiusX = Math.min(centerX, Math.min(100, image.getWidth() - centerX));
-				final double radiusY = Math.min(centerY, Math.min(100, image.getHeight() - centerY));
+				final double size = image.getWidth() > image.getHeight() ? image.getHeight() / 15 : image.getWidth() / 15;
+				final double radiusX = Math.min(centerX, Math.min(size, image.getWidth() - centerX));
+				final double radiusY = Math.min(centerY, Math.min(size, image.getHeight() - centerY));
 				for ( SamplesImageData img : SharedState.INSTANCE.samplesImages.values() )
 					sampleFactory.createNewSample(img, centerX, centerY, radiusX, radiusY);
 				final List< Sample > rectangles = imageData.samples;
