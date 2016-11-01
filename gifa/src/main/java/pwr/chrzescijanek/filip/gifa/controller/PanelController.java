@@ -13,6 +13,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.RowConstraints;
+import javafx.stage.Stage;
 import pwr.chrzescijanek.filip.gifa.Main;
 import pwr.chrzescijanek.filip.gifa.model.PanelView;
 
@@ -66,7 +67,7 @@ public class PanelController {
 				placeImages();
 		});
 		panelHBox.visibleProperty().bind(panelInfo.textProperty().isNotNull());
-		root.layoutBoundsProperty().addListener(( observable, oldValue, newValue ) -> placeImages());
+		panelGridScrollPane.layoutBoundsProperty().addListener(( observable, oldValue, newValue ) -> placeImages());
 	}
 
 	public void placeImages() {

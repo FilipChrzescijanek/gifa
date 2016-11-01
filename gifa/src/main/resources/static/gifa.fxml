@@ -295,13 +295,13 @@
 						<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER"/>
 					</columnConstraints>
 					<rowConstraints>
-						<RowConstraints valignment="CENTER" percentHeight="40.0" vgrow="SOMETIMES"/>
-						<RowConstraints valignment="CENTER" percentHeight="20.0" vgrow="SOMETIMES"/>
+						<RowConstraints valignment="CENTER" percentHeight="0.0" vgrow="SOMETIMES"/>
+						<RowConstraints valignment="CENTER" percentHeight="60.0" vgrow="SOMETIMES"/>
 						<RowConstraints valignment="CENTER" percentHeight="40.0" vgrow="SOMETIMES"/>
 					</rowConstraints>
 					<VBox fx:id="samplesModeVBox" alignment="CENTER" GridPane.rowIndex="1">
-						<RadioButton fx:id="selectRadioButton" mnemonicParsing="false" selected="true"
-									 text="Select">
+						<RadioButton fx:id="createRadioButton" mnemonicParsing="false" selected="true"
+									 text="Create">
 							<toggleGroup>
 								<ToggleGroup fx:id="drawMethod"/>
 							</toggleGroup>
@@ -309,8 +309,8 @@
 								<Insets top="15.0" left="20.0"/>
 							</VBox.margin>
 						</RadioButton>
-						<RadioButton fx:id="createRadioButton" mnemonicParsing="false"
-									 text="Create" toggleGroup="$drawMethod">
+						<RadioButton fx:id="selectRadioButton" mnemonicParsing="false"
+									 text="Select" toggleGroup="$drawMethod">
 							<VBox.margin>
 								<Insets top="5.0" left="20.0"/>
 							</VBox.margin>
@@ -321,6 +321,28 @@
 								<Insets top="5.0" left="20.0"/>
 							</VBox.margin>
 						</RadioButton>
+						<Button fx:id="deleteSampleButton" mnemonicParsing="false" onAction="#deleteSample">
+							<graphic>
+								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+										   preserveRatio="true">
+									<Image url="@../images/minus.png"/>
+								</ImageView>
+							</graphic>
+							<VBox.margin>
+								<Insets top="40.0"/>
+							</VBox.margin>
+						</Button>
+						<Button fx:id="clearSamplesButton" mnemonicParsing="false" onAction="#clearSamples">
+							<graphic>
+								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+										   preserveRatio="true">
+									<Image url="@../images/trash.png"/>
+								</ImageView>
+							</graphic>
+							<VBox.margin>
+								<Insets top="5.0"/>
+							</VBox.margin>
+						</Button>
 					</VBox>
 					<GridPane fx:id="samplesColorControls" GridPane.rowIndex="2">
 						<columnConstraints>

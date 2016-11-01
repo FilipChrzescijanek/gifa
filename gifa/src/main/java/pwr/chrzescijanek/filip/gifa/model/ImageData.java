@@ -10,8 +10,8 @@ public abstract class ImageData {
 	public Image image;
 	public Mat imageData;
 	public final DoubleProperty scale = new SimpleDoubleProperty(1.0);
-	public double vScrollPos = 0.0;
-	public double hScrollPos = 0.0;
+	public double vScrollPos = 0.5;
+	public double hScrollPos = 0.5;
 
 	ImageData( final Image image, final Mat imageData ) {
 		this.image = image;

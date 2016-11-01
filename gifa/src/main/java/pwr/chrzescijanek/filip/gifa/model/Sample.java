@@ -75,13 +75,22 @@ public class Sample extends BaseSample {
 		onMouseScrolled();
 		state.rotate.addListener(( observable, oldValue, newValue ) -> {
 			if (newValue) {
+				state.setSampleSelection(SharedState.SampleSelection.NIL);
 				if (getRadiusX() < getRadiusY()) constantAngle = 90;
 				rotateBound();
+//				this.setOnMousePressed(null);
+//				this.setOnMouseDragged(null);
+//				sampleArea.setOnMouseMoved(this::checkForResizeOrDrag);
+//				sampleArea.toFront();
 				recalculateTranslates();
 			} else {
 				constantAngle = 0;
 				setRotate(0);
 				defaultBound();
+//				this.setOnMousePressed(this::setStartPosition);
+//				this.setOnMouseDragged(this::resizeAndPlace);
+//				sampleArea.setOnMouseMoved(this::checkForResize);
+//				this.toFront();
 				recalculateTranslates();
 			}
 		});
@@ -102,16 +111,20 @@ public class Sample extends BaseSample {
 
 			@Override
 			protected double computeValue() {
-				double h = getCenterX();
-				final double b = semiminor.get();
-				final double a = semimajor.get();
 				final double phi = (constantAngle + getRotate()) / 180.0 * PI;
-				double tangent = -b * tan(phi) / a;
-				double t = atan(tangent) - ( phi < -PI / 2 || phi > PI / 2 ? 0 : PI );
-				final double x = h + a * cos(t) * cos(phi) - b * sin(t) * sin(phi);
-				return x;
+				return calculateX(phi);
 			}
 		});
+	}
+
+	private double calculateX( final double phi ) {
+		double h = getCenterX();
+		final double b = semiminor.get();
+		final double a = semimajor.get();
+		double tangent = -b * tan(phi) / a;
+		double t = atan(tangent) - ( phi < -PI / 2 || phi > PI / 2 ? 0 : PI );
+		final double x = h + a * cos(t) * cos(phi) - b * sin(t) * sin(phi);
+		return x;
 	}
 
 	private void bindY() {
@@ -122,16 +135,20 @@ public class Sample extends BaseSample {
 
 			@Override
 			protected double computeValue() {
-				double k = getCenterY();
-				final double b = semiminor.get();
-				final double a = semimajor.get();
 				final double phi = (constantAngle + getRotate()) / 180.0 * PI;
-				double tangent = b * ( 1 / tan(phi) ) / a;
-				double t = atan(tangent) - ( phi < 0.0 || phi > PI ? 0 : PI );
-				final double y = k + b * sin(t) * cos(phi) + a * cos(t) * sin(phi);
-				return y;
+				return calculateY(phi);
 			}
 		});
+	}
+
+	private double calculateY( final double phi ) {
+		double k = getCenterY();
+		final double b = semiminor.get();
+		final double a = semimajor.get();
+		double tangent = b * ( 1 / tan(phi) ) / a;
+		double t = atan(tangent) - ( phi < 0.0 || phi > PI ? 0 : PI );
+		final double y = k + b * sin(t) * cos(phi) + a * cos(t) * sin(phi);
+		return y;
 	}
 
 	private void onMouseScrolled() {
@@ -147,11 +164,22 @@ public class Sample extends BaseSample {
 		if ( deltaY > 0 ) {
 			double nextValue = ( rotate - 1 ) % 180;
 			if (Math.abs(nextValue) < 0.00001) nextValue = 0;
-			setRotate(nextValue);
-			this.autosize();
+			checkIfCanRotate(nextValue);
 		} else {
 			double nextValue = ( rotate + 1 ) % 180;
 			if (Math.abs(nextValue) < 0.00001) nextValue = 0;
+			checkIfCanRotate(nextValue);
+		}
+	}
+
+	private void checkIfCanRotate( final double nextValue ) {
+		final double phi = (constantAngle + nextValue) / 180.0 * PI;
+		final double nextX = calculateX(phi);
+		final double nextY = calculateY(phi);
+		final double nextWidth = (getCenterX() - nextX) * 2;
+		final double nextHeight = (getCenterY() - nextY) * 2;
+		if (nextX >= 0 && nextY >= 0 && nextX + nextWidth <= imageData.image.getWidth()
+				&& nextY + nextHeight <= imageData.image.getHeight()) {
 			setRotate(nextValue);
 			this.autosize();
 		}
@@ -172,8 +200,12 @@ public class Sample extends BaseSample {
 			resizeAndPlace(event);
 		} else {
 			final int index = getIndexOf();
+			final double deltaX = event.getSceneX() / getScaleX() - startX;
+			final double deltaY = event.getSceneY() / getScaleY() - startY;
+			startX = event.getSceneX() / getScaleX();
+			startY = event.getSceneY() / getScaleY();
 			state.samplesImages.values()
-					.forEach(img -> img.samples.get(index).resizeAndPlace(event));
+					.forEach(img -> img.samples.get(index).resizeAndPlace(deltaX, deltaY));
 		}
 	}
 

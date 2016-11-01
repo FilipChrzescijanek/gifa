@@ -1,11 +1,8 @@
 package pwr.chrzescijanek.filip.gifa.model;
 
-import javafx.beans.binding.DoubleBinding;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
@@ -17,13 +14,8 @@ import pwr.chrzescijanek.filip.gifa.view.FXView;
 
 import java.util.List;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.atan;
-import static java.lang.Math.cos;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.Math.sin;
-import static java.lang.Math.tan;
 import static javafx.scene.Cursor.DEFAULT;
 import static javafx.scene.Cursor.E_RESIZE;
 import static javafx.scene.Cursor.MOVE;
@@ -61,8 +53,8 @@ public abstract class BaseSample extends Ellipse {
 
 	double xBound;
 	double yBound;
-	private double startX;
-	private double startY;
+	double startX;
+	double startY;
 
 	BaseSample( final ImageData imageData, double x, double y, double radiusX, double radiusY,
 				final SharedState state, final PanelViewFactory panelViewFactory,
@@ -97,19 +89,31 @@ public abstract class BaseSample extends Ellipse {
 
 	void moveCenterBy( double dX, double dY) {
 		drag(dX, dY);
+		System.out.println("Rotate: " + getRotate() + ", dX: " + dX + ", dY" + dY);
 		recalculateTranslates();
 	}
 
 	void setStartPosition( final MouseEvent event ) {
-		startX = event.getX();
-		startY = event.getY();
+		startX = event.getSceneX() / getScaleX();
+		startY = event.getSceneY() / getScaleY();
 	}
 
 	void resizeAndPlace( final MouseEvent event ) {
-		if (this instanceof VertexSample || !state.rotate.get()) {
-			resizeShape(event);
+//		if (this instanceof VertexSample || !state.rotate.get()) {
+			final double deltaX = event.getSceneX() / getScaleX() - startX;
+			final double deltaY = event.getSceneY() / getScaleY() - startY;
+			startX = event.getSceneX() / getScaleX();
+			startY = event.getSceneY() / getScaleY();
+			resizeShape(deltaX, deltaY);
 			recalculateTranslates();
-		}
+//		}
+	}
+
+	void resizeAndPlace( final double deltaX, final double deltaY ) {
+//				if (this instanceof VertexSample || !state.rotate.get()) {
+		resizeShape(deltaX, deltaY);
+		recalculateTranslates();
+//				}
 	}
 
 	Stage getNewStage( String viewPath, String info, String title, List< ? extends PanelView > views ) {
@@ -195,8 +199,8 @@ public abstract class BaseSample extends Ellipse {
 		this.setOnMouseMoved(this::checkForResizeOrDrag);
 	}
 
-	private void checkForResizeOrDrag( final MouseEvent event ) {
-		if ( isSelected() && (this instanceof VertexSample || !state.rotate.get()) ) {
+	void checkForResizeOrDrag( final MouseEvent event ) {
+		if ( isSelected() ) {
 			double dX = event.getX() - sampleArea.getX();
 			double dY = event.getY() - sampleArea.getY();
 			if ( !checkForResize(dX, dY) && dX > 10 / getScaleX() && dY > 10 / getScaleY()
@@ -207,7 +211,7 @@ public abstract class BaseSample extends Ellipse {
 		}
 	}
 
-	private void checkForResize( final MouseEvent event ) {
+	void checkForResize( final MouseEvent event ) {
 		if ( isSelected() && (this instanceof VertexSample || !state.rotate.get()) ) {
 			double dX = event.getX() - sampleArea.getX();
 			double dY = event.getY() - sampleArea.getY();
@@ -218,35 +222,37 @@ public abstract class BaseSample extends Ellipse {
 	boolean isSelected() {return state.selectedRectangle.get() == this || state.selectedSample.get() == this;}
 
 	private boolean checkForResize( final double dX, final double dY ) {
-		if ( sampleArea.getWidth() - dX < 7 / getScaleX() && sampleArea.getHeight() - dY < 7 / getScaleY() ) {
-			getScene().setCursor(SE_RESIZE);
-			state.setSampleSelection(SE);
-		} else if ( dX < 7 / getScaleX() && dY < 7 / getScaleY() ) {
-			getScene().setCursor(NW_RESIZE);
-			state.setSampleSelection(NW);
-		} else if ( sampleArea.getWidth() - dX < 7 / getScaleX() && dY < 7 / getScaleY() ) {
-			getScene().setCursor(NE_RESIZE);
-			state.setSampleSelection(NE);
-		} else if ( dX < 7 / getScaleX() && sampleArea.getHeight() - dY < 7 / getScaleY() ) {
-			getScene().setCursor(SW_RESIZE);
-			state.setSampleSelection(SW);
-		} else if ( sampleArea.getWidth() - dX < 7 / getScaleX() ) {
-			getScene().setCursor(E_RESIZE);
-			state.setSampleSelection(E);
-		} else if ( dX < 7 / getScaleX() ) {
-			getScene().setCursor(W_RESIZE);
-			state.setSampleSelection(W);
-		} else if ( sampleArea.getHeight() - dY < 7 / getScaleY() ) {
-			getScene().setCursor(S_RESIZE);
-			state.setSampleSelection(S);
-		} else if ( dY < 7 / getScaleY() ) {
-			getScene().setCursor(N_RESIZE);
-			state.setSampleSelection(N);
-		} else {
-			setNoSelection();
-			return false;
-		}
-		return true;
+		if ((this instanceof VertexSample || !state.rotate.get())) {
+			if ( sampleArea.getWidth() - dX < 7 / getScaleX() && sampleArea.getHeight() - dY < 7 / getScaleY() ) {
+				getScene().setCursor(SE_RESIZE);
+				state.setSampleSelection(SE);
+			} else if ( dX < 7 / getScaleX() && dY < 7 / getScaleY() ) {
+				getScene().setCursor(NW_RESIZE);
+				state.setSampleSelection(NW);
+			} else if ( sampleArea.getWidth() - dX < 7 / getScaleX() && dY < 7 / getScaleY() ) {
+				getScene().setCursor(NE_RESIZE);
+				state.setSampleSelection(NE);
+			} else if ( dX < 7 / getScaleX() && sampleArea.getHeight() - dY < 7 / getScaleY() ) {
+				getScene().setCursor(SW_RESIZE);
+				state.setSampleSelection(SW);
+			} else if ( sampleArea.getWidth() - dX < 7 / getScaleX() ) {
+				getScene().setCursor(E_RESIZE);
+				state.setSampleSelection(E);
+			} else if ( dX < 7 / getScaleX() ) {
+				getScene().setCursor(W_RESIZE);
+				state.setSampleSelection(W);
+			} else if ( sampleArea.getHeight() - dY < 7 / getScaleY() ) {
+				getScene().setCursor(S_RESIZE);
+				state.setSampleSelection(S);
+			} else if ( dY < 7 / getScaleY() ) {
+				getScene().setCursor(N_RESIZE);
+				state.setSampleSelection(N);
+			} else {
+				setNoSelection();
+				return false;
+			}
+			return true;
+		} else return false;
 	}
 
 	private void onMouseDragged() {
@@ -281,11 +287,7 @@ public abstract class BaseSample extends Ellipse {
 		this.setOnMouseExited(event -> getScene().setCursor(DEFAULT));
 	}
 
-	private void resizeShape( final MouseEvent event ) {
-		final double deltaX = event.getX() - startX;
-		final double deltaY = event.getY() - startY;
-		startX = event.getX();
-		startY = event.getY();
+	private void resizeShape( final double deltaX, final double deltaY ) {
 		switch ( state.getSampleSelection() ) {
 			case NW:
 				resizeNW(deltaX, deltaY);

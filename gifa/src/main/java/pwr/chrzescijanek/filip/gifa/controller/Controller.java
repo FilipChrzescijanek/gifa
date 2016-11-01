@@ -106,6 +106,8 @@ public class Controller implements Initializable {
 	public GridPane imagesBySampleGrid;
 	public MenuItem fileMenuExportToPng;
 	public RadioButton rotateRadioButton;
+	public Button deleteSampleButton;
+	public Button clearSamplesButton;
 
 	//fields
 	private DataGeneratorFactory generatorFactory;
@@ -952,12 +954,16 @@ public class Controller implements Initializable {
 					final Mat[] images = new Mat[SharedState.INSTANCE.samplesImages.size()];
 					for ( String key : samplesImageList.getItems() ) {
 						final SamplesImageData samplesImageData = SharedState.INSTANCE.samplesImages.get(key);
-						final int x = (int) Math.max(r.sampleArea.getX(), 0);
-						final int y = (int) Math.max(r.sampleArea.getY(), 0);
-						int width = (int) Math.min(r.sampleArea.getWidth(), samplesImageData.imageData.width() - x);
-						int height = (int) Math.min(r.sampleArea.getHeight(), samplesImageData.imageData.height() - y);
-						if (r.sampleArea.getX() < 0) width += r.sampleArea.getX();
-						if (r.sampleArea.getY() < 0) height += r.sampleArea.getY();
+//						final int x = (int) Math.max(r.sampleArea.getX(), 0);
+//						final int y = (int) Math.max(r.sampleArea.getY(), 0);
+//						int width = (int) Math.min(r.sampleArea.getWidth(), samplesImageData.imageData.width() - x);
+//						int height = (int) Math.min(r.sampleArea.getHeight(), samplesImageData.imageData.height() - y);;
+						final int x = (int) r.sampleArea.getX();
+						final int y = (int) r.sampleArea.getY();
+						int width = (int) r.sampleArea.getWidth();
+						int height = (int) r.sampleArea.getHeight();
+//						if (r.sampleArea.getX() < 0) width += r.sampleArea.getX();
+//						if (r.sampleArea.getY() < 0) height += r.sampleArea.getY();
 						images[i] = samplesImageData.imageData
 								.submat(new Rect(x, y, width, height)).clone();
 						Mat zeros = Mat.zeros(images[i].rows(), images[i].cols(), images[i].type());
@@ -1439,6 +1445,8 @@ public class Controller implements Initializable {
 		loadImagesButton.setTooltip(new Tooltip("Load transformImages"));
 		deleteImageButton.setTooltip(new Tooltip("Remove image"));
 		clearImagesButton.setTooltip(new Tooltip("Clear image list"));
+		deleteSampleButton.setTooltip(new Tooltip("Remove sample"));
+		clearSamplesButton.setTooltip(new Tooltip("Clear samples"));
 		chartsRefreshButton.setTooltip(new Tooltip("Restore charts"));
 		chartsMergeButton.setTooltip(new Tooltip("Merge chartse"));
 		chartsShiftButton.setTooltip(new Tooltip("Extract chart"));
@@ -1594,7 +1602,8 @@ public class Controller implements Initializable {
 						.findAny().isPresent(),
 				samplesImageViewAnchor.getChildren()
 		);
-
+		deleteSampleButton.disableProperty().bind(SharedState.INSTANCE.selectedSample.isNull());
+		clearSamplesButton.disableProperty().bind(noSamplesAdded);
 		resultsButton.disableProperty().bind(Bindings.or(noSamplesAdded,
 				Bindings.or(Bindings.isEmpty(samplesImageList.getItems()), Bindings.or(noFeaturesAvailable, noFeaturesChosen))));
 		runMenuResultsButton.disableProperty().bind(Bindings.or(noSamplesAdded, Bindings.or(samplesTab.selectedProperty().not(),
@@ -1742,10 +1751,10 @@ public class Controller implements Initializable {
 	}
 
 	public void clearSamples() {
-		BaseSample r = SharedState.INSTANCE.selectedSample.get();
 		for ( SamplesImageData img : SharedState.INSTANCE.samplesImages.values() ) {
 			img.samples.clear();
 		}
+		SharedState.INSTANCE.selectedSample.set(null);
 		samplesImageViewAnchor.getChildren().removeIf(Sample.class::isInstance);
 		samplesImageViewAnchor.getChildren().removeIf(Rectangle.class::isInstance);
 	}
