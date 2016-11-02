@@ -20,6 +20,8 @@ public class Injector {
 	private static final Map< Class< ? >, Object > components = new WeakHashMap<>();
 	private static final Function< Class< ? >, Object > supplier = createInstanceSupplier();
 
+	private Injector() { }
+
 	private static Function< Class< ? >, Object > createInstanceSupplier() {
 		return ( c ) -> {
 			try {
@@ -59,14 +61,24 @@ public class Injector {
 				.toArray();
 	}
 
-	public static void reset() {
-		components.clear();
-	}
-
 	public static < T > T instantiate( Class< T > clazz ) {
 		@SuppressWarnings( "unchecked" )
 		T instance = injectFields((T) supplier.apply(clazz));
 		return instance;
+	}
+
+	@SuppressWarnings( "unchecked" )
+	public static < T > T instantiateComponent( Class< T > clazz ) {
+		T product = (T) components.get(clazz);
+		if ( product == null ) {
+			product = injectFields((T) supplier.apply(clazz));
+			components.put(clazz, product);
+		}
+		return clazz.cast(product);
+	}
+
+	public static void reset() {
+		components.clear();
 	}
 
 	private static < T > T injectFields( final T instance ) {
@@ -91,16 +103,6 @@ public class Injector {
 
 	private static boolean checkIfNotPrimitiveOrString( Class< ? > type ) {
 		return !type.isPrimitive() && !type.isAssignableFrom(String.class);
-	}
-
-	@SuppressWarnings( "unchecked" )
-	private static < T > T instantiateComponent( Class< T > clazz ) {
-		T product = (T) components.get(clazz);
-		if ( product == null ) {
-			product = injectFields((T) supplier.apply(clazz));
-			components.put(clazz, product);
-		}
-		return clazz.cast(product);
 	}
 
 	private static void injectField( final Field field, final Object instance, final Object value ) {

@@ -1061,7 +1061,7 @@ public class Controller implements Initializable {
 	@FXML
 	void loadImages(  ) {
 		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Load transformImages");
+		fileChooser.setTitle("Load images");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.bmp", "*.tif"));
 		List< File > selectedFiles = fileChooser.showOpenMultipleDialog(root.getScene().getWindow());
 		if ( selectedFiles != null ) {
