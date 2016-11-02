@@ -93,12 +93,12 @@ public final class FunctionUtils {
 
 	public static double calculateLinearFuzziness( final byte[] imageData, final int channels, final int valueIndex ) {
 		final double max = calculateMax(imageData, channels, valueIndex);
+		if (Math.abs(max) < 0.00000001) return 0;
 		double sum = 0.0;
 		for ( int i = 0; i < imageData.length; i += channels ) {
 			final double current = toDouble(imageData[i + valueIndex]);
 			final double functionValue = current / max;
-			if (Double.isFinite(functionValue))
-				sum += min(functionValue, 1.0 - functionValue);
+			sum += min(functionValue, 1.0 - functionValue);
 		}
 		return sum * 2 / (imageData.length / channels);
 	}
@@ -118,12 +118,12 @@ public final class FunctionUtils {
 
 	public static double calculateQuadraticFuzziness( final byte[] imageData, final int channels, final int valueIndex ) {
 		final double max = calculateMax(imageData, channels, valueIndex);
+		if (Math.abs(max) < 0.00000001) return 0;
 		double sum = 0.0;
 		for ( int i = 0; i < imageData.length; i += channels ) {
 			final double current = toDouble(imageData[i + valueIndex]);
 			final double functionValue = current / max;
-			if (Double.isFinite(functionValue))
-				sum += pow(min(functionValue, 1.0 - functionValue), 2);
+			sum += pow(min(functionValue, 1.0 - functionValue), 2);
 		}
 		return sqrt(sum) * 2 / sqrt((imageData.length / channels));
 	}
@@ -147,9 +147,9 @@ public final class FunctionUtils {
 		double log2 = Math.log(2);
 		for ( int i = 0; i < 256; i++ ) {
 			final double current = count(i, imageData, channels, valueIndex);
+			if (Math.abs(current) < 0.00000001) continue;
 			final double log = Math.log(current) / log2;
-			if (Double.isFinite(log))
-				sum -= current * log;
+			sum -= current * log;
 		}
 		return sum;
 	}

@@ -89,7 +89,6 @@ public abstract class BaseSample extends Ellipse {
 
 	void moveCenterBy( double dX, double dY) {
 		drag(dX, dY);
-		System.out.println("Rotate: " + getRotate() + ", dX: " + dX + ", dY" + dY);
 		recalculateTranslates();
 	}
 

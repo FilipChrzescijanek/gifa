@@ -16,53 +16,63 @@
 	</rowConstraints>
 	<MenuBar fx:id="menuBar">
 		<Menu fx:id="fileMenu" text="_File">
-			<MenuItem fx:id="fileMenuLoadImages" onAction="#loadImages" text="_Load images" accelerator="Shortcut+L"/>
 			<MenuItem fx:id="fileMenuExportToCsv" onAction="#exportToCsv" text="_Export to CSV" accelerator="Shortcut+E"/>
 			<MenuItem fx:id="fileMenuExportToPng" onAction="#exportToPng" text="_Save samples" accelerator="Shortcut+S"/>
-			<MenuItem fx:id="fileMenuRemoveImage" text="_Remove image" onAction="#deleteImage" accelerator="Shortcut+Delete"/>
-			<MenuItem fx:id="fileMenuClear" text="_Clear image list" onAction="#clearImages" accelerator="Shortcut+Alt+Delete"/>
 			<MenuItem fx:id="fileMenuExit" onAction="#exit" text="E_xit"/>
 		</Menu>
 		<Menu fx:id="editMenu" text="_Edit">
-			<MenuItem fx:id="editMenuVerticalFlip" text="Flip _vertically" onAction="#flipVertical" accelerator="Shift+V"/>
-			<MenuItem fx:id="editMenuHorizontalFlip" text="Flip _horizontally" onAction="#flipHorizontal" accelerator="Shift+H"/>
-			<MenuItem fx:id="editMenuRotateLeft" text="Rotate _left by 90°" onAction="#rotateLeft" accelerator="Shift+L"/>
-			<MenuItem fx:id="editMenuRotateRight" text="Rotate ri_ght by 90°" onAction="#rotateRight" accelerator="Shift+R"/>
-			<MenuItem fx:id="editMenuZoomIn" text="_Zoom in" onAction="#zoomIn" accelerator="Shortcut+Add"/>
+			<MenuItem fx:id="editMenuZoomIn" text="Zoom _in" onAction="#zoomIn" accelerator="Shortcut+Add"/>
 			<MenuItem fx:id="editMenuZoomOut" text="Zoom _out" onAction="#zoomOut" accelerator="Shortcut+Subtract"/>
-			<MenuItem fx:id="editMenuCreateMode" text="Create mo_de" onAction="#setCreateMode" accelerator="Shortcut+Shift+C"/>
-			<MenuItem fx:id="editMenuSelectMode" text="Selec_t mode" onAction="#setSelectMode" accelerator="Shortcut+Shift+T"/>
-			<MenuItem fx:id="editMenuDeleteSample" text="Delete _sample" onAction="#deleteSample" accelerator="Shortcut+D"/>
-			<MenuItem fx:id="editMenuRestoreCharts" text="_Restore charts" onAction="#refresh" accelerator="F5"/>
-			<MenuItem fx:id="editMenuMergeCharts" text="_Merge charts" onAction="#merge" accelerator="F6"/>
-			<MenuItem fx:id="editMenuExtractChart" text="_Extract chart" onAction="#shift" accelerator="F7"/>
-			<MenuItem fx:id="editMenuRemoveCharts" text="Remove _charts" onAction="#delete" accelerator="F8"/>
-			<MenuItem fx:id="editMenuSelectAllFeatures" text="Select _all features" onAction="#selectAllFunctions" accelerator="F9"/>
-			<MenuItem fx:id="editMenuDeselectAllFeatures" text="Deselect all _features" onAction="#deselectAllFunctions" accelerator="F10"/>
+		</Menu>
+		<Menu fx:id="transformMenu" text="_Transform">
+			<MenuItem fx:id="transformMenuVerticalFlip" text="Flip _vertically" onAction="#flipVertical" accelerator="Shift+V"/>
+			<MenuItem fx:id="transformMenuHorizontalFlip" text="Flip _horizontally" onAction="#flipHorizontal" accelerator="Shift+H"/>
+			<MenuItem fx:id="transformMenuMenuRotateLeft" text="Rotate _left by 90°" onAction="#rotateLeft" accelerator="Shift+L"/>
+			<MenuItem fx:id="transformMenuMenuRotateRight" text="Rotate _right by 90°" onAction="#rotateRight" accelerator="Shift+R"/>
+			<MenuItem fx:id="transformMenuLoadImages" text="_Load images" onAction="#loadImages" accelerator="Shortcut+L"/>
+			<MenuItem fx:id="transformMenuDeleteImage" text="_Delete image" onAction="#deleteImage" accelerator="Shortcut+Delete"/>
+			<MenuItem fx:id="transformMenuClear" text="_Clear image list" onAction="#clearImages" accelerator="Shortcut+Alt+Delete"/>
+		</Menu>
+		<Menu fx:id="samplesMenu" text="_Samples">
+			<MenuItem fx:id="samplesMenuCreateMode" text="_Create mode" onAction="#setCreateMode" accelerator="Shortcut+Alt+C"/>
+			<MenuItem fx:id="samplesMenuSelectMode" text="_Select mode" onAction="#setSelectMode" accelerator="Shortcut+Alt+S"/>
+			<MenuItem fx:id="samplesMenuRotateMode" text="_Rotate mode" onAction="#setRotateMode" accelerator="Shortcut+Alt+R"/>
+			<MenuItem fx:id="samplesMenuDeleteSample" text="_Delete selected sample" onAction="#deleteSample" accelerator="Shortcut+Delete"/>
+			<MenuItem fx:id="samplesMenuClearSamples" text="C_lear samples" onAction="#clearSamples" accelerator="Shortcut+Alt+Delete"/>
+			<MenuItem fx:id="samplesMenuSelectAllFeatures" text="Select _all features" onAction="#selectAllFunctions" accelerator="F9"/>
+			<MenuItem fx:id="samplesMenuDeselectAllFeatures" text="Deselect all _features" onAction="#deselectAllFunctions" accelerator="F10"/>
+		</Menu>
+		<Menu fx:id="chartsMenu" text="_Charts">
+			<MenuItem fx:id="chartsMenuRestoreCharts" text="_Restore charts" onAction="#refresh" accelerator="F5"/>
+			<MenuItem fx:id="chartsMenuMergeCharts" text="_Merge charts" onAction="#merge" accelerator="F6"/>
+			<MenuItem fx:id="chartsMenuExtractChart" text="_Extract chart" onAction="#shift" accelerator="F7"/>
+			<MenuItem fx:id="chartsMenuRemoveCharts" text="Remove _charts" onAction="#delete" accelerator="F8"/>
 		</Menu>
 		<Menu fx:id="navMenu" text="_Navigate">
-			<MenuItem fx:id="navMenuTransform" onAction="#transformTab" text="_Transform" accelerator="Shortcut+Alt+T"/>
-			<MenuItem fx:id="navMenuSamples" onAction="#samplesTab" text="_Samples" accelerator="Shortcut+Alt+S"/>
-			<MenuItem fx:id="navMenuCharts" onAction="#chartsTab" text="_Charts" accelerator="Shortcut+Alt+C"/>
-			<MenuItem fx:id="navMenuChartsBySample" onAction="#chartsBySample" text="Charts by sampl_e" accelerator="Shortcut+Shift+S"/>
-			<MenuItem fx:id="navMenuAllCharts" onAction="#allCharts" text="_All charts" accelerator="Shortcut+Shift+A"/>
-		</Menu>
+			<MenuItem fx:id="navMenuTransform" onAction="#transformTab" text="_Transform" accelerator="Shortcut+Shift+T"/>
+			<MenuItem fx:id="navMenuSamples" onAction="#samplesTab" text="_Samples" accelerator="Shortcut+Shift+S"/>
+			<MenuItem fx:id="navMenuCharts" onAction="#chartsTab" text="_Charts" accelerator="Shortcut+Shift+C"/>
+			<MenuItem fx:id="navMenuAllCharts" onAction="#allCharts" text="_All charts" accelerator="Shift+Alt+A"/>
+			<MenuItem fx:id="navMenuChartsBySample" onAction="#chartsBySample" text="Charts by sampl_e" accelerator="Shift+Alt+S"/>
+			<MenuItem fx:id="navMenuImagesBySample" onAction="#imagesBySample" text="_Images by sample" accelerator="Shift+Alt+I"/>
+			</Menu>
 		<Menu fx:id="runMenu" text="_Run">
 			<MenuItem fx:id="runMenuResultsButton" onAction="#calculateResults" text="_Get results" accelerator="F2"/>
 			<MenuItem fx:id="runMenuTransformButton" onAction="#transform" text="_Transform images" accelerator="F3"/>
 		</Menu>
 		<Menu fx:id="optionsMenu" text="_Options">
 			<Menu fx:id="optionsMenuTheme" text="_Theme">
-				<RadioMenuItem fx:id="optionsMenuThemeLight" onAction="#applyLightTheme" text="Light" accelerator="Shortcut+Alt+Shift+L">
+				<RadioMenuItem fx:id="optionsMenuThemeLight" onAction="#applyLightTheme" text="_Light" accelerator="Shortcut+Alt+Shift+L">
 					<toggleGroup>
 						<ToggleGroup fx:id="theme"/>
 					</toggleGroup>
 				</RadioMenuItem>
-				<RadioMenuItem fx:id="optionsMenuThemeDark" onAction="#applyDarkTheme" text="Dark" toggleGroup="$theme"
+				<RadioMenuItem fx:id="optionsMenuThemeDark" onAction="#applyDarkTheme" text="_Dark" toggleGroup="$theme"
 							   accelerator="Shortcut+Alt+Shift+D"/>
 			</Menu>
 		</Menu>
 		<Menu fx:id="helpMenu" text="_Help">
+			<MenuItem fx:id="helpMenuHelp" onAction="#help" text="_Help" accelerator="F1"/>
 			<MenuItem fx:id="helpMenuAbout" onAction="#about" text="_About"/>
 		</Menu>
 	</MenuBar>

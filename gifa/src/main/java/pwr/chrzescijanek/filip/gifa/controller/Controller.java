@@ -10,7 +10,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
@@ -108,6 +107,13 @@ public class Controller implements Initializable {
 	public RadioButton rotateRadioButton;
 	public Button deleteSampleButton;
 	public Button clearSamplesButton;
+	public MenuItem navMenuImagesBySample;
+	public MenuItem helpMenuHelp;
+	public Menu transformMenu;
+	public Menu samplesMenu;
+	public Menu chartsMenu;
+	public MenuItem samplesMenuRotateMode;
+	public MenuItem samplesMenuClearSamples;
 
 	//fields
 	private DataGeneratorFactory generatorFactory;
@@ -124,18 +130,18 @@ public class Controller implements Initializable {
 		this.imageDataFactory = imageDataFactory;
 	}
 
-	public MenuItem fileMenuRemoveImage;
-	public MenuItem fileMenuClear;
-	public MenuItem editMenuVerticalFlip;
-	public MenuItem editMenuHorizontalFlip;
-	public MenuItem editMenuRotateLeft;
-	public MenuItem editMenuRotateRight;
-	public MenuItem editMenuRestoreCharts;
-	public MenuItem editMenuMergeCharts;
-	public MenuItem editMenuExtractChart;
-	public MenuItem editMenuRemoveCharts;
-	public MenuItem editMenuSelectAllFeatures;
-	public MenuItem editMenuDeselectAllFeatures;
+	public MenuItem transformMenuDeleteImage;
+	public MenuItem transformMenuClear;
+	public MenuItem transformMenuVerticalFlip;
+	public MenuItem transformMenuHorizontalFlip;
+	public MenuItem transformMenuMenuRotateLeft;
+	public MenuItem transformMenuMenuRotateRight;
+	public MenuItem chartsMenuRestoreCharts;
+	public MenuItem chartsMenuMergeCharts;
+	public MenuItem chartsMenuExtractChart;
+	public MenuItem chartsMenuRemoveCharts;
+	public MenuItem samplesMenuSelectAllFeatures;
+	public MenuItem samplesMenuDeselectAllFeatures;
 	public MenuItem navMenuTransform;
 	public MenuItem navMenuSamples;
 	public MenuItem navMenuCharts;
@@ -190,11 +196,11 @@ public class Controller implements Initializable {
 	public HBox transformTopHBox;
 	public Label transformInfo;
 	public VBox samplesModeVBox;
-	public MenuItem editMenuDeleteSample;
+	public MenuItem samplesMenuDeleteSample;
 	public Label chartsSampleLabel;
 	public MenuItem runMenuTransformButton;
-	public MenuItem editMenuCreateMode;
-	public MenuItem editMenuSelectMode;
+	public MenuItem samplesMenuCreateMode;
+	public MenuItem samplesMenuSelectMode;
 
 	@FXML
 	private ScrollPane allChartsGridScrollPane;
@@ -242,7 +248,7 @@ public class Controller implements Initializable {
 	private Menu fileMenu;
 
 	@FXML
-	private MenuItem fileMenuLoadImages;
+	private MenuItem transformMenuLoadImages;
 
 	@FXML
 	private MenuItem fileMenuExportToCsv;
@@ -408,7 +414,7 @@ public class Controller implements Initializable {
 
 	//others
 	@FXML
-	void about( ActionEvent event ) {
+	void about(  ) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION, "Global image features analyzer\n\nCopyright © 2016 Filip Chrześcijanek", ButtonType.OK);
 		DialogPane dialogPane = alert.getDialogPane();
 		Preferences prefs = Preferences.userNodeForPackage(Main.class);
@@ -426,12 +432,12 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void applyDarkTheme( ActionEvent event ) {
+	void applyDarkTheme(  ) {
 		applyTheme(THEME_DARK);
 	}
 
 	@FXML
-	void applyLightTheme( ActionEvent event ) {
+	void applyLightTheme(  ) {
 		applyTheme(THEME_LIGHT);
 	}
 
@@ -444,7 +450,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void refresh( ActionEvent actionEvent ) {
+	void refresh(  ) {
 		final Integer index = chartsSampleComboBox.getValue() - 1;
 		createCharts(index);
 		placeCharts();
@@ -474,8 +480,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void deselectAllFunctions( ActionEvent event ) {
-		samplesTab(null);
+	void deselectAllFunctions(  ) {
 		if ( !featuresTab.isSelected() ) rightVBoxTabPane.getSelectionModel().select(featuresTab);
 		for ( Node chb : featuresVBox.getChildren() ) {
 			( (CheckBox) chb ).setSelected(false);
@@ -484,12 +489,11 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void exit( ActionEvent event ) {
+	void exit(  ) {
 		root.getScene().getWindow().hide();
 	}
 
-	@FXML
-	void exportToCsv( ActionEvent event ) {
+	@FXML void exportToCsv(  ) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Export results to CSV file");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Comma-separated values", "*.csv"));
@@ -531,7 +535,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void flipHorizontal( ActionEvent event ) {
+	void flipHorizontal(  ) {
 		String imageName = transformImageList.getSelectionModel().getSelectedItem();
 		TransformImageData img = SharedState.INSTANCE.transformImages.get(imageName);
 		Core.flip(img.imageData, img.imageData, 1);
@@ -559,7 +563,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void flipVertical( ActionEvent event ) {
+	void flipVertical(  ) {
 		String imageName = transformImageList.getSelectionModel().getSelectedItem();
 		TransformImageData img = SharedState.INSTANCE.transformImages.get(imageName);
 		Core.flip(img.imageData, img.imageData, 0);
@@ -753,8 +757,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void selectAllFunctions( ActionEvent event ) {
-		samplesTab(null);
+	void selectAllFunctions(  ) {
 		if ( !featuresTab.isSelected() ) rightVBoxTabPane.getSelectionModel().select(featuresTab);
 		for ( Node chb : featuresVBox.getChildren() ) {
 			( (CheckBox) chb ).setSelected(true);
@@ -782,7 +785,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void merge( ActionEvent actionEvent ) {
+	void merge(  ) {
 		final CategoryAxis xAxis = new CategoryAxis();
 		final NumberAxis yAxis = new NumberAxis();
 		final BarChart< String, Number > bc = new BarChart<>(xAxis, yAxis);
@@ -818,13 +821,13 @@ public class Controller implements Initializable {
 		chartsShiftButton.setDisable(nodes.size() != 1 || integer <= 1);
 		chartsDeleteButton.setDisable(nodes.isEmpty());
 		chartsMergeButton.setDisable(nodes.size() < 2);
-		editMenuMergeCharts.setDisable(nodes.size() < 2);
-		editMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
-		editMenuRemoveCharts.setDisable(nodes.isEmpty());
+		chartsMenuMergeCharts.setDisable(nodes.size() < 2);
+		chartsMenuExtractChart.setDisable(nodes.size() != 1 || integer <= 1);
+		chartsMenuRemoveCharts.setDisable(nodes.isEmpty());
 	}
 
 	@FXML
-	void shift( ActionEvent actionEvent ) {
+	void shift(  ) {
 		final CategoryAxis xAxis1 = new CategoryAxis();
 		final NumberAxis yAxis1 = new NumberAxis();
 		final CategoryAxis xAxis2 = new CategoryAxis();
@@ -882,7 +885,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void delete( ActionEvent actionEvent ) {
+	void delete(  ) {
 		SharedState.INSTANCE.charts.get().get(chartsSampleComboBox.getValue() - 1).removeAll(chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle
 				().equals
 				(GRAPH_SELECTION_STYLE)).collect(Collectors.toList()));
@@ -891,23 +894,23 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void showAllCharts( ActionEvent actionEvent ) { }
+	void showAllCharts(  ) { }
 
-	public void transformTab( ActionEvent actionEvent ) {
+	public void transformTab(  ) {
 		if ( !transformTab.isSelected() ) mainTabPane.getSelectionModel().select(transformTab);
 	}
 
-	public void samplesTab( ActionEvent actionEvent ) {
+	public void samplesTab(  ) {
 		if ( !samplesTab.isSelected() ) mainTabPane.getSelectionModel().select(samplesTab);
 	}
 
-	public void chartsTab( ActionEvent actionEvent ) {
+	public void chartsTab(  ) {
 		if ( !chartsTab.isSelected() ) mainTabPane.getSelectionModel().select(chartsTab);
 	}
 
-	public void chartsBySample( ActionEvent actionEvent ) {
+	public void chartsBySample(  ) {
 		if ( !chartsTab.isSelected() ) mainTabPane.getSelectionModel().select(chartsTab);
-		if ( !allChartsTab.isSelected() ) chartsTabPane.getSelectionModel().select(bySampleTab);
+		if ( !bySampleTab.isSelected() ) chartsTabPane.getSelectionModel().select(bySampleTab);
 		chartsBySampleRadioButton.setSelected(true);
 	}
 
@@ -916,14 +919,14 @@ public class Controller implements Initializable {
 		if ( !allChartsTab.isSelected() ) chartsTabPane.getSelectionModel().select(allChartsTab);
 	}
 
-	public void zoomIn( ActionEvent actionEvent ) {
+	public void zoomIn(  ) {
 		if ( transformTab.isSelected() )
 			updateScrollbars(transformImageView, transformScrollPane, 1);
 		else if ( samplesTab.isSelected() )
 			updateScrollbars(samplesImageView, samplesScrollPane, 1);
 	}
 
-	public void zoomOut( ActionEvent actionEvent ) {
+	public void zoomOut(  ) {
 		if ( transformTab.isSelected() )
 			updateScrollbars(transformImageView, transformScrollPane, -1);
 		else if ( samplesTab.isSelected() )
@@ -1056,7 +1059,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void loadImages( ActionEvent event ) {
+	void loadImages(  ) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Load transformImages");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.bmp", "*.tif"));
@@ -1097,7 +1100,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void rotateLeft( ActionEvent event ) {
+	void rotateLeft(  ) {
 		String imageName = transformImageList.getSelectionModel().getSelectedItem();
 		TransformImageData img = SharedState.INSTANCE.transformImages.get(imageName);
 		Core.transpose(img.imageData, img.imageData);
@@ -1111,7 +1114,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	void rotateRight( ActionEvent event ) {
+	void rotateRight(  ) {
 		String imageName = transformImageList.getSelectionModel().getSelectedItem();
 		TransformImageData img = SharedState.INSTANCE.transformImages.get(imageName);
 		Core.transpose(img.imageData, img.imageData);
@@ -1163,7 +1166,7 @@ public class Controller implements Initializable {
 		assert root != null : "fx:id=\"root\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert menuBar != null : "fx:id=\"menuBar\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert fileMenu != null : "fx:id=\"fileMenu\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert fileMenuLoadImages != null : "fx:id=\"fileMenuLoadImages\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert transformMenuLoadImages != null : "fx:id=\"transformMenuLoadImages\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert fileMenuExportToCsv != null : "fx:id=\"fileMenuExportToCsv\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert fileMenuExit != null : "fx:id=\"fileMenuExit\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert optionsMenu != null : "fx:id=\"optionsMenu\" was not injected: check your FXML file 'gifa-gui.fxml'.";
@@ -1246,9 +1249,9 @@ public class Controller implements Initializable {
 		chartsShiftButton.setDisable(true);
 		chartsDeleteButton.setDisable(true);
 		chartsMergeButton.setDisable(true);
-		editMenuMergeCharts.setDisable(true);
-		editMenuExtractChart.setDisable(true);
-		editMenuRemoveCharts.setDisable(true);
+		chartsMenuMergeCharts.setDisable(true);
+		chartsMenuExtractChart.setDisable(true);
+		chartsMenuRemoveCharts.setDisable(true);
 		chartsSampleComboBox.getSelectionModel().selectedItemProperty().addListener(( observable, oldValue, newValue ) -> {
 			if ( newValue != null ) {
 				placeCharts();
@@ -1289,7 +1292,7 @@ public class Controller implements Initializable {
 				transformBorderColor.setValue((Color) newValue.sampleArea.getStroke());
 				for ( Map.Entry< String, TransformImageData > e : SharedState.INSTANCE.transformImages.entrySet() ) {
 					if ( Arrays.asList(e.getValue().vertexSamples).contains(newValue) ) {
-						transformTab(null);
+						transformTab();
 						transformImageList.getSelectionModel().select(e.getKey());
 						break;
 					}
@@ -1330,7 +1333,7 @@ public class Controller implements Initializable {
 					samplesBorderColor.setValue((Color) newValue.sampleArea.getStroke());
 					for ( Map.Entry< String, SamplesImageData > e : SharedState.INSTANCE.samplesImages.entrySet() ) {
 						if ( e.getValue().samples.contains(newValue) ) {
-							samplesTab(null);
+							samplesTab();
 							samplesImageList.getSelectionModel().select(e.getKey());
 							break;
 						}
@@ -1351,7 +1354,6 @@ public class Controller implements Initializable {
 						samplesScrollPane.setHvalue(
 								( Math.max(0, ( newX + newWidth / 2 ) * samplesImageView.getScaleX() - ( samplesScrollPane.getWidth() / 2 )) / (
 										transformScrollPane.getWidth() / 2 ) )
-
 										/ newHDenominator);
 						samplesScrollPane.setVvalue(
 								( Math.max(0, ( newY + newHeight / 2 ) * samplesImageView.getScaleX() - ( samplesScrollPane.getHeight() / 2 )) / (
@@ -1530,6 +1532,9 @@ public class Controller implements Initializable {
 	}
 
 	private void setVisibilityBindings() {
+		transformMenu.visibleProperty().bind(transformTab.selectedProperty());
+		samplesMenu.visibleProperty().bind(samplesTab.selectedProperty());
+		chartsMenu.visibleProperty().bind(chartsTab.selectedProperty());
 		transformInfo.visibleProperty().bind(transformImageView.imageProperty().isNotNull());
 		transformImageViewGroup.visibleProperty().bind(transformImageView.imageProperty().isNotNull());
 		transformBottomGrid.visibleProperty().bind(transformImageView.imageProperty().isNotNull());
@@ -1557,38 +1562,8 @@ public class Controller implements Initializable {
 	}
 
 	private void setEnablementBindings() {
-		fileMenuRemoveImage.disableProperty().bind(Bindings.or(transformImageList.getSelectionModel().selectedItemProperty().isNull(), transformTab
-				.selectedProperty().not()));
-		fileMenuClear.disableProperty().bind(Bindings.or(Bindings.isEmpty(transformImageList.getItems()), transformTab.selectedProperty().not()));
-		editMenuVerticalFlip.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
-		editMenuHorizontalFlip.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
-		editMenuRotateLeft.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
-		editMenuRotateRight.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformTab.selectedProperty().not()));
-		editMenuCreateMode.disableProperty().bind(Bindings.or(samplesTab.selectedProperty().not(), createRadioButton.selectedProperty()));
-		editMenuSelectMode.disableProperty().bind(Bindings.or(samplesTab.selectedProperty().not(), selectRadioButton.selectedProperty()));
-		editMenuDeleteSample.disableProperty().bind(
-				Bindings.or(
-						Bindings.or(SharedState.INSTANCE.selectedSample.isNull(), selectRadioButton.selectedProperty().not()),
-						Bindings.or(samplesTab.selectedProperty().not(), samplesImageView.imageProperty().isNull())
-				)
-		);
-		editMenuSelectAllFeatures.disableProperty().bind(Bindings.or(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty().not()));
-		editMenuDeselectAllFeatures.disableProperty().bind(Bindings.or(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty().not()));
-		editMenuRestoreCharts.disableProperty().bind(Bindings.or(chartsBySampleRadioButton.selectedProperty().not(), chartsTab.selectedProperty().not()));
-		editMenuZoomIn.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(),
-				transformTab.selectedProperty()), Bindings
-				.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty()))));
-		editMenuZoomOut.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(),
-				transformTab.selectedProperty()),
-				Bindings.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty()))));
-		navMenuSamples.disableProperty().bind(SharedState.INSTANCE.results.isNull());
-		navMenuChartsBySample.disableProperty().bind(SharedState.INSTANCE.results.isNull());
-		navMenuAllCharts.disableProperty().bind(SharedState.INSTANCE.results.isNull());
-		navMenuCharts.disableProperty().bind(SharedState.INSTANCE.results.isNull());
 		deleteImageButton.disableProperty().bind(transformImageList.getSelectionModel().selectedItemProperty().isNull());
 		clearImagesButton.disableProperty().bind(Bindings.isEmpty(transformImageList.getItems()));
-		fileMenuExportToCsv.disableProperty().bind(SharedState.INSTANCE.results.isNull());
-		fileMenuExportToPng.disableProperty().bind(SharedState.INSTANCE.results.isNull());
 		IntegerProperty featuresSize = new SimpleIntegerProperty(featuresVBox.getChildren().size());
 		BooleanBinding noFeaturesAvailable = Bindings.equal(0, featuresSize);
 		BooleanBinding noFeaturesChosen = Bindings.createBooleanBinding(
@@ -1608,12 +1583,46 @@ public class Controller implements Initializable {
 				Bindings.or(Bindings.isEmpty(samplesImageList.getItems()), Bindings.or(noFeaturesAvailable, noFeaturesChosen))));
 		runMenuResultsButton.disableProperty().bind(Bindings.or(noSamplesAdded, Bindings.or(samplesTab.selectedProperty().not(),
 				Bindings.or(Bindings.isEmpty(samplesImageList.getItems()), Bindings.or(noFeaturesAvailable, noFeaturesChosen)))));
-		transformImagesButton.disableProperty().bind(Bindings.isEmpty(transformImageList.getItems()));
 		runMenuTransformButton.disableProperty().bind(Bindings.or(transformTab.selectedProperty().not(),
 				Bindings.isEmpty(transformImageList.getItems())));
+		transformImagesButton.disableProperty().bind(Bindings.isEmpty(transformImageList.getItems()));
 		samplesTab.disableProperty().bind(Bindings.isEmpty(samplesImageList.getItems()));
 		chartsTab.disableProperty().bind(SharedState.INSTANCE.results.isNull());
 
+		fileMenuExportToCsv.disableProperty().bind(SharedState.INSTANCE.results.isNull());
+		fileMenuExportToPng.disableProperty().bind(SharedState.INSTANCE.results.isNull());
+
+		editMenuZoomIn.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(),
+				transformTab.selectedProperty()), Bindings
+				.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty()))));
+		editMenuZoomOut.disableProperty().bind(Bindings.or(chartsTab.selectedProperty(), Bindings.or(Bindings.and(transformImageView.imageProperty().isNull(),
+				transformTab.selectedProperty()),
+				Bindings.and(samplesImageView.imageProperty().isNull(), samplesTab.selectedProperty()))));
+
+		transformMenuVerticalFlip.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformMenu.visibleProperty().not()));
+		transformMenuHorizontalFlip.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformMenu.visibleProperty().not()));
+		transformMenuMenuRotateLeft.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformMenu.visibleProperty().not()));
+		transformMenuMenuRotateRight.disableProperty().bind(Bindings.or(transformImageView.imageProperty().isNull(), transformMenu.visibleProperty().not()));
+		transformMenuLoadImages.disableProperty().bind(transformMenu.visibleProperty().not());
+		transformMenuDeleteImage.disableProperty().bind(Bindings.or(transformImageList.getSelectionModel().selectedItemProperty().isNull(), transformMenu.visibleProperty().not()));
+		transformMenuClear.disableProperty().bind(Bindings.or(Bindings.isEmpty(transformImageList.getItems()), transformMenu.visibleProperty().not()));
+
+		samplesMenuCreateMode.disableProperty().bind(Bindings.or(samplesMenu.visibleProperty().not(), createRadioButton.selectedProperty()));
+		samplesMenuSelectMode.disableProperty().bind(Bindings.or(samplesMenu.visibleProperty().not(), selectRadioButton.selectedProperty()));
+		samplesMenuRotateMode.disableProperty().bind(Bindings.or(samplesMenu.visibleProperty().not(), rotateRadioButton.selectedProperty()));
+		samplesMenuDeleteSample.disableProperty().bind(Bindings.or(SharedState.INSTANCE.selectedSample.isNull(), samplesMenu.visibleProperty().not()));
+		samplesMenuClearSamples.disableProperty().bind(Bindings.or(samplesMenu.visibleProperty().not(), noSamplesAdded));
+		samplesMenuSelectAllFeatures.disableProperty().bind(samplesMenu.visibleProperty().not());
+		samplesMenuDeselectAllFeatures.disableProperty().bind(samplesMenu.visibleProperty().not());
+
+		chartsMenuRestoreCharts.disableProperty().bind(Bindings.or(Bindings.or(chartsBySampleRadioButton.selectedProperty().not(), bySampleTab.selectedProperty().not()), chartsMenu.visibleProperty().not()));
+
+		navMenuTransform.disableProperty().bind(transformTab.selectedProperty());
+		navMenuSamples.disableProperty().bind(Bindings.or(Bindings.isEmpty(SharedState.INSTANCE.samplesImages), samplesTab.selectedProperty()));
+		navMenuCharts.disableProperty().bind(Bindings.or(SharedState.INSTANCE.results.isNull(), chartsTab.selectedProperty()));
+		navMenuAllCharts.disableProperty().bind(Bindings.or(navMenuCharts.disableProperty(), Bindings.and(chartsTab.selectedProperty(), allChartsTab.selectedProperty())));
+		navMenuChartsBySample.disableProperty().bind(Bindings.or(navMenuCharts.disableProperty(), Bindings.and(chartsTab.selectedProperty(), Bindings.and(bySampleTab.selectedProperty(), chartsBySampleRadioButton.selectedProperty()))));
+		navMenuImagesBySample.disableProperty().bind(Bindings.or(navMenuCharts.disableProperty(), Bindings.and(chartsTab.selectedProperty(), Bindings.and(bySampleTab.selectedProperty(), imagesBySampleRadioButton.selectedProperty()))));
 	}
 
 	private void setSelectionListeners() {
@@ -1687,7 +1696,7 @@ public class Controller implements Initializable {
 		);
 	}
 
-	public void transform( ActionEvent actionEvent ) {
+	public void transform(  ) {
 		samplesImageList.getSelectionModel().clearSelection();
 		samplesImageList.getItems().clear();
 		SharedState.INSTANCE.samplesImages.clear();
@@ -1733,7 +1742,7 @@ public class Controller implements Initializable {
 				).toArray(SamplesImageData[]::new);
 	}
 
-	public void deleteSample( ActionEvent actionEvent ) {
+	public void deleteSample(  ) {
 		BaseSample r = SharedState.INSTANCE.selectedSample.get();
 		if ( r != null ) {
 			int index = -1;
@@ -1760,15 +1769,19 @@ public class Controller implements Initializable {
 	}
 
 
-	public void setCreateMode( ActionEvent actionEvent ) {
+	public void setCreateMode(  ) {
 		if ( !createRadioButton.isSelected() ) createRadioButton.setSelected(true);
 	}
 
-	public void setSelectMode( ActionEvent actionEvent ) {
+	public void setSelectMode(  ) {
 		if ( !selectRadioButton.isSelected() ) selectRadioButton.setSelected(true);
 	}
 
-	public void exportToPng( ActionEvent actionEvent ) {
+	public void setRotateMode(  ) {
+		if ( !rotateRadioButton.isSelected() ) rotateRadioButton.setSelected(true);
+	}
+	
+	public void exportToPng(  ) {
 		DirectoryChooser chooser = new DirectoryChooser();
 		chooser.setTitle("Choose directory");
 		File selectedDirectory = chooser.showDialog(root.getScene().getWindow());
@@ -1792,5 +1805,15 @@ public class Controller implements Initializable {
 				showAlert("Save failed! Check your write permissions.");
 			}
 		}
+	}
+
+	public void imagesBySample() {
+		if ( !chartsTab.isSelected() ) mainTabPane.getSelectionModel().select(chartsTab);
+		if ( !bySampleTab.isSelected() ) chartsTabPane.getSelectionModel().select(bySampleTab);
+		imagesBySampleRadioButton.setSelected(true);
+	}
+
+	public void help( ) {
+
 	}
 }

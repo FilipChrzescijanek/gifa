@@ -63,10 +63,10 @@ public class Injector {
 		components.clear();
 	}
 
-	public static < T > T instantiateController( Class< T > clazz ) {
+	public static < T > T instantiate( Class< T > clazz ) {
 		@SuppressWarnings( "unchecked" )
-		T controller = injectFields((T) supplier.apply(clazz));
-		return controller;
+		T instance = injectFields((T) supplier.apply(clazz));
+		return instance;
 	}
 
 	private static < T > T injectFields( final T instance ) {

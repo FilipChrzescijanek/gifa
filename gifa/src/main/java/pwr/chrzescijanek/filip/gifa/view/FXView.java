@@ -41,7 +41,7 @@ public class FXView {
 
 	private FXMLLoader load( final URL resource ) throws IllegalStateException {
 		final FXMLLoader loader = new FXMLLoader(resource);
-		Callback< Class< ? >, Object > controllerFactory = Injector::instantiateController;
+		Callback< Class< ? >, Object > controllerFactory = Injector::instantiate;
 		loader.setControllerFactory(controllerFactory);
 		tryToLoad(loader);
 		return loader;

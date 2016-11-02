@@ -1,17 +1,19 @@
-package pwr.chrzescijanek.filip.gifa.core.function;
+package pwr.chrzescijanek.filip.gifa.core.function.hsv.variance;
 
 import org.opencv.core.Mat;
+import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
 
 import static org.opencv.imgproc.Imgproc.COLOR_RGB2HSV_FULL;
 import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateStdDeviations;
+import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateVariances;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
 
-public final class StdDeviationValue implements EvaluationFunction {
+public final class VarianceValue implements EvaluationFunction {
 
 	@Override
 	public double[] evaluate( final Mat[] images ) {
 		convertType(images, COLOR_RGB2HSV_FULL);
-		return calculateStdDeviations(images, 2);
+		return calculateVariances(images, 2);
 	}
 
 }
