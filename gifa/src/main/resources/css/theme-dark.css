@@ -8,6 +8,7 @@
 
 .root {
     -fx-background-color: #444;
+    -fx-accent: #e45708;
 }
 
 .list-view {
