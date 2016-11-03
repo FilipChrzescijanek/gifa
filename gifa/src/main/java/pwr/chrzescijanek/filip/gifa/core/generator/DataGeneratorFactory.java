@@ -1,6 +1,11 @@
 package pwr.chrzescijanek.filip.gifa.core.generator;
 
+import pwr.chrzescijanek.filip.gifa.core.function.Canny;
 import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
+import pwr.chrzescijanek.filip.gifa.core.function.Roberts;
+import pwr.chrzescijanek.filip.gifa.core.function.Scharr;
+import pwr.chrzescijanek.filip.gifa.core.function.Sobel;
+import pwr.chrzescijanek.filip.gifa.core.function.SobelValue;
 import pwr.chrzescijanek.filip.gifa.core.function.hsv.entropy.EntropyHue;
 import pwr.chrzescijanek.filip.gifa.core.function.hsv.entropy.EntropySaturation;
 import pwr.chrzescijanek.filip.gifa.core.function.hsv.entropy.EntropyValue;
@@ -57,12 +62,17 @@ public class DataGeneratorFactory {
 	}
 
 	public void injectBasicFunctions() {
-		injectRedFunctions();
-		injectGreenFunctions();
-		injectBlueFunctions();
-		injectHueFunctions();
-		injectSaturationFunctions();
-		injectValueFunctions();
+//		injectRedFunctions();
+//		injectGreenFunctions();
+//		injectBlueFunctions();
+//		injectHueFunctions();
+//		injectSaturationFunctions();
+//		injectValueFunctions();
+		injectFunction("Sobel3 mean", new Sobel(3));
+		injectFunction("SobelValue7 mean", new SobelValue(7));
+		injectFunction("Scharr mean", new Scharr());
+		injectFunction("Canny mean", new Canny());
+		injectFunction("Roberts cross mean", new Roberts());
 	}
 
 	private void injectRedFunctions() {
