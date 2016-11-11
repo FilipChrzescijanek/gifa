@@ -24,6 +24,7 @@ import static org.opencv.core.Core.convertScaleAbs;
 import static org.opencv.core.Core.pow;
 import static org.opencv.core.Core.sqrt;
 import static org.opencv.imgcodecs.Imgcodecs.imencode;
+import static org.opencv.imgproc.Imgproc.*;
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2BGRA;
 import static org.opencv.imgproc.Imgproc.Canny;
 import static org.opencv.imgproc.Imgproc.Scharr;
@@ -262,6 +263,20 @@ public final class ImageUtils {
 		final Mat result = new Mat();
 		Canny(image, edges, 25, 75, 3, true);
 		image.copyTo(result, edges);
+		return result;
+	}
+
+	public static Mat[] otsuThreshold(final Mat[] images) {
+		checkIfChannelsMatch(images, 1);
+		Mat[] result = new Mat[images.length];
+		for (int i = 0; i < images.length; i++)
+			result[i] = otsuThreshold(images[i]);
+		return result;
+	}
+
+	public static Mat otsuThreshold(final Mat image) {
+		final Mat result = new Mat();
+		threshold(image, result, 0, 255, THRESH_BINARY | THRESH_OTSU);
 		return result;
 	}
 

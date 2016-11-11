@@ -19,7 +19,8 @@ public class SobelValue implements EdgeEvaluationFunction {
 		ImageUtils.convertType(images, Imgproc.COLOR_BGRA2BGR);
 		ImageUtils.convertType(images, Imgproc.COLOR_BGR2HSV);
 		Mat[] values = ImageUtils.extractChannel(images, 2);
-		Mat[] result = ImageUtils.sobelDerivative(values, kernelSize);
+		Mat[] filtered = ImageUtils.sobelDerivative(values, kernelSize);
+		Mat[] result = ImageUtils.otsuThreshold(filtered);
 		return result;
 	}
 
@@ -27,7 +28,8 @@ public class SobelValue implements EdgeEvaluationFunction {
 	public Mat[] process( final Mat[] images ) {
 		ImageUtils.convertType(images, Imgproc.COLOR_BGR2HSV);
 		Mat[] values = ImageUtils.extractChannel(images, 2);
-		Mat[] result = ImageUtils.sobelDerivative(values, kernelSize);
+		Mat[] filtered = ImageUtils.sobelDerivative(values, kernelSize);
+		Mat[] result = ImageUtils.otsuThreshold(filtered);
 		return result;
 	}
 

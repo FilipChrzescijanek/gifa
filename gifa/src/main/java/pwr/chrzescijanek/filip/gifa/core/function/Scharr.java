@@ -10,14 +10,16 @@ public class Scharr implements EdgeEvaluationFunction {
 	@Override
 	public Mat[] preprocess( final Mat[] images ) {
 		ImageUtils.convertType(images, Imgproc.COLOR_BGRA2GRAY);
-		Mat[] result = ImageUtils.scharrDerivative(images);
+		Mat[] filtered = ImageUtils.scharrDerivative(images);
+		Mat[] result = ImageUtils.otsuThreshold(filtered);
 		return result;
 	}
 
 	@Override
 	public Mat[] process( final Mat[] images ) {
 		ImageUtils.convertType(images, Imgproc.COLOR_BGR2GRAY);
-		Mat[] result = ImageUtils.scharrDerivative(images);
+		Mat[] filtered = ImageUtils.scharrDerivative(images);
+		Mat[] result = ImageUtils.otsuThreshold(filtered);
 		return result;
 	}
 

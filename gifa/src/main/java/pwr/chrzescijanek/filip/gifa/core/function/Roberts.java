@@ -10,14 +10,16 @@ public class Roberts implements EdgeEvaluationFunction  {
 	@Override
 	public Mat[] preprocess( final Mat[] images ) {
 		ImageUtils.convertType(images, Imgproc.COLOR_BGRA2GRAY);
-		Mat[] result = ImageUtils.robertsCross(images);
+		Mat[] filtered = ImageUtils.robertsCross(images);
+		Mat[] result = ImageUtils.otsuThreshold(filtered);
 		return result;
 	}
 
 	@Override
 	public Mat[] process( final Mat[] images ) {
 		ImageUtils.convertType(images, Imgproc.COLOR_BGR2GRAY);
-		Mat[] result = ImageUtils.robertsCross(images);
+		Mat[] filtered = ImageUtils.robertsCross(images);
+		Mat[] result = ImageUtils.otsuThreshold(filtered);
 		return result;
 	}
 
