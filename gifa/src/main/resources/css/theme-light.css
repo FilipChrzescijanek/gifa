@@ -2,6 +2,10 @@
     -fx-text-fill: #222;
 }
 
+.button {
+    -fx-text-fill: #222;
+}
+
 .menu-item .label {
     -fx-text-fill: #222;
 }
@@ -10,15 +14,15 @@
     -fx-text-fill: #222;
 }
 
-.button {
-    -fx-text-fill: #222;
-}
-
 .scroll-pane {
     -fx-background: #eee;
-    -fx-background-color:transparent;
+    -fx-background-color: transparent;
+}
+
+.titled-pane > *.content {
+    -fx-border-radius: 0 0 5 5;
 }
 
 .color-picker {
-    -fx-color-label-visible: false ;
+    -fx-color-label-visible: false;
 }

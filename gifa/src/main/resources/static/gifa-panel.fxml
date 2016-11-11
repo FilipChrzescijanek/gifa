@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <BorderPane fx:id="root" styleClass="root" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1"
-			fx:controller="pwr.chrzescijanek.filip.gifa.controller.PanelController">
+			fx:controller="pwr.chrzescijanek.filip.gifa.controller.PanelController" >
 	<top>
 		<HBox fx:id="panelHBox" alignment="CENTER">
 			<Label fx:id="panelInfo"/>
@@ -12,12 +12,12 @@
 	</top>
 	<bottom>
 		<HBox fx:id="panelControls" alignment="CENTER" minHeight="40.0">
-			<Label fx:id="panelColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns">
+			<Label fx:id="panelColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns:">
 				<HBox.margin>
-					<Insets right="50"/>
+					<Insets right="10"/>
 				</HBox.margin>
 			</Label>
-			<TextField fx:id="panelColumnsTextField" alignment="CENTER" text="3"/>
+			<TextField fx:id="panelColumnsTextField" alignment="CENTER" text="3" prefWidth="50" />
 		</HBox>
 	</bottom>
 	<center>

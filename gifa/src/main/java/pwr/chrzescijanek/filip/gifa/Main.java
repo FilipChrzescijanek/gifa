@@ -2,8 +2,6 @@ package pwr.chrzescijanek.filip.gifa;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.opencv.core.Core;
@@ -25,7 +23,7 @@ public class Main extends Application {
 	public void start( final Stage primaryStage ) throws Exception {
 		Image icon = new Image(getClass().getResourceAsStream("/images/icon-small.png"));
 		FXView fxView = new FXView("/static/gifa.fxml");
-		StageUtils.prepareStagePreservingRatio(primaryStage, "gifa", icon, fxView);
+		StageUtils.prepareMainStage(primaryStage, "gifa", icon, fxView);
 		primaryStage.setOnCloseRequest(event -> Platform.exit());
 		primaryStage.show();
 	}

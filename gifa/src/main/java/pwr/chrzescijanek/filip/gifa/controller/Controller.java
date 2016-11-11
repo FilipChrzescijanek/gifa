@@ -105,28 +105,10 @@ public class Controller implements Initializable {
 	public static final String THEME_DARK = "/css/theme-dark.css";
 	public static final String THEME_LIGHT = "/css/theme-light.css";
 	public static final String GRAPH_SELECTION_STYLE = "-fx-border-color: yellow; -fx-border-width: 3px;";
-	public TabPane chartsTabPane;
-	public Tab allChartsTab;
-	public Tab bySampleTab;
-	public ScrollPane imagesBySampleGridScrollPane;
-	public GridPane imagesBySampleGrid;
-	public MenuItem fileMenuExportToPng;
-	public RadioButton rotateRadioButton;
-	public Button deleteSampleButton;
-	public Button clearSamplesButton;
-	public MenuItem navMenuImagesBySample;
-	public MenuItem helpMenuHelp;
-	public Menu transformMenu;
-	public Menu samplesMenu;
-	public Menu chartsMenu;
-	public MenuItem samplesMenuRotateMode;
-	public MenuItem samplesMenuClearSamples;
 
-	//fields
 	private DataGeneratorFactory generatorFactory;
 	private SampleFactory sampleFactory;
 	private ImageDataFactory imageDataFactory;
-
 	private List< List< Pair< String, ImageView > > > samples = new ArrayList<>();
 
 	@Inject
@@ -137,230 +119,60 @@ public class Controller implements Initializable {
 		this.imageDataFactory = imageDataFactory;
 	}
 
-	public MenuItem transformMenuDeleteImage;
-	public MenuItem transformMenuClear;
-	public MenuItem transformMenuVerticalFlip;
-	public MenuItem transformMenuHorizontalFlip;
-	public MenuItem transformMenuMenuRotateLeft;
-	public MenuItem transformMenuMenuRotateRight;
-	public MenuItem chartsMenuRestoreCharts;
-	public MenuItem chartsMenuMergeCharts;
-	public MenuItem chartsMenuExtractChart;
-	public MenuItem chartsMenuRemoveCharts;
-	public MenuItem samplesMenuSelectAllFeatures;
-	public MenuItem samplesMenuDeselectAllFeatures;
-	public MenuItem navMenuTransform;
-	public MenuItem navMenuSamples;
-	public MenuItem navMenuCharts;
-	public MenuItem navMenuChartsBySample;
-	public MenuItem navMenuAllCharts;
-	public MenuItem editMenuZoomIn;
-	public MenuItem editMenuZoomOut;
-	public Menu editMenu;
-	public Menu navMenu;
-	public MenuItem runMenuResultsButton;
-	public RadioButton nearestRadioButton;
-	public ToggleGroup interpolation;
-	public RadioButton linearRadioButton;
-	public RadioButton cubicRadioButton;
-	public Menu runMenu;
-	public VBox interpolationVBox;
-	public GridPane transformColorControls;
-	public ColorPicker transformBorderColor;
-	public Label transformBorderLabel;
-	public Tab samplesTab;
-	public GridPane samplesMainPane;
-	public GridPane samplesLeftGridPane;
-	public RadioButton selectRadioButton;
-	public RadioButton createRadioButton;
-	public ToggleGroup drawMethod;
-	public GridPane samplesColorControls;
-	public ColorPicker samplesFillColor;
-	public ColorPicker samplesStrokeColor;
-	public ColorPicker samplesBorderColor;
-	public Label samplesFillLabel;
-	public Label samplesStrokeLabel;
-	public Label samplesBorderLabel;
-	public BorderPane samplesBorderPane;
-	public ScrollPane samplesScrollPane;
-	public Group samplesImageViewGroup;
-	public AnchorPane samplesImageViewAnchor;
-	public ImageView samplesImageView;
-	public GridPane samplesBottomGrid;
-	public Label samplesImageSizeLabel;
-	public ComboBox< String > samplesScaleCombo;
-	public Label samplesMousePositionLabel;
-	public GridPane samplesImageListGrid;
-	public ListView< String > samplesImageList;
-	public ComboBox< Integer > chartsSampleComboBox;
-	public ColorPicker transformTriangleFillColor;
-	public ColorPicker transformTriangleStrokeColor;
-	public Label transformTriangleFillLabel;
-	public Label transformTriangleStrokeLabel;
-	public Button transformImagesButton;
-	public HBox samplesTopHBox;
-	public Label samplesInfo;
-	public HBox transformTopHBox;
-	public Label transformInfo;
-	public VBox samplesModeVBox;
-	public MenuItem samplesMenuDeleteSample;
-	public Label chartsSampleLabel;
-	public MenuItem runMenuTransformButton;
-	public MenuItem samplesMenuCreateMode;
-	public MenuItem samplesMenuSelectMode;
-
+	//FXML fields
 	@FXML
-	private ScrollPane allChartsGridScrollPane;
-	@FXML
-	private GridPane allChartsGrid;
-	@FXML
-	private HBox chartsGraphsHBox;
-	@FXML
-	private HBox chartsGraphsToolbar;
-	@FXML
-	private Label chartsGraphsInfo;
-	@FXML
-	private Label transformImageListInfo;
-	@FXML
-	private HBox transformImageListToolbar;
-	@FXML
-	private RadioButton imagesBySampleRadioButton;
-	@FXML
-	private Button chartsMergeButton;
-	@FXML
-	private Button chartsShiftButton;
-	@FXML
-	private Button chartsDeleteButton;
-
-	@FXML
-	private Button chartsRefreshButton;
-	@FXML
-	private Button deleteImageButton;
-	@FXML
-	private Button clearImagesButton;
-
-	@FXML
-	private ResourceBundle resources;
-
-	@FXML
-	private URL location;
-
-	@FXML
-	private GridPane root;
-
-	@FXML
-	private MenuBar menuBar;
-
-	@FXML
-	private Menu fileMenu;
-
-	@FXML
-	private MenuItem transformMenuLoadImages;
-
-	@FXML
-	private MenuItem fileMenuExportToCsv;
-
-	@FXML
-	private MenuItem fileMenuExit;
-
-	@FXML
-	private Menu optionsMenu;
-
-	@FXML
-	private Menu optionsMenuTheme;
-
-	@FXML
-	private RadioMenuItem optionsMenuThemeLight;
-
-	@FXML
-	private ToggleGroup theme;
-
-	@FXML
-	private RadioMenuItem optionsMenuThemeDark;
-
-	@FXML
-	private Menu helpMenu;
-
-	@FXML
-	private MenuItem helpMenuAbout;
-
-	@FXML
-	private TabPane mainTabPane;
-
-	@FXML
-	private Tab transformTab;
-
-	@FXML
-	private GridPane transformMainPane;
-
-	@FXML
-	private GridPane transformImageListGrid;
-
-	@FXML
-	private ListView< String > transformImageList;
-
-	@FXML
-	private Button loadImagesButton;
-
-	@FXML
-	private BorderPane transformBorderPane;
-
-	@FXML
-	private ScrollPane transformScrollPane;
+	private AnchorPane samplesImageViewAnchor;
 
 	@FXML
 	private AnchorPane transformImageViewAnchor;
 
 	@FXML
-	private Group transformImageViewGroup;
+	private BorderPane chartsMainPane;
 
 	@FXML
-	private ImageView transformImageView;
+	private BorderPane featuresBorderPane;
 
 	@FXML
-	private GridPane transformBottomGrid;
+	private BorderPane samplesBorderPane;
 
 	@FXML
-	private Label transformImageSizeLabel;
+	private BorderPane transformBorderPane;
 
 	@FXML
-	private ComboBox< String > transformScaleCombo;
+	private Button chartsDeleteButton;
 
 	@FXML
-	private Label transformMousePositionLabel;
+	private Button chartsMergeButton;
 
 	@FXML
-	private VBox rightVBox;
+	private Button chartsRefreshButton;
 
 	@FXML
-	private TabPane rightVBoxTabPane;
+	private Button chartsShiftButton;
 
 	@FXML
-	private Tab toolboxTab;
+	private Button clearImagesButton;
 
 	@FXML
-	private GridPane transformLeftGridPane;
+	private Button clearSamplesButton;
 
 	@FXML
-	private ColorPicker transformFillColor;
+	private Button deleteImageButton;
 
 	@FXML
-	private ColorPicker transformStrokeColor;
+	private Button deleteSampleButton;
 
 	@FXML
-	private Label transformFillLabel;
-
-	@FXML
-	private Label transformStrokeLabel;
-
-	@FXML
-	private Button verticalFlipButton;
+	private Button deselectAllButton;
 
 	@FXML
 	private Button horizontalFlipButton;
 
 	@FXML
-	private VBox transformToolbarVBox;
+	private Button loadImagesButton;
+
+	@FXML
+	private Button resultsButton;
 
 	@FXML
 	private Button rotateLeftButton;
@@ -369,37 +181,49 @@ public class Controller implements Initializable {
 	private Button rotateRightButton;
 
 	@FXML
-	private Tab featuresTab;
-
-	@FXML
-	private BorderPane featuresBorderPane;
-
-	@FXML
-	private ScrollPane featuresScrollPane;
-
-	@FXML
-	private VBox featuresVBox;
-
-	@FXML
-	private HBox selectionButtonsHBox;
-
-	@FXML
 	private Button selectAllButton;
 
 	@FXML
-	private Button deselectAllButton;
+	private Button transformImagesButton;
 
 	@FXML
-	private Button resultsButton;
+	private Button verticalFlipButton;
 
 	@FXML
-	private Tab chartsTab;
+	private ColorPicker sampleBorderColor;
 
 	@FXML
-	private BorderPane chartsMainPane;
+	private ColorPicker sampleFillColor;
 
 	@FXML
-	private ScrollPane chartsBySampleGridScrollPane;
+	private ColorPicker sampleStrokeColor;
+
+	@FXML
+	private ColorPicker triangleFillColor;
+
+	@FXML
+	private ColorPicker triangleStrokeColor;
+
+	@FXML
+	private ColorPicker vertexBorderColor;
+
+	@FXML
+	private ColorPicker vertexFillColor;
+
+	@FXML
+	private ColorPicker vertexStrokeColor;
+
+	@FXML
+	private ComboBox< Integer > chartsSampleComboBox;
+
+	@FXML
+	private ComboBox< String > samplesScaleCombo;
+
+	@FXML
+	private ComboBox< String > transformScaleCombo;
+
+	@FXML
+	private GridPane allChartsGrid;
 
 	@FXML
 	private GridPane chartsBySampleGrid;
@@ -408,16 +232,1085 @@ public class Controller implements Initializable {
 	private GridPane chartsControls;
 
 	@FXML
-	private ToggleGroup result;
+	private GridPane imagesBySampleGrid;
 
 	@FXML
-	private RadioButton chartsBySampleRadioButton;
+	private GridPane root;
+
+	@FXML
+	private GridPane sampleColorControls;
+
+	@FXML
+	private GridPane samplesBottomGrid;
+
+	@FXML
+	private GridPane samplesImageListGrid;
+
+	@FXML
+	private GridPane samplesMainPane;
+
+	@FXML
+	private GridPane samplesToolsGridPane;
+
+	@FXML
+	private GridPane transformBottomGrid;
+
+	@FXML
+	private GridPane transformColorControls;
+
+	@FXML
+	private GridPane transformImageListGrid;
+
+	@FXML
+	private GridPane transformMainPane;
+
+	@FXML
+	private GridPane transformToolsGridPane;
+
+	@FXML
+	private GridPane vertexColorControls;
+
+	@FXML
+	private Group samplesImageViewGroup;
+
+	@FXML
+	private Group transformImageViewGroup;
+
+	@FXML
+	private HBox chartsGraphsHBox;
+
+	@FXML
+	private HBox chartsGraphsToolbar;
+
+	@FXML
+	private HBox samplesTopHBox;
+
+	@FXML
+	private HBox selectionButtonsHBox;
+
+	@FXML
+	private HBox transformImageListToolbar;
+
+	@FXML
+	private HBox transformTopHBox;
+
+	@FXML
+	private ImageView samplesImageView;
+
+	@FXML
+	private ImageView transformImageView;
 
 	@FXML
 	private Label chartsColumnsLabel;
 
 	@FXML
+	private Label chartsGraphsInfo;
+
+	@FXML
+	private Label chartsSampleLabel;
+
+	@FXML
+	private Label sampleBorderLabel;
+
+	@FXML
+	private Label sampleFillLabel;
+
+	@FXML
+	private Label sampleStrokeLabel;
+
+	@FXML
+	private Label samplesImageSizeLabel;
+
+	@FXML
+	private Label samplesInfo;
+
+	@FXML
+	private Label samplesMousePositionLabel;
+
+	@FXML
+	private Label transformImageListInfo;
+
+	@FXML
+	private Label transformImageSizeLabel;
+
+	@FXML
+	private Label transformInfo;
+
+	@FXML
+	private Label transformMousePositionLabel;
+
+	@FXML
+	private Label triangleFillLabel;
+
+	@FXML
+	private Label triangleStrokeLabel;
+
+	@FXML
+	private Label vertexBorderLabel;
+
+	@FXML
+	private Label vertexFillLabel;
+
+	@FXML
+	private Label vertexStrokeLabel;
+
+	@FXML
+	private ListView< String > samplesImageList;
+
+	@FXML
+	private ListView< String > transformImageList;
+
+	@FXML
+	private Menu chartsMenu;
+
+	@FXML
+	private Menu editMenu;
+
+	@FXML
+	private Menu fileMenu;
+
+	@FXML
+	private Menu helpMenu;
+
+	@FXML
+	private Menu navMenu;
+
+	@FXML
+	private Menu optionsMenu;
+
+	@FXML
+	private Menu optionsMenuTheme;
+
+	@FXML
+	private Menu runMenu;
+
+	@FXML
+	private Menu samplesMenu;
+
+	@FXML
+	private Menu transformMenu;
+
+	@FXML
+	private MenuBar menuBar;
+
+	@FXML
+	private MenuItem chartsMenuExtractChart;
+
+	@FXML
+	private MenuItem chartsMenuMergeCharts;
+
+	@FXML
+	private MenuItem chartsMenuRemoveCharts;
+
+	@FXML
+	private MenuItem chartsMenuRestoreCharts;
+
+	@FXML
+	private MenuItem editMenuZoomIn;
+
+	@FXML
+	private MenuItem editMenuZoomOut;
+
+	@FXML
+	private MenuItem fileMenuExit;
+
+	@FXML
+	private MenuItem fileMenuExportToCsv;
+
+	@FXML
+	private MenuItem fileMenuExportToPng;
+
+	@FXML
+	private MenuItem helpMenuAbout;
+
+	@FXML
+	private MenuItem helpMenuHelp;
+
+	@FXML
+	private MenuItem navMenuAllCharts;
+
+	@FXML
+	private MenuItem navMenuCharts;
+
+	@FXML
+	private MenuItem navMenuChartsBySample;
+
+	@FXML
+	private MenuItem navMenuImagesBySample;
+
+	@FXML
+	private MenuItem navMenuSamples;
+
+	@FXML
+	private MenuItem navMenuTransform;
+
+	@FXML
+	private MenuItem runMenuResultsButton;
+
+	@FXML
+	private MenuItem runMenuTransformButton;
+
+	@FXML
+	private MenuItem samplesMenuClearSamples;
+
+	@FXML
+	private MenuItem samplesMenuCreateMode;
+
+	@FXML
+	private MenuItem samplesMenuDeleteSample;
+
+	@FXML
+	private MenuItem samplesMenuDeselectAllFeatures;
+
+	@FXML
+	private MenuItem samplesMenuRotateMode;
+
+	@FXML
+	private MenuItem samplesMenuSelectAllFeatures;
+
+	@FXML
+	private MenuItem samplesMenuSelectMode;
+
+	@FXML
+	private MenuItem transformMenuClear;
+
+	@FXML
+	private MenuItem transformMenuDeleteImage;
+
+	@FXML
+	private MenuItem transformMenuHorizontalFlip;
+
+	@FXML
+	private MenuItem transformMenuLoadImages;
+
+	@FXML
+	private MenuItem transformMenuMenuRotateLeft;
+
+	@FXML
+	private MenuItem transformMenuMenuRotateRight;
+
+	@FXML
+	private MenuItem transformMenuVerticalFlip;
+
+	@FXML
+	private RadioButton chartsBySampleRadioButton;
+
+	@FXML
+	private RadioButton createRadioButton;
+
+	@FXML
+	private RadioButton cubicRadioButton;
+
+	@FXML
+	private RadioButton imagesBySampleRadioButton;
+
+	@FXML
+	private RadioButton linearRadioButton;
+
+	@FXML
+	private RadioButton nearestRadioButton;
+
+	@FXML
+	private RadioButton rotateRadioButton;
+
+	@FXML
+	private RadioButton selectRadioButton;
+
+	@FXML
+	private RadioMenuItem optionsMenuThemeDark;
+
+	@FXML
+	private RadioMenuItem optionsMenuThemeLight;
+
+	@FXML
+	private ResourceBundle resources;
+
+	@FXML
+	private ScrollPane allChartsGridScrollPane;
+
+	@FXML
+	private ScrollPane chartsBySampleGridScrollPane;
+
+	@FXML
+	private ScrollPane featuresScrollPane;
+
+	@FXML
+	private ScrollPane imagesBySampleGridScrollPane;
+
+	@FXML
+	private ScrollPane samplesScrollPane;
+
+	@FXML
+	private ScrollPane transformScrollPane;
+
+	@FXML
+	private Tab allChartsTab;
+
+	@FXML
+	private Tab bySampleTab;
+
+	@FXML
+	private Tab chartsTab;
+
+	@FXML
+	private Tab featuresTab;
+
+	@FXML
+	private Tab samplesTab;
+
+	@FXML
+	private Tab toolboxTab;
+
+	@FXML
+	private Tab transformTab;
+
+	@FXML
+	private TabPane chartsTabPane;
+
+	@FXML
+	private TabPane mainTabPane;
+
+	@FXML
+	private TabPane rightVBoxTabPane;
+
+	@FXML
 	private TextField chartsColumnsTextField;
+
+	@FXML
+	private TitledPane interpolationTitledPane;
+
+	@FXML
+	private TitledPane sampleTitledPane;
+
+	@FXML
+	private TitledPane samplesModeTitledPane;
+
+	@FXML
+	private TitledPane samplesToolsTitledPane;
+
+	@FXML
+	private TitledPane toolsTitledPane;
+
+	@FXML
+	private TitledPane triangleTitledPane;
+
+	@FXML
+	private TitledPane vertexTitledPane;
+
+	@FXML
+	private ToggleGroup drawMethod;
+
+	@FXML
+	private ToggleGroup interpolation;
+
+	@FXML
+	private ToggleGroup result;
+
+	@FXML
+	private ToggleGroup theme;
+
+	@FXML
+	private URL location;
+
+	@FXML
+	private VBox featuresVBox;
+
+	@FXML
+	private VBox interpolationVBox;
+
+	@FXML
+	private VBox rightVBox;
+
+	@FXML
+	private VBox samplesLeftVBox;
+
+	@FXML
+	private VBox samplesModeVBox;
+
+	@FXML
+	private VBox transformLeftVBox;
+
+	//FXML getters
+	public AnchorPane getSamplesImageViewAnchor() {
+		return samplesImageViewAnchor;
+	}
+
+	public AnchorPane getTransformImageViewAnchor() {
+		return transformImageViewAnchor;
+	}
+
+	public BorderPane getChartsMainPane() {
+		return chartsMainPane;
+	}
+
+	public BorderPane getFeaturesBorderPane() {
+		return featuresBorderPane;
+	}
+
+	public BorderPane getSamplesBorderPane() {
+		return samplesBorderPane;
+	}
+
+	public BorderPane getTransformBorderPane() {
+		return transformBorderPane;
+	}
+
+	public Button getChartsDeleteButton() {
+		return chartsDeleteButton;
+	}
+
+	public Button getChartsMergeButton() {
+		return chartsMergeButton;
+	}
+
+	public Button getChartsRefreshButton() {
+		return chartsRefreshButton;
+	}
+
+	public Button getChartsShiftButton() {
+		return chartsShiftButton;
+	}
+
+	public Button getClearImagesButton() {
+		return clearImagesButton;
+	}
+
+	public Button getClearSamplesButton() {
+		return clearSamplesButton;
+	}
+
+	public Button getDeleteImageButton() {
+		return deleteImageButton;
+	}
+
+	public Button getDeleteSampleButton() {
+		return deleteSampleButton;
+	}
+
+	public Button getDeselectAllButton() {
+		return deselectAllButton;
+	}
+
+	public Button getHorizontalFlipButton() {
+		return horizontalFlipButton;
+	}
+
+	public Button getLoadImagesButton() {
+		return loadImagesButton;
+	}
+
+	public Button getResultsButton() {
+		return resultsButton;
+	}
+
+	public Button getRotateLeftButton() {
+		return rotateLeftButton;
+	}
+
+	public Button getRotateRightButton() {
+		return rotateRightButton;
+	}
+
+	public Button getSelectAllButton() {
+		return selectAllButton;
+	}
+
+	public Button getTransformImagesButton() {
+		return transformImagesButton;
+	}
+
+	public Button getVerticalFlipButton() {
+		return verticalFlipButton;
+	}
+
+	public ColorPicker getSampleBorderColor() {
+		return sampleBorderColor;
+	}
+
+	public ColorPicker getSampleFillColor() {
+		return sampleFillColor;
+	}
+
+	public ColorPicker getSampleStrokeColor() {
+		return sampleStrokeColor;
+	}
+
+	public ColorPicker getTriangleFillColor() {
+		return triangleFillColor;
+	}
+
+	public ColorPicker getTriangleStrokeColor() {
+		return triangleStrokeColor;
+	}
+
+	public ColorPicker getVertexBorderColor() {
+		return vertexBorderColor;
+	}
+
+	public ColorPicker getVertexFillColor() {
+		return vertexFillColor;
+	}
+
+	public ColorPicker getVertexStrokeColor() {
+		return vertexStrokeColor;
+	}
+
+	public ComboBox<Integer> getChartsSampleComboBox() {
+		return chartsSampleComboBox;
+	}
+
+	public ComboBox<String> getSamplesScaleCombo() {
+		return samplesScaleCombo;
+	}
+
+	public ComboBox<String> getTransformScaleCombo() {
+		return transformScaleCombo;
+	}
+
+	public GridPane getAllChartsGrid() {
+		return allChartsGrid;
+	}
+
+	public GridPane getChartsBySampleGrid() {
+		return chartsBySampleGrid;
+	}
+
+	public GridPane getChartsControls() {
+		return chartsControls;
+	}
+
+	public GridPane getImagesBySampleGrid() {
+		return imagesBySampleGrid;
+	}
+
+	public GridPane getRoot() {
+		return root;
+	}
+
+	public GridPane getSampleColorControls() {
+		return sampleColorControls;
+	}
+
+	public GridPane getSamplesBottomGrid() {
+		return samplesBottomGrid;
+	}
+
+	public GridPane getSamplesImageListGrid() {
+		return samplesImageListGrid;
+	}
+
+	public GridPane getSamplesMainPane() {
+		return samplesMainPane;
+	}
+
+	public GridPane getSamplesToolsGridPane() {
+		return samplesToolsGridPane;
+	}
+
+	public GridPane getTransformBottomGrid() {
+		return transformBottomGrid;
+	}
+
+	public GridPane getTransformColorControls() {
+		return transformColorControls;
+	}
+
+	public GridPane getTransformImageListGrid() {
+		return transformImageListGrid;
+	}
+
+	public GridPane getTransformMainPane() {
+		return transformMainPane;
+	}
+
+	public GridPane getTransformToolsGridPane() {
+		return transformToolsGridPane;
+	}
+
+	public GridPane getVertexColorControls() {
+		return vertexColorControls;
+	}
+
+	public Group getSamplesImageViewGroup() {
+		return samplesImageViewGroup;
+	}
+
+	public Group getTransformImageViewGroup() {
+		return transformImageViewGroup;
+	}
+
+	public HBox getChartsGraphsHBox() {
+		return chartsGraphsHBox;
+	}
+
+	public HBox getChartsGraphsToolbar() {
+		return chartsGraphsToolbar;
+	}
+
+	public HBox getSamplesTopHBox() {
+		return samplesTopHBox;
+	}
+
+	public HBox getSelectionButtonsHBox() {
+		return selectionButtonsHBox;
+	}
+
+	public HBox getTransformImageListToolbar() {
+		return transformImageListToolbar;
+	}
+
+	public HBox getTransformTopHBox() {
+		return transformTopHBox;
+	}
+
+	public ImageView getSamplesImageView() {
+		return samplesImageView;
+	}
+
+	public ImageView getTransformImageView() {
+		return transformImageView;
+	}
+
+	public Label getChartsColumnsLabel() {
+		return chartsColumnsLabel;
+	}
+
+	public Label getChartsGraphsInfo() {
+		return chartsGraphsInfo;
+	}
+
+	public Label getChartsSampleLabel() {
+		return chartsSampleLabel;
+	}
+
+	public Label getSampleBorderLabel() {
+		return sampleBorderLabel;
+	}
+
+	public Label getSampleFillLabel() {
+		return sampleFillLabel;
+	}
+
+	public Label getSampleStrokeLabel() {
+		return sampleStrokeLabel;
+	}
+
+	public Label getSamplesImageSizeLabel() {
+		return samplesImageSizeLabel;
+	}
+
+	public Label getSamplesInfo() {
+		return samplesInfo;
+	}
+
+	public Label getSamplesMousePositionLabel() {
+		return samplesMousePositionLabel;
+	}
+
+	public Label getTransformImageListInfo() {
+		return transformImageListInfo;
+	}
+
+	public Label getTransformImageSizeLabel() {
+		return transformImageSizeLabel;
+	}
+
+	public Label getTransformInfo() {
+		return transformInfo;
+	}
+
+	public Label getTransformMousePositionLabel() {
+		return transformMousePositionLabel;
+	}
+
+	public Label getTriangleFillLabel() {
+		return triangleFillLabel;
+	}
+
+	public Label getTriangleStrokeLabel() {
+		return triangleStrokeLabel;
+	}
+
+	public Label getVertexBorderLabel() {
+		return vertexBorderLabel;
+	}
+
+	public Label getVertexFillLabel() {
+		return vertexFillLabel;
+	}
+
+	public Label getVertexStrokeLabel() {
+		return vertexStrokeLabel;
+	}
+
+	public ListView<String> getSamplesImageList() {
+		return samplesImageList;
+	}
+
+	public ListView<String> getTransformImageList() {
+		return transformImageList;
+	}
+
+	public Menu getChartsMenu() {
+		return chartsMenu;
+	}
+
+	public Menu getEditMenu() {
+		return editMenu;
+	}
+
+	public Menu getFileMenu() {
+		return fileMenu;
+	}
+
+	public Menu getHelpMenu() {
+		return helpMenu;
+	}
+
+	public Menu getNavMenu() {
+		return navMenu;
+	}
+
+	public Menu getOptionsMenu() {
+		return optionsMenu;
+	}
+
+	public Menu getOptionsMenuTheme() {
+		return optionsMenuTheme;
+	}
+
+	public Menu getRunMenu() {
+		return runMenu;
+	}
+
+	public Menu getSamplesMenu() {
+		return samplesMenu;
+	}
+
+	public Menu getTransformMenu() {
+		return transformMenu;
+	}
+
+	public MenuBar getMenuBar() {
+		return menuBar;
+	}
+
+	public MenuItem getChartsMenuExtractChart() {
+		return chartsMenuExtractChart;
+	}
+
+	public MenuItem getChartsMenuMergeCharts() {
+		return chartsMenuMergeCharts;
+	}
+
+	public MenuItem getChartsMenuRemoveCharts() {
+		return chartsMenuRemoveCharts;
+	}
+
+	public MenuItem getChartsMenuRestoreCharts() {
+		return chartsMenuRestoreCharts;
+	}
+
+	public MenuItem getEditMenuZoomIn() {
+		return editMenuZoomIn;
+	}
+
+	public MenuItem getEditMenuZoomOut() {
+		return editMenuZoomOut;
+	}
+
+	public MenuItem getFileMenuExit() {
+		return fileMenuExit;
+	}
+
+	public MenuItem getFileMenuExportToCsv() {
+		return fileMenuExportToCsv;
+	}
+
+	public MenuItem getFileMenuExportToPng() {
+		return fileMenuExportToPng;
+	}
+
+	public MenuItem getHelpMenuAbout() {
+		return helpMenuAbout;
+	}
+
+	public MenuItem getHelpMenuHelp() {
+		return helpMenuHelp;
+	}
+
+	public MenuItem getNavMenuAllCharts() {
+		return navMenuAllCharts;
+	}
+
+	public MenuItem getNavMenuCharts() {
+		return navMenuCharts;
+	}
+
+	public MenuItem getNavMenuChartsBySample() {
+		return navMenuChartsBySample;
+	}
+
+	public MenuItem getNavMenuImagesBySample() {
+		return navMenuImagesBySample;
+	}
+
+	public MenuItem getNavMenuSamples() {
+		return navMenuSamples;
+	}
+
+	public MenuItem getNavMenuTransform() {
+		return navMenuTransform;
+	}
+
+	public MenuItem getRunMenuResultsButton() {
+		return runMenuResultsButton;
+	}
+
+	public MenuItem getRunMenuTransformButton() {
+		return runMenuTransformButton;
+	}
+
+	public MenuItem getSamplesMenuClearSamples() {
+		return samplesMenuClearSamples;
+	}
+
+	public MenuItem getSamplesMenuCreateMode() {
+		return samplesMenuCreateMode;
+	}
+
+	public MenuItem getSamplesMenuDeleteSample() {
+		return samplesMenuDeleteSample;
+	}
+
+	public MenuItem getSamplesMenuDeselectAllFeatures() {
+		return samplesMenuDeselectAllFeatures;
+	}
+
+	public MenuItem getSamplesMenuRotateMode() {
+		return samplesMenuRotateMode;
+	}
+
+	public MenuItem getSamplesMenuSelectAllFeatures() {
+		return samplesMenuSelectAllFeatures;
+	}
+
+	public MenuItem getSamplesMenuSelectMode() {
+		return samplesMenuSelectMode;
+	}
+
+	public MenuItem getTransformMenuClear() {
+		return transformMenuClear;
+	}
+
+	public MenuItem getTransformMenuDeleteImage() {
+		return transformMenuDeleteImage;
+	}
+
+	public MenuItem getTransformMenuHorizontalFlip() {
+		return transformMenuHorizontalFlip;
+	}
+
+	public MenuItem getTransformMenuLoadImages() {
+		return transformMenuLoadImages;
+	}
+
+	public MenuItem getTransformMenuMenuRotateLeft() {
+		return transformMenuMenuRotateLeft;
+	}
+
+	public MenuItem getTransformMenuMenuRotateRight() {
+		return transformMenuMenuRotateRight;
+	}
+
+	public MenuItem getTransformMenuVerticalFlip() {
+		return transformMenuVerticalFlip;
+	}
+
+	public RadioButton getChartsBySampleRadioButton() {
+		return chartsBySampleRadioButton;
+	}
+
+	public RadioButton getCreateRadioButton() {
+		return createRadioButton;
+	}
+
+	public RadioButton getCubicRadioButton() {
+		return cubicRadioButton;
+	}
+
+	public RadioButton getImagesBySampleRadioButton() {
+		return imagesBySampleRadioButton;
+	}
+
+	public RadioButton getLinearRadioButton() {
+		return linearRadioButton;
+	}
+
+	public RadioButton getNearestRadioButton() {
+		return nearestRadioButton;
+	}
+
+	public RadioButton getRotateRadioButton() {
+		return rotateRadioButton;
+	}
+
+	public RadioButton getSelectRadioButton() {
+		return selectRadioButton;
+	}
+
+	public RadioMenuItem getOptionsMenuThemeDark() {
+		return optionsMenuThemeDark;
+	}
+
+	public RadioMenuItem getOptionsMenuThemeLight() {
+		return optionsMenuThemeLight;
+	}
+
+	public ResourceBundle getResources() {
+		return resources;
+	}
+
+	public ScrollPane getAllChartsGridScrollPane() {
+		return allChartsGridScrollPane;
+	}
+
+	public ScrollPane getChartsBySampleGridScrollPane() {
+		return chartsBySampleGridScrollPane;
+	}
+
+	public ScrollPane getFeaturesScrollPane() {
+		return featuresScrollPane;
+	}
+
+	public ScrollPane getImagesBySampleGridScrollPane() {
+		return imagesBySampleGridScrollPane;
+	}
+
+	public ScrollPane getSamplesScrollPane() {
+		return samplesScrollPane;
+	}
+
+	public ScrollPane getTransformScrollPane() {
+		return transformScrollPane;
+	}
+
+	public Tab getAllChartsTab() {
+		return allChartsTab;
+	}
+
+	public Tab getBySampleTab() {
+		return bySampleTab;
+	}
+
+	public Tab getChartsTab() {
+		return chartsTab;
+	}
+
+	public Tab getFeaturesTab() {
+		return featuresTab;
+	}
+
+	public Tab getSamplesTab() {
+		return samplesTab;
+	}
+
+	public Tab getToolboxTab() {
+		return toolboxTab;
+	}
+
+	public Tab getTransformTab() {
+		return transformTab;
+	}
+
+	public TabPane getChartsTabPane() {
+		return chartsTabPane;
+	}
+
+	public TabPane getMainTabPane() {
+		return mainTabPane;
+	}
+
+	public TabPane getRightVBoxTabPane() {
+		return rightVBoxTabPane;
+	}
+
+	public TextField getChartsColumnsTextField() {
+		return chartsColumnsTextField;
+	}
+
+	public TitledPane getInterpolationTitledPane() {
+		return interpolationTitledPane;
+	}
+
+	public TitledPane getSampleTitledPane() {
+		return sampleTitledPane;
+	}
+
+	public TitledPane getSamplesModeTitledPane() {
+		return samplesModeTitledPane;
+	}
+
+	public TitledPane getSamplesToolsTitledPane() {
+		return samplesToolsTitledPane;
+	}
+
+	public TitledPane getToolsTitledPane() {
+		return toolsTitledPane;
+	}
+
+	public TitledPane getTriangleTitledPane() {
+		return triangleTitledPane;
+	}
+
+	public TitledPane getVertexTitledPane() {
+		return vertexTitledPane;
+	}
+
+	public ToggleGroup getDrawMethod() {
+		return drawMethod;
+	}
+
+	public ToggleGroup getInterpolation() {
+		return interpolation;
+	}
+
+	public ToggleGroup getResult() {
+		return result;
+	}
+
+	public ToggleGroup getTheme() {
+		return theme;
+	}
+
+	public URL getLocation() {
+		return location;
+	}
+
+	public VBox getFeaturesVBox() {
+		return featuresVBox;
+	}
+
+	public VBox getInterpolationVBox() {
+		return interpolationVBox;
+	}
+
+	public VBox getRightVBox() {
+		return rightVBox;
+	}
+
+	public VBox getSamplesLeftVBox() {
+		return samplesLeftVBox;
+	}
+
+	public VBox getSamplesModeVBox() {
+		return samplesModeVBox;
+	}
+
+	public VBox getTransformLeftVBox() {
+		return transformLeftVBox;
+	}
+
 
 	//others
 	@FXML
@@ -1238,12 +2131,12 @@ public class Controller implements Initializable {
 		assert rightVBox != null : "fx:id=\"rightVBox\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert rightVBoxTabPane != null : "fx:id=\"rightVBoxTabPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert toolboxTab != null : "fx:id=\"toolboxTab\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert transformLeftGridPane != null : "fx:id=\"transformLeftGridPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert transformFillColor != null : "fx:id=\"transformFillColor\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert transformStrokeColor != null : "fx:id=\"transformStrokeColor\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert transformFillLabel != null : "fx:id=\"transformFillLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert transformStrokeLabel != null : "fx:id=\"transformStrokeLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
-		assert transformToolbarVBox != null : "fx:id=\"transformToolbarVBox\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert transformLeftVBox != null : "fx:id=\"transformLeftVBox\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert vertexFillColor != null : "fx:id=\"vertexFillColor\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert vertexStrokeColor != null : "fx:id=\"vertexStrokeColor\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert vertexFillLabel != null : "fx:id=\"vertexFillLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert vertexStrokeLabel != null : "fx:id=\"vertexStrokeLabel\" was not injected: check your FXML file 'gifa-gui.fxml'.";
+		assert transformToolsGridPane != null : "fx:id=\"transformToolsGridPane\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert verticalFlipButton != null : "fx:id=\"verticalFlipButton\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert horizontalFlipButton != null : "fx:id=\"horizontalFlipButton\" was not injected: check your FXML file 'gifa-gui.fxml'.";
 		assert rotateLeftButton != null : "fx:id=\"rotateLeftButton\" was not injected: check your FXML file 'gifa-gui.fxml'.";
@@ -1306,36 +2199,38 @@ public class Controller implements Initializable {
 			}
 		});
 		chartsColumnsTextField.textProperty().addListener(( observable, oldValue, newValue ) -> {
-			placeCharts();
-			placeImages();
-			placeHistoryCharts();
+			if (newValue != null && !newValue.isEmpty()) {
+				placeCharts();
+				placeImages();
+				placeHistoryCharts();
+			}
 		});
 		setTooltips();
 		createCheckBoxes();
 		setVisibilityBindings();
 		setEnablementBindings();
 		setSelectionListeners();
-		transformTriangleFillColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
+		triangleFillColor.valueProperty().addListener((observable, oldValue, newValue ) ->
 				SharedState.INSTANCE.transformImages.get(transformImageList.getSelectionModel().getSelectedItem()).triangle.setFill(newValue));
-		transformTriangleStrokeColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
+		triangleStrokeColor.valueProperty().addListener((observable, oldValue, newValue ) ->
 				SharedState.INSTANCE.transformImages.get(transformImageList.getSelectionModel().getSelectedItem()).triangle.setStroke(newValue));
-		transformFillColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
+		vertexFillColor.valueProperty().addListener((observable, oldValue, newValue ) ->
 				SharedState.INSTANCE.selectedRectangle.get().setFill(newValue));
-		transformStrokeColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
+		vertexStrokeColor.valueProperty().addListener((observable, oldValue, newValue ) ->
 				SharedState.INSTANCE.selectedRectangle.get().setStroke(newValue));
-		transformBorderColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
+		vertexBorderColor.valueProperty().addListener((observable, oldValue, newValue ) ->
 				SharedState.INSTANCE.selectedRectangle.get().sampleArea.setStroke(newValue));
-		samplesFillColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
+		sampleFillColor.valueProperty().addListener((observable, oldValue, newValue ) ->
 				SharedState.INSTANCE.selectedSample.get().setFill(newValue));
-		samplesStrokeColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
+		sampleStrokeColor.valueProperty().addListener((observable, oldValue, newValue ) ->
 				SharedState.INSTANCE.selectedSample.get().setStroke(newValue));
-		samplesBorderColor.valueProperty().addListener(( observable, oldValue, newValue ) ->
+		sampleBorderColor.valueProperty().addListener((observable, oldValue, newValue ) ->
 				SharedState.INSTANCE.selectedSample.get().sampleArea.setStroke(newValue));
 		SharedState.INSTANCE.selectedRectangle.addListener(( observable, oldValue, newValue ) -> {
 			if ( newValue != null ) {
-				transformFillColor.setValue((Color) newValue.getFill());
-				transformStrokeColor.setValue((Color) newValue.getStroke());
-				transformBorderColor.setValue((Color) newValue.sampleArea.getStroke());
+				vertexFillColor.setValue((Color) newValue.getFill());
+				vertexStrokeColor.setValue((Color) newValue.getStroke());
+				vertexBorderColor.setValue((Color) newValue.sampleArea.getStroke());
 				for ( Map.Entry< String, TransformImageData > e : SharedState.INSTANCE.transformImages.entrySet() ) {
 					if ( Arrays.asList(e.getValue().vertexSamples).contains(newValue) ) {
 						transformTab();
@@ -1374,9 +2269,9 @@ public class Controller implements Initializable {
 				SharedState.INSTANCE.selectedSample.set(null);
 			} else {
 				if ( newValue != null ) {
-					samplesFillColor.setValue((Color) newValue.getFill());
-					samplesStrokeColor.setValue((Color) newValue.getStroke());
-					samplesBorderColor.setValue((Color) newValue.sampleArea.getStroke());
+					sampleFillColor.setValue((Color) newValue.getFill());
+					sampleStrokeColor.setValue((Color) newValue.getStroke());
+					sampleBorderColor.setValue((Color) newValue.sampleArea.getStroke());
 					for ( Map.Entry< String, SamplesImageData > e : SharedState.INSTANCE.samplesImages.entrySet() ) {
 						if ( e.getValue().samples.contains(newValue) ) {
 							samplesTab();
@@ -1490,7 +2385,7 @@ public class Controller implements Initializable {
 		verticalFlipButton.setTooltip(new Tooltip("Flip vertically"));
 		rotateLeftButton.setTooltip(new Tooltip("Rotate left by 90°"));
 		rotateRightButton.setTooltip(new Tooltip("Rotate right by 90°"));
-		loadImagesButton.setTooltip(new Tooltip("Load transformImages"));
+		loadImagesButton.setTooltip(new Tooltip("Load images"));
 		deleteImageButton.setTooltip(new Tooltip("Remove image"));
 		clearImagesButton.setTooltip(new Tooltip("Clear image list"));
 		deleteSampleButton.setTooltip(new Tooltip("Remove sample"));
@@ -1584,11 +2479,11 @@ public class Controller implements Initializable {
 		transformInfo.visibleProperty().bind(transformImageView.imageProperty().isNotNull());
 		transformImageViewGroup.visibleProperty().bind(transformImageView.imageProperty().isNotNull());
 		transformBottomGrid.visibleProperty().bind(transformImageView.imageProperty().isNotNull());
-		transformLeftGridPane.visibleProperty().bind(transformImageView.imageProperty().isNotNull());
-		samplesLeftGridPane.visibleProperty().bind(samplesImageView.imageProperty().isNotNull());
+		transformLeftVBox.visibleProperty().bind(transformImageView.imageProperty().isNotNull());
+		samplesLeftVBox.visibleProperty().bind(samplesImageView.imageProperty().isNotNull());
 		samplesImageViewGroup.visibleProperty().bind(samplesImageView.imageProperty().isNotNull());
 		samplesBottomGrid.visibleProperty().bind(samplesImageView.imageProperty().isNotNull());
-		rightVBox.visibleProperty().bind(samplesImageView.imageProperty().isNotNull());
+		rightVBoxTabPane.visibleProperty().bind(samplesImageView.imageProperty().isNotNull());
 		chartsBySampleRadioButton.visibleProperty().bind(bySampleTab.selectedProperty());
 		imagesBySampleRadioButton.visibleProperty().bind(bySampleTab.selectedProperty());
 		chartsBySampleGridScrollPane.visibleProperty().bind(chartsBySampleRadioButton.selectedProperty());
@@ -1598,13 +2493,8 @@ public class Controller implements Initializable {
 		chartsGraphsToolbar.visibleProperty().bind(Bindings.and(bySampleTab.selectedProperty(), chartsBySampleRadioButton.selectedProperty()));
 		chartsGraphsHBox.visibleProperty().bind(Bindings.and(bySampleTab.selectedProperty(), chartsBySampleRadioButton.selectedProperty()));
 		transformImageListInfo.visibleProperty().bind(Bindings.isEmpty(transformImageList.getItems()));
-		samplesColorControls.visibleProperty().bind(Bindings.isNotNull(SharedState.INSTANCE.selectedSample));
-		transformFillColor.visibleProperty().bind(Bindings.isNotNull(SharedState.INSTANCE.selectedRectangle));
-		transformStrokeColor.visibleProperty().bind(Bindings.isNotNull(SharedState.INSTANCE.selectedRectangle));
-		transformBorderColor.visibleProperty().bind(Bindings.isNotNull(SharedState.INSTANCE.selectedRectangle));
-		transformFillLabel.visibleProperty().bind(Bindings.isNotNull(SharedState.INSTANCE.selectedRectangle));
-		transformStrokeLabel.visibleProperty().bind(Bindings.isNotNull(SharedState.INSTANCE.selectedRectangle));
-		transformBorderLabel.visibleProperty().bind(Bindings.isNotNull(SharedState.INSTANCE.selectedRectangle));
+		sampleTitledPane.visibleProperty().bind(Bindings.isNotNull(SharedState.INSTANCE.selectedSample));
+		vertexTitledPane.visibleProperty().bind(Bindings.isNotNull(SharedState.INSTANCE.selectedRectangle));
 	}
 
 	private void setEnablementBindings() {
@@ -1668,12 +2558,12 @@ public class Controller implements Initializable {
 		navMenuTransform.disableProperty().bind(transformTab.selectedProperty());
 		navMenuSamples.disableProperty().bind(Bindings.or(Bindings.isEmpty(SharedState.INSTANCE.samplesImages), samplesTab.selectedProperty()));
 		navMenuCharts.disableProperty().bind(Bindings.or(SharedState.INSTANCE.results.isNull(), chartsTab.selectedProperty()));
-		navMenuAllCharts.disableProperty().bind(Bindings.or(navMenuCharts.disableProperty(), Bindings.and(chartsTab.selectedProperty(), allChartsTab
-				.selectedProperty())));
-		navMenuChartsBySample.disableProperty().bind(Bindings.or(navMenuCharts.disableProperty(), Bindings.and(chartsTab.selectedProperty(), Bindings.and
-				(bySampleTab.selectedProperty(), chartsBySampleRadioButton.selectedProperty()))));
-		navMenuImagesBySample.disableProperty().bind(Bindings.or(navMenuCharts.disableProperty(), Bindings.and(chartsTab.selectedProperty(), Bindings.and
-				(bySampleTab.selectedProperty(), imagesBySampleRadioButton.selectedProperty()))));
+		navMenuAllCharts.disableProperty().bind(Bindings.and(chartsTab.selectedProperty(), allChartsTab
+				.selectedProperty()));
+		navMenuChartsBySample.disableProperty().bind(Bindings.and(chartsTab.selectedProperty(), Bindings.and
+				(bySampleTab.selectedProperty(), chartsBySampleRadioButton.selectedProperty())));
+		navMenuImagesBySample.disableProperty().bind( Bindings.and(chartsTab.selectedProperty(), Bindings.and
+				(bySampleTab.selectedProperty(), imagesBySampleRadioButton.selectedProperty())));
 	}
 
 	private void setSelectionListeners() {
@@ -1702,8 +2592,8 @@ public class Controller implements Initializable {
 						transformScrollPane.setHvalue(img.hScrollPos);
 						transformScrollPane.setVvalue(img.vScrollPos);
 						transformImageSizeLabel.setText((int) img.image.getWidth() + "x" + (int) img.image.getHeight() + " px");
-						transformTriangleFillColor.setValue((Color) img.triangle.getFill());
-						transformTriangleStrokeColor.setValue((Color) img.triangle.getStroke());
+						triangleFillColor.setValue((Color) img.triangle.getFill());
+						triangleStrokeColor.setValue((Color) img.triangle.getStroke());
 						SharedState.INSTANCE.selectedRectangle.set(null);
 					} else {
 						transformImageView.setScaleX(1.0);

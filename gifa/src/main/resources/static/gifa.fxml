@@ -6,597 +6,618 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <GridPane fx:id="root" styleClass="root" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1"
-		  fx:controller="pwr.chrzescijanek.filip.gifa.controller.Controller">
-	<columnConstraints>
-		<ColumnConstraints hgrow="SOMETIMES"/>
-	</columnConstraints>
-	<rowConstraints>
-		<RowConstraints vgrow="NEVER"/>
-		<RowConstraints vgrow="ALWAYS"/>
-	</rowConstraints>
-	<MenuBar fx:id="menuBar">
-		<Menu fx:id="fileMenu" text="_File">
-			<MenuItem fx:id="fileMenuExportToCsv" onAction="#exportToCsv" text="_Export to CSV" accelerator="Shortcut+E"/>
-			<MenuItem fx:id="fileMenuExportToPng" onAction="#exportToPng" text="_Save samples" accelerator="Shortcut+S"/>
-			<MenuItem fx:id="fileMenuExit" onAction="#exit" text="E_xit"/>
-		</Menu>
-		<Menu fx:id="editMenu" text="_Edit">
-			<MenuItem fx:id="editMenuZoomIn" text="Zoom _in" onAction="#zoomIn" accelerator="Shortcut+Add"/>
-			<MenuItem fx:id="editMenuZoomOut" text="Zoom _out" onAction="#zoomOut" accelerator="Shortcut+Subtract"/>
-		</Menu>
-		<Menu fx:id="transformMenu" text="_Transform">
-			<MenuItem fx:id="transformMenuVerticalFlip" text="Flip _vertically" onAction="#flipVertical" accelerator="Shift+V"/>
-			<MenuItem fx:id="transformMenuHorizontalFlip" text="Flip _horizontally" onAction="#flipHorizontal" accelerator="Shift+H"/>
-			<MenuItem fx:id="transformMenuMenuRotateLeft" text="Rotate _left by 90°" onAction="#rotateLeft" accelerator="Shift+L"/>
-			<MenuItem fx:id="transformMenuMenuRotateRight" text="Rotate _right by 90°" onAction="#rotateRight" accelerator="Shift+R"/>
-			<MenuItem fx:id="transformMenuLoadImages" text="_Load images" onAction="#loadImages" accelerator="Shortcut+L"/>
-			<MenuItem fx:id="transformMenuDeleteImage" text="_Delete image" onAction="#deleteImage" accelerator="Shortcut+Delete"/>
-			<MenuItem fx:id="transformMenuClear" text="_Clear image list" onAction="#clearImages" accelerator="Shortcut+Alt+Delete"/>
-		</Menu>
-		<Menu fx:id="samplesMenu" text="_Samples">
-			<MenuItem fx:id="samplesMenuCreateMode" text="_Create mode" onAction="#setCreateMode" accelerator="Shortcut+Alt+C"/>
-			<MenuItem fx:id="samplesMenuSelectMode" text="_Select mode" onAction="#setSelectMode" accelerator="Shortcut+Alt+S"/>
-			<MenuItem fx:id="samplesMenuRotateMode" text="_Rotate mode" onAction="#setRotateMode" accelerator="Shortcut+Alt+R"/>
-			<MenuItem fx:id="samplesMenuDeleteSample" text="_Delete selected sample" onAction="#deleteSample" accelerator="Shortcut+Delete"/>
-			<MenuItem fx:id="samplesMenuClearSamples" text="C_lear samples" onAction="#clearSamples" accelerator="Shortcut+Alt+Delete"/>
-			<MenuItem fx:id="samplesMenuSelectAllFeatures" text="Select _all features" onAction="#selectAllFunctions" accelerator="F9"/>
-			<MenuItem fx:id="samplesMenuDeselectAllFeatures" text="Deselect all _features" onAction="#deselectAllFunctions" accelerator="F10"/>
-		</Menu>
-		<Menu fx:id="chartsMenu" text="_Charts">
-			<MenuItem fx:id="chartsMenuRestoreCharts" text="_Restore charts" onAction="#refresh" accelerator="F5"/>
-			<MenuItem fx:id="chartsMenuMergeCharts" text="_Merge charts" onAction="#merge" accelerator="F6"/>
-			<MenuItem fx:id="chartsMenuExtractChart" text="_Extract chart" onAction="#shift" accelerator="F7"/>
-			<MenuItem fx:id="chartsMenuRemoveCharts" text="Remove _charts" onAction="#delete" accelerator="F8"/>
-		</Menu>
-		<Menu fx:id="navMenu" text="_Navigate">
-			<MenuItem fx:id="navMenuTransform" onAction="#transformTab" text="_Transform" accelerator="Shortcut+Shift+T"/>
-			<MenuItem fx:id="navMenuSamples" onAction="#samplesTab" text="_Samples" accelerator="Shortcut+Shift+S"/>
-			<MenuItem fx:id="navMenuCharts" onAction="#chartsTab" text="_Charts" accelerator="Shortcut+Shift+C"/>
-			<MenuItem fx:id="navMenuAllCharts" onAction="#allCharts" text="_All charts" accelerator="Shift+Alt+A"/>
-			<MenuItem fx:id="navMenuChartsBySample" onAction="#chartsBySample" text="Charts by sampl_e" accelerator="Shift+Alt+S"/>
-			<MenuItem fx:id="navMenuImagesBySample" onAction="#imagesBySample" text="_Images by sample" accelerator="Shift+Alt+I"/>
-			</Menu>
-		<Menu fx:id="runMenu" text="_Run">
-			<MenuItem fx:id="runMenuResultsButton" onAction="#calculateResults" text="_Get results" accelerator="F2"/>
-			<MenuItem fx:id="runMenuTransformButton" onAction="#transform" text="_Transform images" accelerator="F3"/>
-		</Menu>
-		<Menu fx:id="optionsMenu" text="_Options">
-			<Menu fx:id="optionsMenuTheme" text="_Theme">
-				<RadioMenuItem fx:id="optionsMenuThemeLight" onAction="#applyLightTheme" text="_Light" accelerator="Shortcut+Alt+Shift+L">
-					<toggleGroup>
-						<ToggleGroup fx:id="theme"/>
-					</toggleGroup>
-				</RadioMenuItem>
-				<RadioMenuItem fx:id="optionsMenuThemeDark" onAction="#applyDarkTheme" text="_Dark" toggleGroup="$theme"
-							   accelerator="Shortcut+Alt+Shift+D"/>
-			</Menu>
-		</Menu>
-		<Menu fx:id="helpMenu" text="_Help">
-			<MenuItem fx:id="helpMenuHelp" onAction="#help" text="_Help" accelerator="F1"/>
-			<MenuItem fx:id="helpMenuAbout" onAction="#about" text="_About"/>
-		</Menu>
-	</MenuBar>
-	<TabPane GridPane.rowIndex="1" fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
-		<Tab fx:id="transformTab" closable="false" text="Transform">
-			<GridPane fx:id="transformMainPane">
-				<columnConstraints>
-					<ColumnConstraints hgrow="SOMETIMES" percentWidth="12.0"/>
-					<ColumnConstraints hgrow="SOMETIMES" percentWidth="70.0"/>
-					<ColumnConstraints hgrow="SOMETIMES" percentWidth="18.0"/>
-				</columnConstraints>
-				<rowConstraints>
-					<RowConstraints vgrow="SOMETIMES"/>
-				</rowConstraints>
-				<GridPane fx:id="transformLeftGridPane">
-					<padding>
-						<Insets left="10" right="10" bottom="30"/>
-					</padding>
-					<columnConstraints>
-						<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER"/>
-					</columnConstraints>
-					<rowConstraints>
-						<RowConstraints valignment="CENTER" percentHeight="40.0" vgrow="SOMETIMES"/>
-						<RowConstraints valignment="CENTER" percentHeight="20.0" vgrow="SOMETIMES"/>
-						<RowConstraints valignment="CENTER" percentHeight="40.0" vgrow="SOMETIMES"/>
-					</rowConstraints>
-					<VBox fx:id="transformToolbarVBox" alignment="CENTER">
-						<Button fx:id="verticalFlipButton" mnemonicParsing="false" onAction="#flipVertical">
-							<graphic>
-								<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
-										   preserveRatio="true">
-									<Image url="@../images/vertical-flip.png"/>
-								</ImageView>
-							</graphic>
-							<VBox.margin>
-								<Insets top="15.0"/>
-							</VBox.margin>
-						</Button>
-						<Button fx:id="horizontalFlipButton" mnemonicParsing="false" onAction="#flipHorizontal">
-							<graphic>
-								<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
-										   preserveRatio="true">
-									<Image url="@../images/horizontal-flip.png"/>
-								</ImageView>
-							</graphic>
-							<VBox.margin>
-								<Insets top="5.0"/>
-							</VBox.margin>
-						</Button>
-						<Button fx:id="rotateLeftButton" mnemonicParsing="false" onAction="#rotateLeft">
-							<graphic>
-								<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
-										   preserveRatio="true">
-									<Image url="@../images/undo.png"/>
-								</ImageView>
-							</graphic>
-							<VBox.margin>
-								<Insets top="5.0"/>
-							</VBox.margin>
-						</Button>
-						<Button fx:id="rotateRightButton" mnemonicParsing="false" onAction="#rotateRight">
-							<graphic>
-								<ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
-										   preserveRatio="true">
-									<Image url="@../images/redo.png"/>
-								</ImageView>
-							</graphic>
-							<VBox.margin>
-								<Insets top="5.0"/>
-							</VBox.margin>
-						</Button>
-					</VBox>
-					<VBox fx:id="interpolationVBox" GridPane.rowIndex="1">
-						<RadioButton fx:id="cubicRadioButton" mnemonicParsing="false" selected="true"
-									 text="Cubic">
-							<toggleGroup>
-								<ToggleGroup fx:id="interpolation"/>
-							</toggleGroup>
-							<VBox.margin>
-								<Insets top="5.0" left="20.0"/>
-							</VBox.margin>
-						</RadioButton>
-						<RadioButton fx:id="linearRadioButton" mnemonicParsing="false"
-									 text="Linear" toggleGroup="$interpolation">
-							<VBox.margin>
-								<Insets top="5.0" left="20.0"/>
-							</VBox.margin>
-						</RadioButton>
-						<RadioButton fx:id="nearestRadioButton" mnemonicParsing="false"
-									 text="Nearest" toggleGroup="$interpolation">
-							<VBox.margin>
-								<Insets top="5.0" left="20.0"/>
-							</VBox.margin>
-						</RadioButton>
-					</VBox>
-					<GridPane fx:id="transformColorControls" GridPane.rowIndex="2">
-						<columnConstraints>
-							<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER" percentWidth="60.0"/>
-							<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER" percentWidth="40.0"/>
-						</columnConstraints>
-						<rowConstraints>
-							<RowConstraints valignment="CENTER" percentHeight="20.0" vgrow="SOMETIMES"/>
-							<RowConstraints valignment="CENTER" percentHeight="20.0" vgrow="SOMETIMES"/>
-							<RowConstraints valignment="CENTER" percentHeight="20.0" vgrow="SOMETIMES"/>
-							<RowConstraints valignment="CENTER" percentHeight="20.0" vgrow="SOMETIMES"/>
-							<RowConstraints valignment="CENTER" percentHeight="20.0" vgrow="SOMETIMES"/>
-						</rowConstraints>
-						<ColorPicker fx:id="transformTriangleFillColor" maxWidth="40.0"
-									 GridPane.columnIndex="1"/>
-						<ColorPicker fx:id="transformTriangleStrokeColor" maxWidth="40.0"
-									 GridPane.columnIndex="1"
-									 GridPane.rowIndex="1"/>
-						<ColorPicker fx:id="transformFillColor" maxWidth="40.0"
-									 GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-						<ColorPicker fx:id="transformStrokeColor" maxWidth="40.0"
-									 GridPane.columnIndex="1"
-									 GridPane.rowIndex="3"/>
-						<ColorPicker fx:id="transformBorderColor" maxWidth="40.0"
-									 GridPane.columnIndex="1"
-									 GridPane.rowIndex="4"/>
-						<Label fx:id="transformTriangleFillLabel" text="Area"/>
-						<Label fx:id="transformTriangleStrokeLabel" text="Sides"
-							   GridPane.rowIndex="1"/>
-						<Label fx:id="transformFillLabel" text="Fill"
-							   GridPane.rowIndex="2"/>
-						<Label fx:id="transformStrokeLabel" text="Stroke"
-							   GridPane.rowIndex="3"/>
-						<Label fx:id="transformBorderLabel" text="Border"
-							   GridPane.rowIndex="4"/>
-					</GridPane>
-				</GridPane>
-				<BorderPane fx:id="transformBorderPane" GridPane.columnIndex="1">
-					<top>
-						<HBox fx:id="transformTopHBox" alignment="CENTER">
-							<Label fx:id="transformInfo" text="Click to select area. Double-click to open compare view."/>
-						</HBox>
-					</top>
-					<center>
-						<ScrollPane fx:id="transformScrollPane">
-							<Group fx:id="transformImageViewGroup" autoSizeChildren="false">
-								<AnchorPane fx:id="transformImageViewAnchor" centerShape="false">
-									<ImageView fx:id="transformImageView" preserveRatio="true" AnchorPane.bottomAnchor="0.0"
-											   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-								</AnchorPane>
-							</Group>
-						</ScrollPane>
-					</center>
-					<bottom>
-						<GridPane fx:id="transformBottomGrid">
-							<columnConstraints>
-								<ColumnConstraints hgrow="SOMETIMES" percentWidth="30.0"/>
-								<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER" percentWidth="40.0"/>
-								<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0"/>
-								<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" halignment="RIGHT"/>
-							</columnConstraints>
-							<rowConstraints>
-								<RowConstraints vgrow="SOMETIMES" minHeight="40.0"/>
-							</rowConstraints>
-							<Label fx:id="transformImageSizeLabel" text=""/>
-							<Button fx:id="transformImagesButton" text="Transform" onAction="#transform" prefWidth="80.0" GridPane.columnIndex="1"/>
-							<ComboBox fx:id="transformScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5" GridPane.columnIndex="2"/>
-							<Label fx:id="transformMousePositionLabel" text="- : -" GridPane.columnIndex="3"/>
-						</GridPane>
-					</bottom>
-				</BorderPane>
-				<GridPane fx:id="transformImageListGrid" alignment="CENTER" vgap="15.0" GridPane.columnIndex="2">
-					<columnConstraints>
-						<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES"/>
-					</columnConstraints>
-					<rowConstraints>
-						<RowConstraints valignment="CENTER" vgrow="SOMETIMES"/>
-						<RowConstraints vgrow="SOMETIMES"/>
-					</rowConstraints>
-					<padding>
-						<Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
-					</padding>
-					<ListView fx:id="transformImageList"/>
-					<Label fx:id="transformImageListInfo" textAlignment="CENTER" text="No images loaded yet" wrapText="true"/>
-					<HBox fx:id="transformImageListToolbar" alignment="CENTER" GridPane.rowIndex="1">
-						<Button fx:id="loadImagesButton" mnemonicParsing="false" onAction="#loadImages">
-							<graphic>
-								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-										   preserveRatio="true">
-									<Image url="@../images/plus.png"/>
-								</ImageView>
-							</graphic>
-							<HBox.margin>
-								<Insets right="5.0"/>
-							</HBox.margin>
-						</Button>
-						<Button fx:id="deleteImageButton" mnemonicParsing="false" onAction="#deleteImage">
-							<graphic>
-								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-										   preserveRatio="true">
-									<Image url="@../images/minus.png"/>
-								</ImageView>
-							</graphic>
-							<HBox.margin>
-								<Insets right="5.0"/>
-							</HBox.margin>
-						</Button>
-						<Button fx:id="clearImagesButton" mnemonicParsing="false" onAction="#clearImages">
-							<graphic>
-								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-										   preserveRatio="true">
-									<Image url="@../images/trash.png"/>
-								</ImageView>
-							</graphic>
-						</Button>
-					</HBox>
-				</GridPane>
-			</GridPane>
-		</Tab>
+          fx:controller="pwr.chrzescijanek.filip.gifa.controller.Controller">
+    <rowConstraints>
+        <RowConstraints vgrow="NEVER"/>
+        <RowConstraints vgrow="ALWAYS"/>
+    </rowConstraints>
+    <MenuBar fx:id="menuBar">
+        <Menu fx:id="fileMenu" text="_File">
+            <MenuItem fx:id="fileMenuExportToCsv" text="_Export to CSV" onAction="#exportToCsv"
+                      accelerator="Shortcut+E"/>
+            <MenuItem fx:id="fileMenuExportToPng" text="_Save samples" onAction="#exportToPng"
+                      accelerator="Shortcut+S"/>
+            <MenuItem fx:id="fileMenuExit" text="E_xit" onAction="#exit"/>
+        </Menu>
+        <Menu fx:id="editMenu" text="_Edit">
+            <MenuItem fx:id="editMenuZoomIn" text="Zoom _in" onAction="#zoomIn" accelerator="Shortcut+Add"/>
+            <MenuItem fx:id="editMenuZoomOut" text="Zoom _out" onAction="#zoomOut" accelerator="Shortcut+Subtract"/>
+        </Menu>
+        <Menu fx:id="transformMenu" text="_Transform">
+            <MenuItem fx:id="transformMenuVerticalFlip" text="Flip _vertically" onAction="#flipVertical"
+                      accelerator="Shift+V"/>
+            <MenuItem fx:id="transformMenuHorizontalFlip" text="Flip _horizontally" onAction="#flipHorizontal"
+                      accelerator="Shift+H"/>
+            <MenuItem fx:id="transformMenuMenuRotateLeft" text="Rotate _left by 90°" onAction="#rotateLeft"
+                      accelerator="Shift+L"/>
+            <MenuItem fx:id="transformMenuMenuRotateRight" text="Rotate _right by 90°" onAction="#rotateRight"
+                      accelerator="Shift+R"/>
+            <MenuItem fx:id="transformMenuLoadImages" text="_Load images" onAction="#loadImages"
+                      accelerator="Shortcut+L"/>
+            <MenuItem fx:id="transformMenuDeleteImage" text="_Delete image" onAction="#deleteImage"
+                      accelerator="Shortcut+Delete"/>
+            <MenuItem fx:id="transformMenuClear" text="_Clear image list" onAction="#clearImages"
+                      accelerator="Shortcut+Alt+Delete"/>
+        </Menu>
+        <Menu fx:id="samplesMenu" text="_Samples">
+            <MenuItem fx:id="samplesMenuCreateMode" text="_Create mode" onAction="#setCreateMode"
+                      accelerator="Shortcut+Alt+C"/>
+            <MenuItem fx:id="samplesMenuSelectMode" text="_Select mode" onAction="#setSelectMode"
+                      accelerator="Shortcut+Alt+S"/>
+            <MenuItem fx:id="samplesMenuRotateMode" text="_Rotate mode" onAction="#setRotateMode"
+                      accelerator="Shortcut+Alt+R"/>
+            <MenuItem fx:id="samplesMenuDeleteSample" text="_Delete selected sample" onAction="#deleteSample"
+                      accelerator="Shortcut+Delete"/>
+            <MenuItem fx:id="samplesMenuClearSamples" text="C_lear samples" onAction="#clearSamples"
+                      accelerator="Shortcut+Alt+Delete"/>
+            <MenuItem fx:id="samplesMenuSelectAllFeatures" text="Select _all features" onAction="#selectAllFunctions"
+                      accelerator="F9"/>
+            <MenuItem fx:id="samplesMenuDeselectAllFeatures" text="Deselect all _features"
+                      onAction="#deselectAllFunctions" accelerator="F10"/>
+        </Menu>
+        <Menu fx:id="chartsMenu" text="_Charts">
+            <MenuItem fx:id="chartsMenuRestoreCharts" text="_Restore charts" onAction="#refresh" accelerator="F5"/>
+            <MenuItem fx:id="chartsMenuMergeCharts" text="_Merge charts" onAction="#merge" accelerator="F6"/>
+            <MenuItem fx:id="chartsMenuExtractChart" text="_Extract chart" onAction="#shift" accelerator="F7"/>
+            <MenuItem fx:id="chartsMenuRemoveCharts" text="Remove _charts" onAction="#delete" accelerator="F8"/>
+        </Menu>
+        <Menu fx:id="navMenu" text="_Navigate">
+            <MenuItem fx:id="navMenuTransform" text="_Transform" onAction="#transformTab"
+                      accelerator="Shortcut+Shift+T"/>
+            <MenuItem fx:id="navMenuSamples" text="_Samples" onAction="#samplesTab" accelerator="Shortcut+Shift+S"/>
+            <MenuItem fx:id="navMenuCharts" text="_Charts" onAction="#chartsTab" accelerator="Shortcut+Shift+C"/>
+            <MenuItem fx:id="navMenuAllCharts" text="_All charts" onAction="#allCharts" accelerator="Shift+Alt+A"/>
+            <MenuItem fx:id="navMenuChartsBySample" text="Charts by sampl_e" onAction="#chartsBySample"
+                      accelerator="Shift+Alt+S"/>
+            <MenuItem fx:id="navMenuImagesBySample" text="_Images by sample" onAction="#imagesBySample"
+                      accelerator="Shift+Alt+I"/>
+        </Menu>
+        <Menu fx:id="runMenu" text="_Run">
+            <MenuItem fx:id="runMenuResultsButton" text="_Get results" onAction="#calculateResults" accelerator="F2"/>
+            <MenuItem fx:id="runMenuTransformButton" text="_Transform images" onAction="#transform" accelerator="F3"/>
+        </Menu>
+        <Menu fx:id="optionsMenu" text="_Options">
+            <Menu fx:id="optionsMenuTheme" text="_Theme">
+                <RadioMenuItem fx:id="optionsMenuThemeLight" text="_Light" onAction="#applyLightTheme"
+                               accelerator="Shortcut+Alt+Shift+L">
+                    <toggleGroup>
+                        <ToggleGroup fx:id="theme"/>
+                    </toggleGroup>
+                </RadioMenuItem>
+                <RadioMenuItem fx:id="optionsMenuThemeDark" text="_Dark" onAction="#applyDarkTheme" toggleGroup="$theme"
+                               accelerator="Shortcut+Alt+Shift+D"/>
+            </Menu>
+        </Menu>
+        <Menu fx:id="helpMenu" text="_Help">
+            <MenuItem fx:id="helpMenuHelp" text="_Help" onAction="#help" accelerator="F1"/>
+            <MenuItem fx:id="helpMenuAbout" text="_About" onAction="#about"/>
+        </Menu>
+    </MenuBar>
+    <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" GridPane.rowIndex="1">
+        <Tab fx:id="transformTab" closable="false" text="Transform">
+            <GridPane fx:id="transformMainPane">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="NEVER" minWidth="150.0"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints minWidth="200.0" prefWidth="200.0"/>
+                </columnConstraints>
+                <VBox fx:id="transformLeftVBox" spacing="5">
+                    <padding>
+                        <Insets left="5" right="5" top="5" bottom="5"/>
+                    </padding>
+                    <TitledPane fx:id="toolsTitledPane" text="Tools" collapsible="false">
+                        <GridPane fx:id="transformToolsGridPane" alignment="CENTER" vgap="10" hgap="10">
+                            <Button fx:id="verticalFlipButton" mnemonicParsing="false" onAction="#flipVertical">
+                                <graphic>
+                                    <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/vertical-flip.png"/>
+                                    </ImageView>
+                                </graphic>
+                            </Button>
+                            <Button fx:id="horizontalFlipButton" mnemonicParsing="false" onAction="#flipHorizontal"
+                                    GridPane.columnIndex="1">
+                                <graphic>
+                                    <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/horizontal-flip.png"/>
+                                    </ImageView>
+                                </graphic>
+                            </Button>
+                            <Button fx:id="rotateLeftButton" mnemonicParsing="false" onAction="#rotateLeft"
+                                    GridPane.rowIndex="1">
+                                <graphic>
+                                    <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/undo.png"/>
+                                    </ImageView>
+                                </graphic>
+                            </Button>
+                            <Button fx:id="rotateRightButton" mnemonicParsing="false" onAction="#rotateRight"
+                                    GridPane.rowIndex="1" GridPane.columnIndex="1">
+                                <graphic>
+                                    <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/redo.png"/>
+                                    </ImageView>
+                                </graphic>
+                            </Button>
+                        </GridPane>
+                    </TitledPane>
+                    <TitledPane fx:id="interpolationTitledPane" text="Interpolation" collapsible="false">
+                        <VBox fx:id="interpolationVBox">
+                            <RadioButton fx:id="cubicRadioButton" mnemonicParsing="false" selected="true"
+                                         text="Cubic">
+                                <toggleGroup>
+                                    <ToggleGroup fx:id="interpolation"/>
+                                </toggleGroup>
+                                <VBox.margin>
+                                    <Insets left="20.0"/>
+                                </VBox.margin>
+                            </RadioButton>
+                            <RadioButton fx:id="linearRadioButton" mnemonicParsing="false"
+                                         text="Linear" toggleGroup="$interpolation">
+                                <VBox.margin>
+                                    <Insets top="5.0" left="20.0"/>
+                                </VBox.margin>
+                            </RadioButton>
+                            <RadioButton fx:id="nearestRadioButton" mnemonicParsing="false"
+                                         text="Nearest" toggleGroup="$interpolation">
+                                <VBox.margin>
+                                    <Insets top="5.0" left="20.0"/>
+                                </VBox.margin>
+                            </RadioButton>
+                        </VBox>
+                    </TitledPane>
+                    <TitledPane fx:id="triangleTitledPane" text="Triangle" collapsible="false">
+                        <GridPane fx:id="transformColorControls" vgap="5">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="60.0"/>
+                                <ColumnConstraints percentWidth="40.0"/>
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints valignment="CENTER"/>
+                                <RowConstraints valignment="CENTER"/>
+                            </rowConstraints>
+                            <ColorPicker fx:id="triangleFillColor" maxWidth="40.0"
+                                         GridPane.columnIndex="1"/>
+                            <ColorPicker fx:id="triangleStrokeColor" maxWidth="40.0"
+                                         GridPane.columnIndex="1"
+                                         GridPane.rowIndex="1"/>
+                            <Label fx:id="triangleFillLabel" text="Area:"/>
+                            <Label fx:id="triangleStrokeLabel" text="Sides:"
+                                   GridPane.rowIndex="1"/>
+                        </GridPane>
+                    </TitledPane>
+                    <TitledPane fx:id="vertexTitledPane" text="Vertex" collapsible="false">
+                        <GridPane fx:id="vertexColorControls" vgap="5">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="60.0"/>
+                                <ColumnConstraints percentWidth="40.0"/>
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints valignment="CENTER"/>
+                                <RowConstraints valignment="CENTER"/>
+                                <RowConstraints valignment="CENTER"/>
+                            </rowConstraints>
+                            <ColorPicker fx:id="vertexFillColor" maxWidth="40.0"
+                                         GridPane.columnIndex="1"/>
+                            <ColorPicker fx:id="vertexStrokeColor" maxWidth="40.0"
+                                         GridPane.columnIndex="1"
+                                         GridPane.rowIndex="1"/>
+                            <ColorPicker fx:id="vertexBorderColor" maxWidth="40.0"
+                                         GridPane.columnIndex="1"
+                                         GridPane.rowIndex="2"/>
+                            <Label fx:id="vertexFillLabel" text="Fill:"/>
+                            <Label fx:id="vertexStrokeLabel" text="Stroke:"
+                                   GridPane.rowIndex="1"/>
+                            <Label fx:id="vertexBorderLabel" text="Border:"
+                                   GridPane.rowIndex="2"/>
+                        </GridPane>
+                    </TitledPane>
+                </VBox>
+                <BorderPane fx:id="transformBorderPane" GridPane.columnIndex="1">
+                    <top>
+                        <HBox fx:id="transformTopHBox" alignment="CENTER">
+                            <Label fx:id="transformInfo"
+                                   text="Click to select area. Double-click to open compare view."/>
+                        </HBox>
+                    </top>
+                    <center>
+                        <ScrollPane fx:id="transformScrollPane">
+                            <Group fx:id="transformImageViewGroup" autoSizeChildren="false">
+                                <AnchorPane fx:id="transformImageViewAnchor" centerShape="false">
+                                    <ImageView fx:id="transformImageView" preserveRatio="true"
+                                               AnchorPane.bottomAnchor="0.0"
+                                               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                               AnchorPane.topAnchor="0.0"/>
+                                </AnchorPane>
+                            </Group>
+                        </ScrollPane>
+                    </center>
+                    <bottom>
+                        <GridPane fx:id="transformBottomGrid">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="30.0"/>
+                                <ColumnConstraints percentWidth="40.0" halignment="CENTER"/>
+                                <ColumnConstraints percentWidth="15.0" halignment="RIGHT"/>
+                                <ColumnConstraints percentWidth="15.0" halignment="RIGHT"/>
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="40.0"/>
+                            </rowConstraints>
+                            <Label fx:id="transformImageSizeLabel" text=""/>
+                            <Button fx:id="transformImagesButton" text="Transform" onAction="#transform"
+                                    prefWidth="80.0" GridPane.columnIndex="1"/>
+                            <ComboBox fx:id="transformScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5"
+                                      GridPane.columnIndex="2"/>
+                            <Label fx:id="transformMousePositionLabel" text="- : -" GridPane.columnIndex="3"/>
+                        </GridPane>
+                    </bottom>
+                </BorderPane>
+                <GridPane fx:id="transformImageListGrid" vgap="15" GridPane.columnIndex="2">
+                    <columnConstraints>
+                        <ColumnConstraints halignment="CENTER"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints valignment="TOP"/>
+                    </rowConstraints>
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
+                    </padding>
+                    <ListView fx:id="transformImageList"/>
+                    <Label fx:id="transformImageListInfo" textAlignment="CENTER" text="No images loaded yet"
+                           wrapText="true" GridPane.valignment="CENTER"/>
+                    <HBox fx:id="transformImageListToolbar" alignment="CENTER" GridPane.rowIndex="1">
+                        <Button fx:id="loadImagesButton" mnemonicParsing="false" onAction="#loadImages">
+                            <graphic>
+                                <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+                                           preserveRatio="true">
+                                    <Image url="@../images/plus.png"/>
+                                </ImageView>
+                            </graphic>
+                            <HBox.margin>
+                                <Insets right="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button fx:id="deleteImageButton" mnemonicParsing="false" onAction="#deleteImage">
+                            <graphic>
+                                <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+                                           preserveRatio="true">
+                                    <Image url="@../images/minus.png"/>
+                                </ImageView>
+                            </graphic>
+                            <HBox.margin>
+                                <Insets right="5.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button fx:id="clearImagesButton" mnemonicParsing="false" onAction="#clearImages">
+                            <graphic>
+                                <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+                                           preserveRatio="true">
+                                    <Image url="@../images/trash.png"/>
+                                </ImageView>
+                            </graphic>
+                        </Button>
+                    </HBox>
+                </GridPane>
+            </GridPane>
+        </Tab>
 
-		<Tab fx:id="samplesTab" closable="false" text="Samples">
-			<GridPane fx:id="samplesMainPane">
-				<columnConstraints>
-					<ColumnConstraints hgrow="SOMETIMES" percentWidth="12.0"/>
-					<ColumnConstraints hgrow="SOMETIMES" percentWidth="70.0"/>
-					<ColumnConstraints hgrow="SOMETIMES" percentWidth="18.0"/>
-				</columnConstraints>
-				<rowConstraints>
-					<RowConstraints vgrow="SOMETIMES"/>
-				</rowConstraints>
-				<GridPane fx:id="samplesLeftGridPane">
-					<padding>
-						<Insets left="10" right="10" bottom="30"/>
-					</padding>
-					<columnConstraints>
-						<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER"/>
-					</columnConstraints>
-					<rowConstraints>
-						<RowConstraints valignment="CENTER" percentHeight="0.0" vgrow="SOMETIMES"/>
-						<RowConstraints valignment="CENTER" percentHeight="60.0" vgrow="SOMETIMES"/>
-						<RowConstraints valignment="CENTER" percentHeight="40.0" vgrow="SOMETIMES"/>
-					</rowConstraints>
-					<VBox fx:id="samplesModeVBox" alignment="CENTER" GridPane.rowIndex="1">
-						<RadioButton fx:id="createRadioButton" mnemonicParsing="false" selected="true"
-									 text="Create">
-							<toggleGroup>
-								<ToggleGroup fx:id="drawMethod"/>
-							</toggleGroup>
-							<VBox.margin>
-								<Insets top="15.0" left="20.0"/>
-							</VBox.margin>
-						</RadioButton>
-						<RadioButton fx:id="selectRadioButton" mnemonicParsing="false"
-									 text="Select" toggleGroup="$drawMethod">
-							<VBox.margin>
-								<Insets top="5.0" left="20.0"/>
-							</VBox.margin>
-						</RadioButton>
-						<RadioButton fx:id="rotateRadioButton" mnemonicParsing="false"
-									 text="Rotate" toggleGroup="$drawMethod">
-							<VBox.margin>
-								<Insets top="5.0" left="20.0"/>
-							</VBox.margin>
-						</RadioButton>
-						<Button fx:id="deleteSampleButton" mnemonicParsing="false" onAction="#deleteSample">
-							<graphic>
-								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-										   preserveRatio="true">
-									<Image url="@../images/minus.png"/>
-								</ImageView>
-							</graphic>
-							<VBox.margin>
-								<Insets top="40.0"/>
-							</VBox.margin>
-						</Button>
-						<Button fx:id="clearSamplesButton" mnemonicParsing="false" onAction="#clearSamples">
-							<graphic>
-								<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-										   preserveRatio="true">
-									<Image url="@../images/trash.png"/>
-								</ImageView>
-							</graphic>
-							<VBox.margin>
-								<Insets top="5.0"/>
-							</VBox.margin>
-						</Button>
-					</VBox>
-					<GridPane fx:id="samplesColorControls" GridPane.rowIndex="2">
-						<columnConstraints>
-							<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER" percentWidth="40.0"/>
-							<ColumnConstraints hgrow="SOMETIMES" halignment="CENTER" percentWidth="60.0"/>
-						</columnConstraints>
-						<rowConstraints>
-							<RowConstraints valignment="CENTER" percentHeight="33.3" vgrow="SOMETIMES"/>
-							<RowConstraints valignment="CENTER" percentHeight="33.3" vgrow="SOMETIMES"/>
-							<RowConstraints valignment="CENTER" percentHeight="33.4" vgrow="SOMETIMES"/>
-						</rowConstraints>
-						<ColorPicker fx:id="samplesFillColor" maxWidth="40.0"
-									 GridPane.columnIndex="1"/>
-						<ColorPicker fx:id="samplesStrokeColor" maxWidth="40.0"
-									 GridPane.columnIndex="1"
-									 GridPane.rowIndex="1"/>
-						<ColorPicker fx:id="samplesBorderColor" maxWidth="40.0"
-									 GridPane.columnIndex="1"
-									 GridPane.rowIndex="2"/>
-						<Label fx:id="samplesFillLabel" text="Fill"
-						/>
-						<Label fx:id="samplesStrokeLabel" text="Stroke"
-							   GridPane.rowIndex="1"/>
-						<Label fx:id="samplesBorderLabel" text="Border"
-							   GridPane.rowIndex="2"/>
-					</GridPane>
-				</GridPane>
-				<BorderPane fx:id="samplesBorderPane" GridPane.columnIndex="1">
-					<top>
-						<HBox fx:id="samplesTopHBox" alignment="CENTER">
-							<Label fx:id="samplesInfo" text="Click to select area. Double-click to open compare view."/>
-						</HBox>
-					</top>
-					<center>
-						<ScrollPane fx:id="samplesScrollPane">
-							<Group fx:id="samplesImageViewGroup" autoSizeChildren="false">
-								<AnchorPane fx:id="samplesImageViewAnchor" centerShape="false">
-									<ImageView fx:id="samplesImageView" preserveRatio="true" AnchorPane.bottomAnchor="0.0"
-											   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
-								</AnchorPane>
-							</Group>
-						</ScrollPane>
-					</center>
-					<bottom>
-						<GridPane fx:id="samplesBottomGrid">
-							<columnConstraints>
-								<ColumnConstraints hgrow="SOMETIMES" percentWidth="70.0"/>
-								<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0"/>
-								<ColumnConstraints hgrow="SOMETIMES" percentWidth="15.0" halignment="RIGHT"/>
-							</columnConstraints>
-							<rowConstraints>
-								<RowConstraints vgrow="SOMETIMES" minHeight="40.0"/>
-							</rowConstraints>
-							<Label fx:id="samplesImageSizeLabel" text=""/>
-							<ComboBox fx:id="samplesScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5" GridPane.columnIndex="1"/>
-							<Label fx:id="samplesMousePositionLabel" text="- : -" GridPane.columnIndex="2"/>
-						</GridPane>
-					</bottom>
-				</BorderPane>
-				<VBox fx:id="rightVBox" alignment="CENTER" GridPane.columnIndex="2">
-					<TabPane fx:id="rightVBoxTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="SOMETIMES">
-						<Tab fx:id="toolboxTab" text="Images">
-							<GridPane fx:id="samplesImageListGrid" alignment="CENTER" vgap="15.0">
-								<columnConstraints>
-									<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES"/>
-								</columnConstraints>
-								<rowConstraints>
-									<RowConstraints valignment="CENTER" vgrow="SOMETIMES"/>
-									<RowConstraints vgrow="SOMETIMES"/>
-								</rowConstraints>
-								<padding>
-									<Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
-								</padding>
-								<ListView fx:id="samplesImageList"/>
-							</GridPane>
-						</Tab>
-						<Tab fx:id="featuresTab" text="Features">
-							<BorderPane fx:id="featuresBorderPane">
-								<center>
-									<ScrollPane fx:id="featuresScrollPane" fitToWidth="true">
-										<VBox fx:id="featuresVBox" spacing="5.0">
-											<padding>
-												<Insets bottom="5.0" left="10.0" right="10.0" top="5.0"/>
-											</padding>
-										</VBox>
-									</ScrollPane>
-								</center>
-								<bottom>
-									<HBox fx:id="selectionButtonsHBox" alignment="CENTER" minHeight="40.0"
-										  BorderPane.alignment="CENTER">
-										<Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAllFunctions"
-												text="Select all">
-											<HBox.margin>
-												<Insets left="5.0" right="15.0"/>
-											</HBox.margin>
-										</Button>
-										<Button fx:id="deselectAllButton" mnemonicParsing="false"
-												onAction="#deselectAllFunctions" text="Deselect all">
-											<HBox.margin>
-												<Insets left="15.0" right="5.0"/>
-											</HBox.margin>
-										</Button>
-									</HBox>
-								</bottom>
-							</BorderPane>
-						</Tab>
-					</TabPane>
-					<Button fx:id="resultsButton" mnemonicParsing="false" onAction="#calculateResults" text="Get results">
-						<VBox.margin>
-							<Insets bottom="25.0" top="25.0"/>
-						</VBox.margin>
-					</Button>
-				</VBox>
-			</GridPane>
-		</Tab>
+        <Tab fx:id="samplesTab" closable="false" text="Samples">
+            <GridPane fx:id="samplesMainPane">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="NEVER" minWidth="150.0"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints minWidth="200.0" prefWidth="200.0"/>
+                </columnConstraints>
+                <VBox fx:id="samplesLeftVBox" spacing="5">
+                    <padding>
+                        <Insets left="5" right="5" top="5" bottom="5"/>
+                    </padding>
+                    <TitledPane fx:id="samplesModeTitledPane" text="Mode" collapsible="false">
+                        <VBox fx:id="samplesModeVBox">
+                            <RadioButton fx:id="createRadioButton" mnemonicParsing="false" selected="true"
+                                         text="Create">
+                                <toggleGroup>
+                                    <ToggleGroup fx:id="drawMethod"/>
+                                </toggleGroup>
+                                <VBox.margin>
+                                    <Insets left="20.0"/>
+                                </VBox.margin>
+                            </RadioButton>
+                            <RadioButton fx:id="selectRadioButton" mnemonicParsing="false"
+                                         text="Select" toggleGroup="$drawMethod">
+                                <VBox.margin>
+                                    <Insets top="5.0" left="20.0"/>
+                                </VBox.margin>
+                            </RadioButton>
+                            <RadioButton fx:id="rotateRadioButton" mnemonicParsing="false"
+                                         text="Rotate" toggleGroup="$drawMethod">
+                                <VBox.margin>
+                                    <Insets top="5.0" left="20.0"/>
+                                </VBox.margin>
+                            </RadioButton>
+                        </VBox>
+                    </TitledPane>
+                    <TitledPane fx:id="samplesToolsTitledPane" text="Tools" collapsible="false">
+                        <GridPane fx:id="samplesToolsGridPane" alignment="CENTER" vgap="10" hgap="10">
+                            <Button fx:id="deleteSampleButton" mnemonicParsing="false" onAction="#deleteSample">
+                                <graphic>
+                                    <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/minus.png"/>
+                                    </ImageView>
+                                </graphic>
+                            </Button>
+                            <Button fx:id="clearSamplesButton" mnemonicParsing="false" onAction="#clearSamples"
+                                    GridPane.columnIndex="1">
+                                <graphic>
+                                    <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/trash.png"/>
+                                    </ImageView>
+                                </graphic>
+                            </Button>
+                        </GridPane>
+                    </TitledPane>
+                    <TitledPane fx:id="sampleTitledPane" text="Sample" collapsible="false">
+                        <GridPane fx:id="sampleColorControls" vgap="5">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="60.0"/>
+                                <ColumnConstraints percentWidth="40.0"/>
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints valignment="CENTER"/>
+                                <RowConstraints valignment="CENTER"/>
+                                <RowConstraints valignment="CENTER"/>
+                            </rowConstraints>
+                            <ColorPicker fx:id="sampleFillColor" maxWidth="40.0"
+                                         GridPane.columnIndex="1"/>
+                            <ColorPicker fx:id="sampleStrokeColor" maxWidth="40.0"
+                                         GridPane.columnIndex="1"
+                                         GridPane.rowIndex="1"/>
+                            <ColorPicker fx:id="sampleBorderColor" maxWidth="40.0"
+                                         GridPane.columnIndex="1"
+                                         GridPane.rowIndex="2"/>
+                            <Label fx:id="sampleFillLabel" text="Fill:"
+                            />
+                            <Label fx:id="sampleStrokeLabel" text="Stroke:"
+                                   GridPane.rowIndex="1"/>
+                            <Label fx:id="sampleBorderLabel" text="Border:"
+                                   GridPane.rowIndex="2"/>
+                        </GridPane>
+                    </TitledPane>
+                </VBox>
+                <BorderPane fx:id="samplesBorderPane" GridPane.columnIndex="1">
+                    <top>
+                        <HBox fx:id="samplesTopHBox" alignment="CENTER">
+                            <Label fx:id="samplesInfo" text="Click to select area. Double-click to open compare view."/>
+                        </HBox>
+                    </top>
+                    <center>
+                        <ScrollPane fx:id="samplesScrollPane">
+                            <Group fx:id="samplesImageViewGroup" autoSizeChildren="false">
+                                <AnchorPane fx:id="samplesImageViewAnchor" centerShape="false">
+                                    <ImageView fx:id="samplesImageView" preserveRatio="true"
+                                               AnchorPane.bottomAnchor="0.0"
+                                               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                               AnchorPane.topAnchor="0.0"/>
+                                </AnchorPane>
+                            </Group>
+                        </ScrollPane>
+                    </center>
+                    <bottom>
+                        <GridPane fx:id="samplesBottomGrid">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="30.0"/>
+                                <ColumnConstraints percentWidth="40.0" halignment="CENTER"/>
+                                <ColumnConstraints percentWidth="15.0" halignment="RIGHT"/>
+                                <ColumnConstraints percentWidth="15.0" halignment="RIGHT"/>
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints minHeight="40.0"/>
+                            </rowConstraints>
+                            <Label fx:id="samplesImageSizeLabel" text=""/>
+                            <Button fx:id="resultsButton" text="Get results" onAction="#calculateResults"
+                                    prefWidth="80.0" GridPane.columnIndex="1"/>
+                            <ComboBox fx:id="samplesScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5"
+                                      GridPane.columnIndex="2"/>
+                            <Label fx:id="samplesMousePositionLabel" text="- : -" GridPane.columnIndex="3"/>
+                        </GridPane>
+                    </bottom>
+                </BorderPane>
+                <TabPane fx:id="rightVBoxTabPane" tabClosingPolicy="UNAVAILABLE" GridPane.columnIndex="2">
+                    <Tab fx:id="toolboxTab" text="Images">
+                        <GridPane fx:id="samplesImageListGrid">
+                            <padding>
+                                <Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
+                            </padding>
+                            <ListView fx:id="samplesImageList"/>
+                        </GridPane>
+                    </Tab>
+                    <Tab fx:id="featuresTab" text="Features">
+                        <BorderPane fx:id="featuresBorderPane">
+                            <center>
+                                <ScrollPane fx:id="featuresScrollPane" fitToWidth="true">
+                                    <VBox fx:id="featuresVBox" spacing="5.0">
+                                        <padding>
+                                            <Insets bottom="5.0" left="10.0" right="10.0" top="5.0"/>
+                                        </padding>
+                                    </VBox>
+                                </ScrollPane>
+                            </center>
+                            <bottom>
+                                <HBox fx:id="selectionButtonsHBox" alignment="CENTER" minHeight="40.0">
+                                    <padding>
+                                        <Insets bottom="50" top="10"/>
+                                    </padding>
+                                    <Button fx:id="selectAllButton" mnemonicParsing="false"
+                                            onAction="#selectAllFunctions"
+                                            text="Select all">
+                                        <HBox.margin>
+                                            <Insets left="5.0" right="10.0"/>
+                                        </HBox.margin>
+                                    </Button>
+                                    <Button fx:id="deselectAllButton" mnemonicParsing="false"
+                                            onAction="#deselectAllFunctions" text="Deselect all">
+                                        <HBox.margin>
+                                            <Insets left="10.0" right="5.0"/>
+                                        </HBox.margin>
+                                    </Button>
+                                </HBox>
+                            </bottom>
+                        </BorderPane>
+                    </Tab>
+                </TabPane>
+            </GridPane>
+        </Tab>
 
-		<Tab fx:id="chartsTab" closable="false" text="Charts">
-			<BorderPane fx:id="chartsMainPane">
-				<top>
-					<HBox fx:id="chartsGraphsHBox" alignment="CENTER">
-						<Label fx:id="chartsGraphsInfo" text="Select multiple charts by clicking on them. Clicking again will remove selection."/>
-					</HBox>
-				</top>
-				<bottom>
-					<GridPane fx:id="chartsControls">
-						<columnConstraints>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="12.0" halignment="CENTER"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="6.0" halignment="CENTER"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="12.0" halignment="RIGHT"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="12.0" halignment="CENTER"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="14.0" halignment="CENTER"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="14.0" halignment="CENTER"/>
-							<ColumnConstraints hgrow="SOMETIMES" percentWidth="30.0" halignment="CENTER"/>
-						</columnConstraints>
-						<rowConstraints>
-							<RowConstraints vgrow="SOMETIMES" minHeight="40.0"/>
-						</rowConstraints>
-						<BorderPane.margin>
-							<Insets left="50.0"/>
-						</BorderPane.margin>
-						<Label fx:id="chartsColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns" GridPane.columnIndex="0"/>
-						<TextField fx:id="chartsColumnsTextField" alignment="CENTER" text="3" GridPane.columnIndex="1"/>
-						<Label fx:id="chartsSampleLabel" alignment="CENTER_RIGHT" text="Sample" GridPane.columnIndex="2"/>
-						<ComboBox fx:id="chartsSampleComboBox" editable="false" visibleRowCount="5" GridPane.columnIndex="3"/>
-						<RadioButton fx:id="chartsBySampleRadioButton" mnemonicParsing="false" text="Charts" selected="true"
-									 GridPane.columnIndex="4">
-							<toggleGroup>
-								<ToggleGroup fx:id="result"/>
-							</toggleGroup>
-						</RadioButton>
-						<RadioButton fx:id="imagesBySampleRadioButton" mnemonicParsing="false" text="Images"
-									 toggleGroup="$result" GridPane.columnIndex="5"/>
-						<HBox alignment="CENTER" fx:id="chartsGraphsToolbar" GridPane.columnIndex="6">
-							<Button fx:id="chartsRefreshButton" onAction="#refresh" alignment="CENTER">
-								<graphic>
-									<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-											   preserveRatio="true">
-										<Image url="@../images/refresh.png"/>
-									</ImageView>
-								</graphic>
-								<HBox.margin>
-									<Insets right="5.0"/>
-								</HBox.margin>
-							</Button>
-							<Button fx:id="chartsMergeButton" onAction="#merge" alignment="CENTER">
-								<graphic>
-									<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-											   preserveRatio="true">
-										<Image url="@../images/merge.png"/>
-									</ImageView>
-								</graphic>
-								<HBox.margin>
-									<Insets right="5.0"/>
-								</HBox.margin>
-							</Button>
-							<Button fx:id="chartsShiftButton" onAction="#shift" alignment="CENTER">
-								<graphic>
-									<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-											   preserveRatio="true">
-										<Image url="@../images/shift.png"/>
-									</ImageView>
-								</graphic>
-								<HBox.margin>
-									<Insets right="5.0"/>
-								</HBox.margin>
-							</Button>
-							<Button fx:id="chartsDeleteButton" onAction="#delete" alignment="CENTER">
-								<graphic>
-									<ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
-											   preserveRatio="true">
-										<Image url="@../images/trash.png"/>
-									</ImageView>
-								</graphic>
-							</Button>
-						</HBox>
-					</GridPane>
-				</bottom>
-				<center>
-					<TabPane fx:id="chartsTabPane" side="RIGHT" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
-						<Tab fx:id="allChartsTab" text="Summary">
-							<ScrollPane fx:id="allChartsGridScrollPane" fitToWidth="true">
-								<GridPane fx:id="allChartsGrid">
-									<rowConstraints>
-										<RowConstraints vgrow="SOMETIMES"/>
-									</rowConstraints>
-									<columnConstraints>
-										<ColumnConstraints/>
-									</columnConstraints>
-								</GridPane>
-							</ScrollPane>
-						</Tab>
-						<Tab fx:id="bySampleTab" text="Samples">
-							<GridPane>
-								<columnConstraints>
-									<ColumnConstraints hgrow="SOMETIMES" percentWidth="100.0"/>
-								</columnConstraints>
-								<rowConstraints>
-									<RowConstraints percentHeight="100.0" vgrow="SOMETIMES"/>
-								</rowConstraints>
-								<ScrollPane fx:id="chartsBySampleGridScrollPane" fitToWidth="true">
-									<GridPane fx:id="chartsBySampleGrid">
-										<rowConstraints>
-											<RowConstraints vgrow="SOMETIMES"/>
-										</rowConstraints>
-										<columnConstraints>
-											<ColumnConstraints/>
-										</columnConstraints>
-									</GridPane>
-								</ScrollPane>
-								<ScrollPane fx:id="imagesBySampleGridScrollPane" fitToWidth="true">
-									<GridPane fx:id="imagesBySampleGrid" vgap="10.0" hgap="10.0">
-										<rowConstraints>
-											<RowConstraints vgrow="SOMETIMES"/>
-										</rowConstraints>
-										<columnConstraints>
-											<ColumnConstraints/>
-										</columnConstraints>
-									</GridPane>
-								</ScrollPane>
-							</GridPane>
-						</Tab>
-					</TabPane>
-				</center>
-			</BorderPane>
-		</Tab>
-	</TabPane>
+        <Tab fx:id="chartsTab" closable="false" text="Charts">
+            <BorderPane fx:id="chartsMainPane">
+                <top>
+                    <HBox fx:id="chartsGraphsHBox" alignment="CENTER">
+                        <Label fx:id="chartsGraphsInfo"
+                               text="Select multiple charts by clicking on them. Clicking again will remove selection."/>
+                    </HBox>
+                </top>
+                <center>
+                    <TabPane fx:id="chartsTabPane" side="RIGHT" tabClosingPolicy="UNAVAILABLE"
+                             BorderPane.alignment="CENTER">
+                        <Tab fx:id="allChartsTab" text="Summary">
+                            <ScrollPane fx:id="allChartsGridScrollPane" fitToWidth="true">
+                                <GridPane fx:id="allChartsGrid">
+                                    <rowConstraints>
+                                        <RowConstraints vgrow="SOMETIMES"/>
+                                    </rowConstraints>
+                                    <columnConstraints>
+                                        <ColumnConstraints/>
+                                    </columnConstraints>
+                                </GridPane>
+                            </ScrollPane>
+                        </Tab>
+                        <Tab fx:id="bySampleTab" text="Samples">
+                            <GridPane>
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" percentWidth="100.0"/>
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints percentHeight="100.0" vgrow="SOMETIMES"/>
+                                </rowConstraints>
+                                <ScrollPane fx:id="chartsBySampleGridScrollPane" fitToWidth="true">
+                                    <GridPane fx:id="chartsBySampleGrid">
+                                        <rowConstraints>
+                                            <RowConstraints vgrow="SOMETIMES"/>
+                                        </rowConstraints>
+                                        <columnConstraints>
+                                            <ColumnConstraints/>
+                                        </columnConstraints>
+                                    </GridPane>
+                                </ScrollPane>
+                                <ScrollPane fx:id="imagesBySampleGridScrollPane" fitToWidth="true">
+                                    <GridPane fx:id="imagesBySampleGrid" vgap="10.0" hgap="10.0">
+                                        <rowConstraints>
+                                            <RowConstraints vgrow="SOMETIMES"/>
+                                        </rowConstraints>
+                                        <columnConstraints>
+                                            <ColumnConstraints/>
+                                        </columnConstraints>
+                                    </GridPane>
+                                </ScrollPane>
+                            </GridPane>
+                        </Tab>
+                    </TabPane>
+                </center>
+                <bottom>
+                    <GridPane fx:id="chartsControls">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="11.0" halignment="RIGHT"/>
+                            <ColumnConstraints percentWidth="5.0" halignment="LEFT"/>
+                            <ColumnConstraints percentWidth="10.0" halignment="RIGHT"/>
+                            <ColumnConstraints percentWidth="14.0" halignment="LEFT"/>
+                            <ColumnConstraints percentWidth="10.0" halignment="CENTER"/>
+                            <ColumnConstraints percentWidth="10.0" halignment="CENTER"/>
+                            <ColumnConstraints percentWidth="40.0" halignment="RIGHT"/>
+                        </columnConstraints>
+                        <rowConstraints>
+                            <RowConstraints vgrow="SOMETIMES" minHeight="40.0"/>
+                        </rowConstraints>
+                        <BorderPane.margin>
+                            <Insets left="50.0"/>
+                        </BorderPane.margin>
+                        <Label fx:id="chartsColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns:"
+                               GridPane.columnIndex="0">
+                            <padding>
+                                <Insets right="10"/>
+                            </padding>
+                        </Label>
+                        <TextField fx:id="chartsColumnsTextField" alignment="CENTER" text="3" GridPane.columnIndex="1"/>
+                        <Label fx:id="chartsSampleLabel" alignment="CENTER_RIGHT" text="Sample:"
+                               GridPane.columnIndex="2">
+                            <padding>
+                                <Insets right="10"/>
+                            </padding>
+                        </Label>
+                        <ComboBox fx:id="chartsSampleComboBox" editable="false" visibleRowCount="5"
+                                  GridPane.columnIndex="3"/>
+                        <RadioButton fx:id="chartsBySampleRadioButton" mnemonicParsing="false" text="Charts"
+                                     selected="true"
+                                     GridPane.columnIndex="4">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="result"/>
+                            </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="imagesBySampleRadioButton" mnemonicParsing="false" text="Images"
+                                     toggleGroup="$result" GridPane.columnIndex="5"/>
+                        <HBox alignment="CENTER_RIGHT" fx:id="chartsGraphsToolbar" GridPane.columnIndex="6">
+                            <Button fx:id="chartsRefreshButton" onAction="#refresh" alignment="CENTER">
+                                <graphic>
+                                    <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/refresh.png"/>
+                                    </ImageView>
+                                </graphic>
+                                <HBox.margin>
+                                    <Insets right="5.0"/>
+                                </HBox.margin>
+                            </Button>
+                            <Button fx:id="chartsMergeButton" onAction="#merge" alignment="CENTER">
+                                <graphic>
+                                    <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/merge.png"/>
+                                    </ImageView>
+                                </graphic>
+                                <HBox.margin>
+                                    <Insets right="5.0"/>
+                                </HBox.margin>
+                            </Button>
+                            <Button fx:id="chartsShiftButton" onAction="#shift" alignment="CENTER">
+                                <graphic>
+                                    <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/shift.png"/>
+                                    </ImageView>
+                                </graphic>
+                                <HBox.margin>
+                                    <Insets right="5.0"/>
+                                </HBox.margin>
+                            </Button>
+                            <Button fx:id="chartsDeleteButton" onAction="#delete" alignment="CENTER">
+                                <graphic>
+                                    <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
+                                               preserveRatio="true">
+                                        <Image url="@../images/trash.png"/>
+                                    </ImageView>
+                                </graphic>
+                                <HBox.margin>
+                                    <Insets right="50.0"/>
+                                </HBox.margin>
+                            </Button>
+                        </HBox>
+                    </GridPane>
+                </bottom>
+            </BorderPane>
+        </Tab>
+    </TabPane>
 </GridPane>

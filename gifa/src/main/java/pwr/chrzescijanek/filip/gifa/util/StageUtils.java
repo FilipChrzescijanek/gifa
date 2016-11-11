@@ -15,9 +15,9 @@ public final class StageUtils {
 		setSceneTo(stage, view);
 	}
 
-	public static void prepareStagePreservingRatio( final Stage stage, final String title, final Image icon, final FXView view ) {
+	public static void prepareMainStage(final Stage stage, final String title, final Image icon, final FXView view ) {
 		setTitleAndIcon(stage, title, icon);
-		setScenePreservingRatioTo(stage, view);
+		setMainScene(stage, view);
 	}
 
 	private static void setSceneTo( final Stage stage, final FXView fxView ) {
@@ -26,9 +26,11 @@ public final class StageUtils {
 		stage.setScene(scene);
 	}
 
-	private static void setScenePreservingRatioTo( final Stage stage, final FXView fxView ) {
+	private static void setMainScene(final Stage stage, final FXView fxView ) {
 		final Parent root = fxView.getView();
 		Scene scene = new Scene(root, root.minWidth(-1), root.minHeight(-1));
+		stage.setMinWidth(960);
+		stage.setMinHeight(540);
 		stage.setScene(scene);
 	}
 
