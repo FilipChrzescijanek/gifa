@@ -23,20 +23,20 @@
             <MenuItem fx:id="editMenuZoomIn" text="Zoom _in" onAction="#zoomIn" accelerator="Shortcut+Add"/>
             <MenuItem fx:id="editMenuZoomOut" text="Zoom _out" onAction="#zoomOut" accelerator="Shortcut+Subtract"/>
         </Menu>
-        <Menu fx:id="transformMenu" text="_Transform">
-            <MenuItem fx:id="transformMenuVerticalFlip" text="Flip _vertically" onAction="#flipVertical"
+        <Menu fx:id="alignMenu" text="_Align">
+            <MenuItem fx:id="alignMenuVerticalFlip" text="Flip _vertically" onAction="#flipVertical"
                       accelerator="Shift+V"/>
-            <MenuItem fx:id="transformMenuHorizontalFlip" text="Flip _horizontally" onAction="#flipHorizontal"
+            <MenuItem fx:id="alignMenuHorizontalFlip" text="Flip _horizontally" onAction="#flipHorizontal"
                       accelerator="Shift+H"/>
-            <MenuItem fx:id="transformMenuMenuRotateLeft" text="Rotate _left by 90°" onAction="#rotateLeft"
+            <MenuItem fx:id="alignMenuMenuRotateLeft" text="Rotate _left by 90°" onAction="#rotateLeft"
                       accelerator="Shift+L"/>
-            <MenuItem fx:id="transformMenuMenuRotateRight" text="Rotate _right by 90°" onAction="#rotateRight"
+            <MenuItem fx:id="alignMenuMenuRotateRight" text="Rotate _right by 90°" onAction="#rotateRight"
                       accelerator="Shift+R"/>
-            <MenuItem fx:id="transformMenuLoadImages" text="_Load images" onAction="#loadImages"
+            <MenuItem fx:id="alignMenuLoadImages" text="_Load images" onAction="#loadImages"
                       accelerator="Shortcut+L"/>
-            <MenuItem fx:id="transformMenuDeleteImage" text="_Delete image" onAction="#deleteImage"
+            <MenuItem fx:id="alignMenuDeleteImage" text="_Delete image" onAction="#deleteImage"
                       accelerator="Shortcut+Delete"/>
-            <MenuItem fx:id="transformMenuClear" text="_Clear image list" onAction="#clearImages"
+            <MenuItem fx:id="alignMenuClear" text="_Clear image list" onAction="#clearImages"
                       accelerator="Shortcut+Alt+Delete"/>
         </Menu>
         <Menu fx:id="samplesMenu" text="_Samples">
@@ -62,29 +62,29 @@
             <MenuItem fx:id="chartsMenuRemoveCharts" text="Remove _charts" onAction="#delete" accelerator="F8"/>
         </Menu>
         <Menu fx:id="navMenu" text="_Navigate">
-            <MenuItem fx:id="navMenuTransform" text="_Transform" onAction="#transformTab"
+            <MenuItem fx:id="navMenuAlign" text="_Align" onAction="#alignTab"
                       accelerator="Shortcut+Shift+T"/>
             <MenuItem fx:id="navMenuSamples" text="_Samples" onAction="#samplesTab" accelerator="Shortcut+Shift+S"/>
             <MenuItem fx:id="navMenuCharts" text="_Charts" onAction="#chartsTab" accelerator="Shortcut+Shift+C"/>
-            <MenuItem fx:id="navMenuAllCharts" text="_All charts" onAction="#allCharts" accelerator="Shift+Alt+A"/>
+            <MenuItem fx:id="navMenuAllCharts" text="Al_l charts" onAction="#allCharts" accelerator="Shift+Alt+A"/>
             <MenuItem fx:id="navMenuChartsBySample" text="Charts by sampl_e" onAction="#chartsBySample"
                       accelerator="Shift+Alt+S"/>
             <MenuItem fx:id="navMenuImagesBySample" text="_Images by sample" onAction="#imagesBySample"
                       accelerator="Shift+Alt+I"/>
         </Menu>
         <Menu fx:id="runMenu" text="_Run">
-            <MenuItem fx:id="runMenuResultsButton" text="_Get results" onAction="#calculateResults" accelerator="F2"/>
-            <MenuItem fx:id="runMenuTransformButton" text="_Transform images" onAction="#transform" accelerator="F3"/>
+            <MenuItem fx:id="runMenuAlignButton" text="_Align images" onAction="#align" accelerator="F2"/>
+            <MenuItem fx:id="runMenuResultsButton" text="_Get results" onAction="#calculateResults" accelerator="F3"/>
         </Menu>
         <Menu fx:id="optionsMenu" text="_Options">
             <Menu fx:id="optionsMenuTheme" text="_Theme">
                 <RadioMenuItem fx:id="optionsMenuThemeLight" text="_Light" onAction="#applyLightTheme"
                                accelerator="Shortcut+Alt+Shift+L">
                     <toggleGroup>
-                        <ToggleGroup fx:id="theme"/>
+                        <ToggleGroup fx:id="themeToggleGroup"/>
                     </toggleGroup>
                 </RadioMenuItem>
-                <RadioMenuItem fx:id="optionsMenuThemeDark" text="_Dark" onAction="#applyDarkTheme" toggleGroup="$theme"
+                <RadioMenuItem fx:id="optionsMenuThemeDark" text="_Dark" onAction="#applyDarkTheme" toggleGroup="$themeToggleGroup"
                                accelerator="Shortcut+Alt+Shift+D"/>
             </Menu>
         </Menu>
@@ -94,19 +94,19 @@
         </Menu>
     </MenuBar>
     <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" GridPane.rowIndex="1">
-        <Tab fx:id="transformTab" closable="false" text="Transform">
-            <GridPane fx:id="transformMainPane">
+        <Tab fx:id="alignTab" closable="false" text="Align">
+            <GridPane fx:id="alignMainPane">
                 <columnConstraints>
                     <ColumnConstraints hgrow="NEVER" minWidth="150.0"/>
                     <ColumnConstraints hgrow="ALWAYS"/>
                     <ColumnConstraints minWidth="200.0" prefWidth="200.0"/>
                 </columnConstraints>
-                <VBox fx:id="transformLeftVBox" spacing="5">
+                <VBox fx:id="alignLeftVBox" spacing="5">
                     <padding>
                         <Insets left="5" right="5" top="5" bottom="5"/>
                     </padding>
                     <TitledPane fx:id="toolsTitledPane" text="Tools" collapsible="false">
-                        <GridPane fx:id="transformToolsGridPane" alignment="CENTER" vgap="10" hgap="10">
+                        <GridPane fx:id="alignToolsGridPane" alignment="CENTER" vgap="10" hgap="10">
                             <Button fx:id="verticalFlipButton" mnemonicParsing="false" onAction="#flipVertical">
                                 <graphic>
                                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
@@ -170,7 +170,7 @@
                         </VBox>
                     </TitledPane>
                     <TitledPane fx:id="triangleTitledPane" text="Triangle" collapsible="false">
-                        <GridPane fx:id="transformColorControls" vgap="5">
+                        <GridPane fx:id="alignColorControls" vgap="5">
                             <columnConstraints>
                                 <ColumnConstraints percentWidth="60.0"/>
                                 <ColumnConstraints percentWidth="40.0"/>
@@ -216,18 +216,18 @@
                         </GridPane>
                     </TitledPane>
                 </VBox>
-                <BorderPane fx:id="transformBorderPane" GridPane.columnIndex="1">
+                <BorderPane fx:id="alignBorderPane" GridPane.columnIndex="1">
                     <top>
-                        <HBox fx:id="transformTopHBox" alignment="CENTER">
-                            <Label fx:id="transformInfo"
+                        <HBox fx:id="alignTopHBox" alignment="CENTER">
+                            <Label fx:id="alignInfo"
                                    text="Click to select area. Double-click to open compare view."/>
                         </HBox>
                     </top>
                     <center>
-                        <ScrollPane fx:id="transformScrollPane">
-                            <Group fx:id="transformImageViewGroup" autoSizeChildren="false">
-                                <AnchorPane fx:id="transformImageViewAnchor" centerShape="false">
-                                    <ImageView fx:id="transformImageView" preserveRatio="true"
+                        <ScrollPane fx:id="alignScrollPane">
+                            <Group fx:id="alignImageViewGroup" autoSizeChildren="false">
+                                <AnchorPane fx:id="alignImageViewAnchor" centerShape="false">
+                                    <ImageView fx:id="alignImageView" preserveRatio="true"
                                                AnchorPane.bottomAnchor="0.0"
                                                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                                                AnchorPane.topAnchor="0.0"/>
@@ -236,7 +236,7 @@
                         </ScrollPane>
                     </center>
                     <bottom>
-                        <GridPane fx:id="transformBottomGrid">
+                        <GridPane fx:id="alignBottomGrid">
                             <columnConstraints>
                                 <ColumnConstraints percentWidth="30.0"/>
                                 <ColumnConstraints percentWidth="40.0" halignment="CENTER"/>
@@ -246,16 +246,16 @@
                             <rowConstraints>
                                 <RowConstraints minHeight="40.0"/>
                             </rowConstraints>
-                            <Label fx:id="transformImageSizeLabel" text=""/>
-                            <Button fx:id="transformImagesButton" text="Transform" onAction="#transform"
+                            <Label fx:id="alignImageSizeLabel" text=""/>
+                            <Button fx:id="alignImagesButton" text="Align" onAction="#align"
                                     prefWidth="80.0" GridPane.columnIndex="1"/>
-                            <ComboBox fx:id="transformScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5"
+                            <ComboBox fx:id="alignScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5"
                                       GridPane.columnIndex="2"/>
-                            <Label fx:id="transformMousePositionLabel" text="- : -" GridPane.columnIndex="3"/>
+                            <Label fx:id="alignMousePositionLabel" text="- : -" GridPane.columnIndex="3"/>
                         </GridPane>
                     </bottom>
                 </BorderPane>
-                <GridPane fx:id="transformImageListGrid" vgap="15" GridPane.columnIndex="2">
+                <GridPane fx:id="alignImageListGrid" vgap="15" GridPane.columnIndex="2">
                     <columnConstraints>
                         <ColumnConstraints halignment="CENTER"/>
                     </columnConstraints>
@@ -265,10 +265,10 @@
                     <padding>
                         <Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
                     </padding>
-                    <ListView fx:id="transformImageList"/>
-                    <Label fx:id="transformImageListInfo" textAlignment="CENTER" text="No images loaded yet"
+                    <ListView fx:id="alignImageList"/>
+                    <Label fx:id="alignImageListInfo" textAlignment="CENTER" text="No images loaded yet"
                            wrapText="true" GridPane.valignment="CENTER"/>
-                    <HBox fx:id="transformImageListToolbar" alignment="CENTER" GridPane.rowIndex="1">
+                    <HBox fx:id="alignImageListToolbar" alignment="CENTER" GridPane.rowIndex="1">
                         <Button fx:id="loadImagesButton" mnemonicParsing="false" onAction="#loadImages">
                             <graphic>
                                 <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
@@ -564,11 +564,11 @@
                                      selected="true"
                                      GridPane.columnIndex="4">
                             <toggleGroup>
-                                <ToggleGroup fx:id="result"/>
+                                <ToggleGroup fx:id="bySampleToggle"/>
                             </toggleGroup>
                         </RadioButton>
                         <RadioButton fx:id="imagesBySampleRadioButton" mnemonicParsing="false" text="Images"
-                                     toggleGroup="$result" GridPane.columnIndex="5"/>
+                                     toggleGroup="$bySampleToggle" GridPane.columnIndex="5"/>
                         <HBox alignment="CENTER_RIGHT" fx:id="chartsGraphsToolbar" GridPane.columnIndex="6">
                             <Button fx:id="chartsRefreshButton" onAction="#refresh" alignment="CENTER">
                                 <graphic>

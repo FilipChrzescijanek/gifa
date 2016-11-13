@@ -10,16 +10,6 @@
 			<Label fx:id="panelInfo"/>
 		</HBox>
 	</top>
-	<bottom>
-		<HBox fx:id="panelControls" alignment="CENTER" minHeight="40.0">
-			<Label fx:id="panelColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns:">
-				<HBox.margin>
-					<Insets right="10"/>
-				</HBox.margin>
-			</Label>
-			<TextField fx:id="panelColumnsTextField" alignment="CENTER" text="3" prefWidth="50" />
-		</HBox>
-	</bottom>
 	<center>
 		<GridPane BorderPane.alignment="CENTER">
 			<columnConstraints>
@@ -37,4 +27,14 @@
 			</ScrollPane>
 		</GridPane>
 	</center>
+	<bottom>
+		<HBox fx:id="panelControls" alignment="CENTER" minHeight="40.0">
+			<Label fx:id="panelColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns:">
+				<HBox.margin>
+					<Insets right="10"/>
+				</HBox.margin>
+			</Label>
+			<TextField fx:id="panelColumnsTextField" alignment="CENTER" text="3" prefWidth="50" />
+		</HBox>
+	</bottom>
 </BorderPane>

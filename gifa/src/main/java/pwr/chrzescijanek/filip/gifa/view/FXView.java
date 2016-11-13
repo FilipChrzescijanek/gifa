@@ -10,8 +10,12 @@ import pwr.chrzescijanek.filip.gifa.inject.Injector;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FXView {
+
+	private static final Logger LOGGER = Logger.getLogger(FXView.class.getName());
 
 	private final ObjectProperty< Object > controllerProperty = new SimpleObjectProperty<>();
 	private final URL resource;
@@ -19,23 +23,23 @@ public class FXView {
 	private FXMLLoader fxmlLoader;
 
 	public FXView( String path ) {
-		this.resource = getClass().getResource(path);
+		resource = getClass().getResource(path);
 	}
 
 	public Object getController() {
-		this.initializeFXMLLoader();
-		return this.controllerProperty.get();
+		initializeFXMLLoader();
+		return controllerProperty.get();
 	}
 
 	public Parent getView() {
-		this.initializeFXMLLoader();
+		initializeFXMLLoader();
 		return fxmlLoader.getRoot();
 	}
 
 	private void initializeFXMLLoader() {
-		if ( Objects.isNull(this.fxmlLoader) ) {
-			this.fxmlLoader = this.load(resource);
-			this.controllerProperty.set(this.fxmlLoader.getController());
+		if ( Objects.isNull(fxmlLoader) ) {
+			fxmlLoader = load(resource);
+			controllerProperty.set(fxmlLoader.getController());
 		}
 	}
 
@@ -50,8 +54,10 @@ public class FXView {
 	private void tryToLoad( final FXMLLoader loader ) {
 		try {
 			loader.load();
-		} catch ( IOException ex ) {
-			throw new IllegalStateException("Could not load view: " + loader.getLocation().getPath(), ex);
+		} catch ( IOException e ) {
+			final IllegalStateException ex = new IllegalStateException("Could not load view: " + loader.getLocation().getPath(), e);
+			LOGGER.log( Level.SEVERE, ex.toString(), ex );
+			throw ex;
 		}
 	}
 

@@ -13,12 +13,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class Injector {
 
-	private static final Map< Class< ? >, Object > components = new WeakHashMap<>();
-	private static final Function< Class< ? >, Object > supplier = createInstanceSupplier();
+	private static final Logger LOGGER = Logger.getLogger(Injector.class.getName());
+
+	private static final Map< Class< ? >, Object > COMPONENTS = new WeakHashMap<>();
+	private static final Function< Class< ? >, Object > SUPPLIER = createInstanceSupplier();
 
 	private Injector() { }
 
@@ -29,8 +33,10 @@ public class Injector {
 				checkForTooManyConstructors(c, constructors);
 				if ( constructors.isEmpty() ) return c.newInstance();
 				return createInstance(constructors.get(0));
-			} catch ( InstantiationException | IllegalAccessException | InvocationTargetException ex ) {
-				throw new IllegalStateException("Could not instantiate: " + c, ex);
+			} catch ( InstantiationException | IllegalAccessException | InvocationTargetException e ) {
+				final IllegalStateException ex = new IllegalStateException("Could not instantiate: " + c, e);
+				LOGGER.log( Level.SEVERE, ex.toString(), ex );
+				throw ex;
 			}
 		};
 	}
@@ -42,9 +48,13 @@ public class Injector {
 
 	private static void checkForTooManyConstructors( final Class< ? > c, final List< ? extends Constructor< ? > > constructors ) throws
 			InstantiationException {
-		if ( constructors.size() > 1 ) throw new InstantiationException(
-				String.format("Found more than one constructor annotated with @Inject in %s class", c.getName())
-		);
+		if ( constructors.size() > 1 ) {
+			final InstantiationException ex = new InstantiationException(
+					String.format("Found more than one constructor annotated with @Inject in %s class", c.getName())
+			);
+			LOGGER.log( Level.SEVERE, ex.toString(), ex );
+			throw ex;
+		}
 	}
 
 	private static Object createInstance( final Constructor< ? > constructor ) throws InstantiationException, IllegalAccessException,
@@ -63,22 +73,22 @@ public class Injector {
 
 	public static < T > T instantiate( Class< T > clazz ) {
 		@SuppressWarnings( "unchecked" )
-		T instance = injectFields((T) supplier.apply(clazz));
+		T instance = injectFields((T) SUPPLIER.apply(clazz));
 		return instance;
 	}
 
 	@SuppressWarnings( "unchecked" )
 	public static < T > T instantiateComponent( Class< T > clazz ) {
-		T product = (T) components.get(clazz);
+		T product = (T) COMPONENTS.get(clazz);
 		if ( product == null ) {
-			product = injectFields((T) supplier.apply(clazz));
-			components.put(clazz, product);
+			product = injectFields((T) SUPPLIER.apply(clazz));
+			COMPONENTS.put(clazz, product);
 		}
 		return clazz.cast(product);
 	}
 
 	public static void reset() {
-		components.clear();
+		COMPONENTS.clear();
 	}
 
 	private static < T > T injectFields( final T instance ) {
@@ -112,13 +122,15 @@ public class Injector {
 				field.setAccessible(true);
 				field.set(instance, value);
 				return null;
-			} catch ( IllegalArgumentException | IllegalAccessException ex ) {
-				throw new IllegalStateException(String.format("Could not set value %s to field %s", value, field), ex);
+			} catch ( IllegalArgumentException | IllegalAccessException e ) {
+				final IllegalStateException ex = new IllegalStateException(String.format("Could not set value %s to field %s", value, field), e);
+				LOGGER.log( Level.SEVERE, ex.toString(), ex );
+				throw ex;
 			} finally {
 				try {
 					field.setAccessible(wasAccessible);
 				} catch ( SecurityException e ) {
-					e.printStackTrace();
+					LOGGER.log( Level.SEVERE, e.toString(), e );
 				}
 			}
 		});

@@ -22,7 +22,7 @@ public final class StageUtils {
 
 	private static void setSceneTo( final Stage stage, final FXView fxView ) {
 		final Parent root = fxView.getView();
-		Scene scene = new Scene(root);
+		Scene scene = new Scene(root, 720, 360);
 		stage.setScene(scene);
 	}
 
