@@ -1,7 +1,7 @@
-# gifa
+# gifa-parent
 Global image features analyzer - parent POM project
 
-### How to run it?
+### How to install?
 ```sh
 $ mvn clean install
 ```
