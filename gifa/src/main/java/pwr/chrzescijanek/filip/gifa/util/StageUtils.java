@@ -10,23 +10,32 @@ public final class StageUtils {
 
 	private StageUtils() { }
 
-	public static void prepareStage( final Stage stage, String title, Image icon, FXView view ) {
-		setTitleAndIcon(stage, title, icon);
-		setSceneTo(stage, view);
+	public static void prepareHelpStage(final Stage stage, final Parent root) {
+		setTitleAndIcon(stage, "Help");
+		setScene(stage, root, 960, 540);
 	}
 
-	public static void prepareMainStage(final Stage stage, final String title, final Image icon, final FXView view ) {
-		setTitleAndIcon(stage, title, icon);
-		setMainScene(stage, view);
+	public static void preparePanelStage(final Stage stage, String title, FXView view) {
+		setTitleAndIcon(stage, title);
+		setPanelScene(stage, view);
 	}
 
-	private static void setSceneTo( final Stage stage, final FXView fxView ) {
+	public static void prepareStage(final Stage stage, final String title, final FXView view) {
+		setTitleAndIcon(stage, title);
+		setScene(stage, view);
+	}
+
+	private static void setPanelScene(final Stage stage, final FXView fxView ) {
 		final Parent root = fxView.getView();
-		Scene scene = new Scene(root, 720, 360);
+		setScene(stage, root, 720, 360);
+	}
+
+	private static void setScene(Stage stage, Parent root, int width, int height) {
+		Scene scene = new Scene(root, width, height);
 		stage.setScene(scene);
 	}
 
-	private static void setMainScene(final Stage stage, final FXView fxView ) {
+	private static void setScene(final Stage stage, final FXView fxView ) {
 		final Parent root = fxView.getView();
 		Scene scene = new Scene(root, root.minWidth(-1), root.minHeight(-1));
 		stage.setMinWidth(960);
@@ -34,8 +43,9 @@ public final class StageUtils {
 		stage.setScene(scene);
 	}
 
-	private static void setTitleAndIcon( final Stage stage, final String title, final Image icon ) {
+	private static void setTitleAndIcon(final Stage stage, final String title) {
 		stage.setTitle(title);
+		Image icon = new Image(StageUtils.class.getResourceAsStream("/images/icon-small.png"));
 		stage.getIcons().add(icon);
 	}
 

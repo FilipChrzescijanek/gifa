@@ -46,7 +46,7 @@
                       accelerator="Shortcut+Alt+S"/>
             <MenuItem fx:id="samplesMenuRotateMode" text="_Rotate mode" onAction="#setRotateMode"
                       accelerator="Shortcut+Alt+R"/>
-            <MenuItem fx:id="samplesMenuDeleteSample" text="_Delete selected sample" onAction="#deleteSample"
+            <MenuItem fx:id="samplesMenuDeleteSample" text="Remo_ve sample" onAction="#deleteSample"
                       accelerator="Shortcut+Delete"/>
             <MenuItem fx:id="samplesMenuClearSamples" text="C_lear samples" onAction="#clearSamples"
                       accelerator="Shortcut+Alt+Delete"/>
@@ -58,12 +58,12 @@
         <Menu fx:id="chartsMenu" text="_Charts">
             <MenuItem fx:id="chartsMenuRestoreCharts" text="_Restore charts" onAction="#refresh" accelerator="F5"/>
             <MenuItem fx:id="chartsMenuMergeCharts" text="_Merge charts" onAction="#merge" accelerator="F6"/>
-            <MenuItem fx:id="chartsMenuExtractChart" text="_Extract chart" onAction="#shift" accelerator="F7"/>
+            <MenuItem fx:id="chartsMenuExtractChart" text="_Extract chart" onAction="#extract" accelerator="F7"/>
             <MenuItem fx:id="chartsMenuRemoveCharts" text="Remove _charts" onAction="#delete" accelerator="F8"/>
         </Menu>
         <Menu fx:id="navMenu" text="_Navigate">
             <MenuItem fx:id="navMenuAlign" text="_Align" onAction="#alignTab"
-                      accelerator="Shortcut+Shift+T"/>
+                      accelerator="Shortcut+Shift+A"/>
             <MenuItem fx:id="navMenuSamples" text="_Samples" onAction="#samplesTab" accelerator="Shortcut+Shift+S"/>
             <MenuItem fx:id="navMenuCharts" text="_Charts" onAction="#chartsTab" accelerator="Shortcut+Shift+C"/>
             <MenuItem fx:id="navMenuAllCharts" text="Al_l charts" onAction="#allCharts" accelerator="Shift+Alt+A"/>
@@ -74,7 +74,7 @@
         </Menu>
         <Menu fx:id="runMenu" text="_Run">
             <MenuItem fx:id="runMenuAlignButton" text="_Align images" onAction="#align" accelerator="F2"/>
-            <MenuItem fx:id="runMenuResultsButton" text="_Get results" onAction="#calculateResults" accelerator="F3"/>
+            <MenuItem fx:id="runMenuResultsButton" text="_Calculate results" onAction="#calculateResults" accelerator="F3"/>
         </Menu>
         <Menu fx:id="optionsMenu" text="_Options">
             <Menu fx:id="optionsMenuTheme" text="_Theme">
@@ -129,7 +129,7 @@
                                 <graphic>
                                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
                                                preserveRatio="true">
-                                        <Image url="@../images/undo.png"/>
+                                        <Image url="@../images/rotate-left.png"/>
                                     </ImageView>
                                 </graphic>
                             </Button>
@@ -138,7 +138,7 @@
                                 <graphic>
                                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true"
                                                preserveRatio="true">
-                                        <Image url="@../images/redo.png"/>
+                                        <Image url="@../images/rotate-right.png"/>
                                     </ImageView>
                                 </graphic>
                             </Button>
@@ -248,7 +248,7 @@
                             </rowConstraints>
                             <Label fx:id="alignImageSizeLabel" text=""/>
                             <Button fx:id="alignImagesButton" text="Align" onAction="#align"
-                                    prefWidth="80.0" GridPane.columnIndex="1"/>
+                                    prefWidth="120.0" GridPane.columnIndex="1"/>
                             <ComboBox fx:id="alignScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5"
                                       GridPane.columnIndex="2"/>
                             <Label fx:id="alignMousePositionLabel" text="- : -" GridPane.columnIndex="3"/>
@@ -273,7 +273,7 @@
                             <graphic>
                                 <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
                                            preserveRatio="true">
-                                    <Image url="@../images/plus.png"/>
+                                    <Image url="@../images/add.png"/>
                                 </ImageView>
                             </graphic>
                             <HBox.margin>
@@ -284,7 +284,7 @@
                             <graphic>
                                 <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
                                            preserveRatio="true">
-                                    <Image url="@../images/minus.png"/>
+                                    <Image url="@../images/delete.png"/>
                                 </ImageView>
                             </graphic>
                             <HBox.margin>
@@ -346,7 +346,7 @@
                                 <graphic>
                                     <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
                                                preserveRatio="true">
-                                        <Image url="@../images/minus.png"/>
+                                        <Image url="@../images/delete.png"/>
                                     </ImageView>
                                 </graphic>
                             </Button>
@@ -419,8 +419,8 @@
                                 <RowConstraints minHeight="40.0"/>
                             </rowConstraints>
                             <Label fx:id="samplesImageSizeLabel" text=""/>
-                            <Button fx:id="resultsButton" text="Get results" onAction="#calculateResults"
-                                    prefWidth="80.0" GridPane.columnIndex="1"/>
+                            <Button fx:id="resultsButton" text="Calculate results" onAction="#calculateResults"
+                                    prefWidth="120.0" GridPane.columnIndex="1"/>
                             <ComboBox fx:id="samplesScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5"
                                       GridPane.columnIndex="2"/>
                             <Label fx:id="samplesMousePositionLabel" text="- : -" GridPane.columnIndex="3"/>
@@ -574,7 +574,7 @@
                                 <graphic>
                                     <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
                                                preserveRatio="true">
-                                        <Image url="@../images/refresh.png"/>
+                                        <Image url="@../images/restore.png"/>
                                     </ImageView>
                                 </graphic>
                                 <HBox.margin>
@@ -592,11 +592,11 @@
                                     <Insets right="5.0"/>
                                 </HBox.margin>
                             </Button>
-                            <Button fx:id="chartsShiftButton" onAction="#shift" alignment="CENTER">
+                            <Button fx:id="chartsShiftButton" onAction="#extract" alignment="CENTER">
                                 <graphic>
                                     <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
                                                preserveRatio="true">
-                                        <Image url="@../images/shift.png"/>
+                                        <Image url="@../images/extract.png"/>
                                     </ImageView>
                                 </graphic>
                                 <HBox.margin>

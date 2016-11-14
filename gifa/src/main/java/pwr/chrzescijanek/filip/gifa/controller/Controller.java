@@ -27,6 +27,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.web.WebView;
 import javafx.stage.*;
 import javafx.util.Pair;
 import org.opencv.core.*;
@@ -44,6 +45,7 @@ import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageToAlignData;
 import pwr.chrzescijanek.filip.gifa.model.sample.Vertex;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
+import pwr.chrzescijanek.filip.gifa.util.StageUtils;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -1703,7 +1705,7 @@ public class Controller extends BaseController implements Initializable {
     }
 
     @FXML
-    void shift() {
+    void extract() {
         BarChart<String, Number> chart = (BarChart<String, Number>) getSelectedCharts().get(0);
         final Integer index = chartsSampleComboBox.getValue() - 1;
         populateNewCharts(chart, index);
@@ -2575,7 +2577,7 @@ public class Controller extends BaseController implements Initializable {
     private void setChartsControlsTooltips() {
         chartsRefreshButton.setTooltip(new Tooltip("Restore charts"));
         chartsMergeButton.setTooltip(new Tooltip("Merge charts"));
-        chartsShiftButton.setTooltip(new Tooltip("Extract charts"));
+        chartsShiftButton.setTooltip(new Tooltip("Extract chart"));
         chartsDeleteButton.setTooltip(new Tooltip("Remove charts"));
     }
 
@@ -3112,7 +3114,11 @@ public class Controller extends BaseController implements Initializable {
 
     @FXML
     void help() {
-
+        final Stage stage = new Stage();
+        final WebView helpView = getHelpView();
+        StageUtils.prepareHelpStage(stage, helpView);
+        injectStylesheets(helpView);
+        stage.show();
     }
 
 }

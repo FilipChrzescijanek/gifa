@@ -40,9 +40,8 @@ public class Main extends Application {
 
 	@Override
 	public void start( final Stage primaryStage ) throws Exception {
-		Image icon = new Image(getClass().getResourceAsStream("/images/icon-small.png"));
 		FXView fxView = new FXView("/static/gifa.fxml");
-		StageUtils.prepareMainStage(primaryStage, "gifa", icon, fxView);
+		StageUtils.prepareStage(primaryStage, "gifa", fxView);
 		primaryStage.setOnCloseRequest(event -> Platform.exit());
 		primaryStage.show();
 	}

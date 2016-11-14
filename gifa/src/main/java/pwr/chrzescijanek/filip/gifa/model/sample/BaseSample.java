@@ -130,8 +130,7 @@ public abstract class BaseSample extends Ellipse {
 	}
 
 	protected void showStage( final Stage newStage, final FXView fxView, final PanelController controller, final String title ) {
-		Image icon = new Image(getClass().getResourceAsStream("/images/icon-small.png"));
-		StageUtils.prepareStage(newStage, title, icon, fxView);
+		StageUtils.preparePanelStage(newStage, title, fxView);
 		controller.placeImages();
 		newStage.show();
 	}
