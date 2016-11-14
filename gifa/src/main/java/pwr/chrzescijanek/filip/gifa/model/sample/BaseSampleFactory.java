@@ -1,7 +1,7 @@
 package pwr.chrzescijanek.filip.gifa.model.sample;
 
 import javafx.scene.image.Image;
-import pwr.chrzescijanek.filip.gifa.controller.SharedState;
+import pwr.chrzescijanek.filip.gifa.util.SharedState;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageToAlignData;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
 import pwr.chrzescijanek.filip.gifa.model.panel.PanelViewFactory;

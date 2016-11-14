@@ -12,7 +12,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.stage.Stage;
 import pwr.chrzescijanek.filip.gifa.controller.PanelController;
-import pwr.chrzescijanek.filip.gifa.controller.SharedState;
+import pwr.chrzescijanek.filip.gifa.util.SharedState;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
 import pwr.chrzescijanek.filip.gifa.model.panel.PanelView;
 import pwr.chrzescijanek.filip.gifa.model.panel.PanelViewFactory;

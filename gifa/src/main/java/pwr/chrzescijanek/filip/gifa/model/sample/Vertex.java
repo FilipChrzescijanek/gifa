@@ -12,7 +12,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 import pwr.chrzescijanek.filip.gifa.controller.PanelController;
-import pwr.chrzescijanek.filip.gifa.controller.SharedState;
+import pwr.chrzescijanek.filip.gifa.util.SharedState;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageToAlignData;
 import pwr.chrzescijanek.filip.gifa.model.image.Triangle;
 import pwr.chrzescijanek.filip.gifa.model.panel.PanelViewFactory;

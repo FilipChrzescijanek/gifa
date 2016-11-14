@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.controller;
+package pwr.chrzescijanek.filip.gifa.util;
 
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;

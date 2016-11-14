@@ -7,7 +7,7 @@ import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import pwr.chrzescijanek.filip.gifa.controller.PanelController;
-import pwr.chrzescijanek.filip.gifa.controller.SharedState;
+import pwr.chrzescijanek.filip.gifa.util.SharedState;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageData;
 import pwr.chrzescijanek.filip.gifa.model.panel.PanelView;
 import pwr.chrzescijanek.filip.gifa.model.panel.PanelViewFactory;

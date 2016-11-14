@@ -10,6 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import pwr.chrzescijanek.filip.gifa.model.panel.PanelView;
+import pwr.chrzescijanek.filip.gifa.util.SharedState;
 
 import javax.inject.Inject;
 import java.net.URL;

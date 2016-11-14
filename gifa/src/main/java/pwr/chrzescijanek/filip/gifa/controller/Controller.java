@@ -14,7 +14,6 @@ import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.chart.*;
@@ -44,6 +43,7 @@ import pwr.chrzescijanek.filip.gifa.model.sample.Sample;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageToAlignData;
 import pwr.chrzescijanek.filip.gifa.model.sample.Vertex;
+import pwr.chrzescijanek.filip.gifa.util.SharedState;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -61,6 +61,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.opencv.imgproc.Imgproc.*;
+import static pwr.chrzescijanek.filip.gifa.controller.ControllerUtils.*;
 
 public class Controller extends BaseController implements Initializable {
 
@@ -1293,20 +1294,10 @@ public class Controller extends BaseController implements Initializable {
 
     @FXML
     void about() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION,
-                "Global image features analyzer\n\nCopyright © 2016 Filip Chrześcijanek", ButtonType.OK);
+        Alert alert = getAboutDialog();
         DialogPane dialogPane = alert.getDialogPane();
         injectStylesheets(dialogPane);
-        setContent(alert);
         alert.show();
-    }
-
-    private void setContent(Alert alert) {
-        alert.setTitle("About");
-        alert.setHeaderText("gifa®");
-        alert.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/images/icon-big.png"))));
-        ((Stage) alert.getDialogPane().getScene().getWindow()).getIcons()
-                .add(new Image(getClass().getResourceAsStream("/images/icon-small.png")));
     }
 
     @FXML
@@ -1380,7 +1371,7 @@ public class Controller extends BaseController implements Initializable {
 
     @FXML
     void exportToCsv() {
-        File csvFile = getFile();
+        File csvFile = getFile(root.getScene().getWindow());
         if (csvFile != null) {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
                 bw.write(createCsvContents());
@@ -1390,19 +1381,11 @@ public class Controller extends BaseController implements Initializable {
         }
     }
 
-    private void showAlert(final String contentText) {
-        Alert alert = new Alert(Alert.AlertType.ERROR,
-                contentText, ButtonType.OK);
+    private void showAlert(final String content) {
+        Alert alert = getErrorAlert(content);
         DialogPane dialogPane = alert.getDialogPane();
         injectStylesheets(dialogPane);
         alert.showAndWait();
-    }
-
-    private File getFile() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Export results to CSV file");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Comma-separated values", "*.csv"));
-        return fileChooser.showSaveDialog(root.getScene().getWindow());
     }
 
     private String createCsvContents() {
@@ -1427,18 +1410,18 @@ public class Controller extends BaseController implements Initializable {
 
     private String appendSampleScores(TreeSet<String> functions, Result result, int sample) {
         String csvContents = "";
-        Map<String, UnmodifiableArrayList<Double>> results = result.getScores();
+        Map<String, UnmodifiableArrayList<Double>> scores = result.getScores();
         final List<String> images = result.getImageNames();
         for (int i = 0; i < images.size(); i++)
-            csvContents += appendSampleScores(functions, results, sample, images.get(i), i);
+            csvContents += appendSampleScores(functions, scores, sample, images.get(i), i);
         return csvContents;
     }
 
-    private String appendSampleScores(TreeSet<String> functions, Map<String, UnmodifiableArrayList<Double>> results,
+    private String appendSampleScores(TreeSet<String> functions, Map<String, UnmodifiableArrayList<Double>> scores,
                                       int sample, String image, int i) {
         String csvContents = "\r\n" + sample + ",\"" + image + "\"";
         for (String s : functions) {
-            final double[] doubles = results.get(s).stream().mapToDouble(Double::doubleValue).toArray();
+            final double[] doubles = scores.get(s).stream().mapToDouble(Double::doubleValue).toArray();
             if (doubles == null)
                 csvContents += ",";
             else
@@ -1588,7 +1571,7 @@ public class Controller extends BaseController implements Initializable {
 
     private ColorPicker initializeColorPicker(List<Color> defaultColors, LineChart<String, Number> chart, Series<String, Number> series, int index) {
         final ColorPicker picker = new ColorPicker();
-        picker.setMaxWidth(15);
+        picker.setMaxWidth(12);
         picker.valueProperty().addListener((observable, oldValue, newValue) -> {
             String web = getWebColor(newValue);
             updateColors(chart, series, newValue, web);
@@ -1596,14 +1579,6 @@ public class Controller extends BaseController implements Initializable {
         picker.setValue(summarySeriesColors.get(chart.getTitle() + "/" + series.getName()) == null ?
                 defaultColors.get(index % defaultColors.size()) : summarySeriesColors.get(chart.getTitle() + "/" + series.getName()));
         return picker;
-    }
-
-    private String getWebColor(Color newValue) {
-        return String.format("#%02X%02X%02X%02X",
-                (int) (newValue.getRed() * 255),
-                (int) (newValue.getGreen() * 255),
-                (int) (newValue.getBlue() * 255),
-                (int) (newValue.getOpacity() * 255));
     }
 
     private void updateColors(LineChart<String, Number> chart, Series<String, Number> s, Color newValue, String web) {
@@ -1651,7 +1626,7 @@ public class Controller extends BaseController implements Initializable {
 
     private ColorPicker instantiateColorPicker(List<Color> defaultColors, int chartIndex, List<BarChart<String, Number>> charts, int seriesIndex, Series<? extends String, ? extends Number> series) {
         final ColorPicker picker = new ColorPicker();
-        picker.setMaxWidth(15);
+        picker.setMaxWidth(12);
         picker.valueProperty().addListener((observable, oldValue, newValue) -> {
             String web = getWebColor(newValue);
             updateColors(chartIndex, charts, series, newValue, web);
@@ -1849,12 +1824,6 @@ public class Controller extends BaseController implements Initializable {
         startRunnable(task);
     }
 
-    private void startRunnable(final Task<? extends Void> task) {
-        Thread th = new Thread(task);
-        th.setDaemon(true);
-        th.start();
-    }
-
     private Task<? extends Void> createCalculateResultsTask(final Stage dialog) {
         return new Task<Void>() {
             @Override
@@ -1912,20 +1881,6 @@ public class Controller extends BaseController implements Initializable {
         return images;
     }
 
-    private void prepareImage(BaseSample sample, int index, Mat[] images, SamplesImageData samplesImageData) {
-        final int x = (int) sample.sampleArea.getX();
-        final int y = (int) sample.sampleArea.getY();
-        int width = (int) sample.sampleArea.getWidth();
-        int height = (int) sample.sampleArea.getHeight();
-        images[index] = samplesImageData.imageData
-                .submat(new Rect(x, y, width, height)).clone();
-        Mat zeros = Mat.zeros(images[index].rows(), images[index].cols(), images[index].type());
-        ellipse(zeros, new Point(sample.getCenterX() - x, sample.getCenterY() - y), new Size(sample.getRadiusX(), sample.getRadiusY()), sample.getRotate(), 0.0, 360.0,
-                new Scalar(255,
-                        255, 255, 255), Core.FILLED);
-        Core.bitwise_and(images[index], zeros, images[index]);
-    }
-
     private void createView(int index, Mat image, String key) {
         final ImageView view = new ImageView(ImageUtils.createImage(image));
         view.setPreserveRatio(true);
@@ -1968,19 +1923,12 @@ public class Controller extends BaseController implements Initializable {
 
     @FXML
     void loadImages() {
-        List<File> selectedFiles = getFiles();
+        List<File> selectedFiles = getFiles(root.getScene().getWindow());
         if (selectedFiles != null) {
             final Stage dialog = showPopup("Loading images");
             Task<? extends Void> task = createLoadImagesTask(dialog, selectedFiles);
             startRunnable(task);
         }
-    }
-
-    private List<File> getFiles() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Load images");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.bmp", "*.tif"));
-        return fileChooser.showOpenMultipleDialog(root.getScene().getWindow());
     }
 
     private Task<? extends Void> createLoadImagesTask(final Stage dialog, final List<File> selectedFiles) {
@@ -2003,7 +1951,7 @@ public class Controller extends BaseController implements Initializable {
                 addNewImage(filePath, image, fxImage);
             } catch (IOException | CvException e) {
                 handleException(dialog, e,
-                        "Loading failed!\nImages might be corrupted or you do not have sufficient read permissions.");
+                        "Loading failed!\nImages might be corrupted, paths may contain non-ASCII symbols or you do not have sufficient read permissions.");
                 break;
             }
         }
@@ -2035,13 +1983,13 @@ public class Controller extends BaseController implements Initializable {
 
     private void handleException(Exception e, String alert) {
         LOGGER.log( Level.SEVERE, e.toString(), e );
-        showAlert(alert);
+        Platform.runLater(() -> showAlert(alert));
     }
 
     private void handleException(Stage dialog, Exception e, String alert) {
         Platform.runLater(dialog::close);
         LOGGER.log( Level.SEVERE, e.toString(), e );
-        showAlert(alert);
+        Platform.runLater(() -> showAlert(alert));
     }
 
     private void showImage(Stage dialog) {
@@ -2572,7 +2520,7 @@ public class Controller extends BaseController implements Initializable {
 
     private void addColumnsTextFieldListener() {
         chartsColumnsTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d+"))
+            if (!newValue.matches("[1-9]\\d*"))
                 chartsColumnsTextField.setText(oldValue);
             else {
                 if (bySampleTab.isSelected() && chartsBySampleRadioButton.isSelected())
@@ -2718,7 +2666,7 @@ public class Controller extends BaseController implements Initializable {
 
     private void setComboBoxListener(ImageView imageView, ComboBox<String> scaleCombo) {
         scaleCombo.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d+%"))
+            if (!newValue.matches("[1-9]\\d*%"))
                 scaleCombo.setValue(oldValue);
             else
                 imageView.setScaleX(Double.parseDouble(newValue.substring(0, newValue.length() - 1)) / 100.0);
@@ -3023,31 +2971,13 @@ public class Controller extends BaseController implements Initializable {
     }
 
     private Stage showPopup(String info) {
-        final Stage dialog = initDialog();
-        final HBox box = setContent(info);
+        final Stage dialog = initDialog(root.getScene().getWindow());
+        final HBox box = getHBoxWithLabel(info);
         Scene scene = new Scene(box);
         injectStylesheets(box);
         dialog.setScene(scene);
         dialog.show();
         return dialog;
-    }
-
-    private Stage initDialog() {
-        final Stage dialog = new Stage();
-        dialog.initOwner(root.getScene().getWindow());
-        dialog.initStyle(StageStyle.UNDECORATED);
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        return dialog;
-    }
-
-    private HBox setContent(String info) {
-        final Label label = new Label(info);
-        label.setAlignment(Pos.CENTER);
-        final HBox box = new HBox(label, new ProgressIndicator(-1.0));
-        box.setSpacing(30.0);
-        box.setAlignment(Pos.CENTER);
-        box.setPadding(new Insets(25));
-        return box;
     }
 
     private void align(final Stage dialog) {
@@ -3158,19 +3088,13 @@ public class Controller extends BaseController implements Initializable {
 
     @FXML
     void exportToPng() {
-        File selectedDirectory = getDirectory();
+        File selectedDirectory = getDirectory(root.getScene().getWindow());
         if (selectedDirectory != null) {
             if (selectedDirectory.canWrite())
                 writeImages(selectedDirectory);
             else
-                showAlert("Save failed! Check your write permissions.");
+                Platform.runLater(() -> showAlert("Save failed! Check your write permissions."));
         }
-    }
-
-    private File getDirectory() {
-        DirectoryChooser chooser = new DirectoryChooser();
-        chooser.setTitle("Choose directory");
-        return chooser.showDialog(root.getScene().getWindow());
     }
 
     private void writeImages(File selectedDirectory) {
@@ -3184,13 +3108,6 @@ public class Controller extends BaseController implements Initializable {
                 }
             }
         }
-    }
-
-    private void writeImage(File selectedDirectory, List<Pair<String, ImageView>> currentSamples, int i, int j) throws IOException {
-        BufferedImage image = SwingFXUtils.fromFXImage(currentSamples.get(j).getValue().getImage(), null);
-        ImageIO.write(image, "png",
-                new File(selectedDirectory.getCanonicalPath()
-                        + File.separator + "sample#" + (i + 1) + "_" + currentSamples.get(j).getKey() + ".png"));
     }
 
     @FXML
