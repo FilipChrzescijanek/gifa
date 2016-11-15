@@ -465,7 +465,7 @@ public final class ImageUtils {
      */
     public static Mat otsuThreshold(final Mat image) {
         final Mat result = new Mat();
-        threshold(image, result, 0, 255, THRESH_BINARY | THRESH_OTSU);
+        threshold(image, result, 0, 255, THRESH_OTSU);
         return result;
     }
 

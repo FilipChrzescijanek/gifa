@@ -1772,6 +1772,7 @@ public class Controller extends BaseController implements Initializable {
         return alignLeftVBox;
     }
 
+
     //fields
     private static final Logger LOGGER = Logger.getLogger(Controller.class.getName());
 
@@ -1789,23 +1790,34 @@ public class Controller extends BaseController implements Initializable {
     private final List<List<Pair<String, ImageView>>> samples = new ArrayList<>();
     private final Map<Object, String> columns = new HashMap<>();
 
-    private final DataGeneratorFactory generatorFactory;
-    private final BaseSampleFactory baseSampleFactory;
-    private final ImageDataFactory imageDataFactory;
+    /**
+     * Data generators factory.
+     */
+    protected final DataGeneratorFactory dataGeneratorFactory;
+
+    /**
+     * Samples factory.
+     */
+    protected final BaseSampleFactory baseSampleFactory;
+
+    /**
+     * Image data factory.
+     */
+    protected final ImageDataFactory imageDataFactory;
 
     /**
      * Constructs new Controller with given shared state, data generators factory, samples factory
-     * and images data factory.
+     * and image data factory.
      * @param state shared state
-     * @param generatorFactory data generators factory
+     * @param dataGeneratorFactory data generators factory
      * @param baseSampleFactory samples factory
-     * @param imageDataFactory images data factory
+     * @param imageDataFactory image data factory
      */
     @Inject
-    public Controller(final SharedState state, final DataGeneratorFactory generatorFactory,
+    public Controller(final SharedState state, final DataGeneratorFactory dataGeneratorFactory,
                       final BaseSampleFactory baseSampleFactory, final ImageDataFactory imageDataFactory) {
         super(state);
-        this.generatorFactory = generatorFactory;
+        this.dataGeneratorFactory = dataGeneratorFactory;
         this.baseSampleFactory = baseSampleFactory;
         this.imageDataFactory = imageDataFactory;
     }
@@ -1879,7 +1891,7 @@ public class Controller extends BaseController implements Initializable {
         for (Node chb : featuresVBox.getChildren()) {
             ((CheckBox) chb).setSelected(false);
         }
-        generatorFactory.clearChosenFunctions();
+        dataGeneratorFactory.clearChosenFunctions();
     }
 
     @FXML
@@ -2186,7 +2198,7 @@ public class Controller extends BaseController implements Initializable {
         for (Node chb : featuresVBox.getChildren()) {
             ((CheckBox) chb).setSelected(true);
         }
-        generatorFactory.chooseAllAvailableFunctions();
+        dataGeneratorFactory.chooseAllAvailableFunctions();
     }
 
     @FXML
@@ -2385,7 +2397,7 @@ public class Controller extends BaseController implements Initializable {
             samples.add(new ArrayList<>());
             BasicSample sample = img.samples.get(i);
             final Mat[] images = prepareImages(i, sample);
-            final DataGenerator generator = generatorFactory.createGenerator();
+            final DataGenerator generator = dataGeneratorFactory.createGenerator();
             final Result result = generator.generateData(ImageUtils.getImagesCopy(images), samplesImageList.getItems());
             addSamplesFromPreprocessedImages(i, generator);
             saveResults(i, result);
@@ -3051,14 +3063,14 @@ public class Controller extends BaseController implements Initializable {
     }
 
     private void createCheckBoxes() {
-        for (String function : generatorFactory.getAvailableFunctionsNames()) {
+        for (String function : dataGeneratorFactory.getAvailableFunctionsNames()) {
             final CheckBox checkBox = new CheckBox(function);
             featuresVBox.getChildren().add(checkBox);
             checkBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue)
-                    generatorFactory.chooseFunction(function);
+                    dataGeneratorFactory.chooseFunction(function);
                 else
-                    generatorFactory.deselectFunction(function);
+                    dataGeneratorFactory.deselectFunction(function);
             });
             checkBox.setSelected(true);
         }

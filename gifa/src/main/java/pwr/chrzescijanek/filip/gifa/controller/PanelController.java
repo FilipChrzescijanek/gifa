@@ -115,7 +115,11 @@ public class PanelController extends BaseController implements Initializable {
 
 
     //fields
-    private List<? extends PanelView> imageViews = null;
+
+    /**
+     * Panel views list.
+     */
+    protected List<? extends PanelView> panelViews = null;
 
     //setters
 
@@ -124,12 +128,12 @@ public class PanelController extends BaseController implements Initializable {
      * @param panelViews panel views
      */
     public void setPanelViews(final List<? extends PanelView> panelViews) {
-        this.imageViews = panelViews;
+        this.panelViews = panelViews;
         addBoundsChangedListeners();
     }
 
     private void addBoundsChangedListeners() {
-        for (ImageView iv : this.imageViews) {
+        for (ImageView iv : this.panelViews) {
             bindSize(iv, panelGridScrollPane);
         }
     }
@@ -155,8 +159,8 @@ public class PanelController extends BaseController implements Initializable {
      * Refreshes panel.
      */
     public void refresh() {
-        calculateColumnsAndRows(panelColumnsTextField, imageViews);
-        placeNodes(imageViews, panelGrid);
+        calculateColumnsAndRows(panelColumnsTextField, panelViews);
+        placeNodes(panelViews, panelGrid);
     }
 
     @Override
