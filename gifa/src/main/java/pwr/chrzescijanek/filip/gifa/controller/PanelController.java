@@ -161,14 +161,14 @@ public class PanelController extends BaseController implements Initializable {
 		assert root != null : "fx:id=\"root\" was not injected: check your FXML file 'gifa-panel.fxml'.";
 		assert panelHBox != null : "fx:id=\"panelHBox\" was not injected: check your FXML file 'gifa-panel.fxml'.";
 		assert panelInfo != null : "fx:id=\"panelInfo\" was not injected: check your FXML file 'gifa-panel.fxml'.";
-		assert panelControls != null : "fx:id=\"panelControls\" was not injected: check your FXML file 'gifa-panel"
-		                               + ".fxml'.";
-		assert panelColumnsLabel != null : "fx:id=\"panelColumnsLabel\" was not injected: check your FXML file "
-		                                   + "'gifa-panel.fxml'.";
-		assert panelColumnsTextField != null : "fx:id=\"panelColumnsTextField\" was not injected: check your FXML file"
-		                                       + " 'gifa-panel.fxml'.";
-		assert panelGridScrollPane != null : "fx:id=\"panelGridScrollPane\" was not injected: check your FXML file "
-		                                     + "'gifa-panel.fxml'.";
+		assert panelControls != null :
+				"fx:id=\"panelControls\" was not injected: check your FXML file 'gifa-panel.fxml'.";
+		assert panelColumnsLabel != null :
+				"fx:id=\"panelColumnsLabel\" was not injected: check your FXML file 'gifa-panel.fxml'.";
+		assert panelColumnsTextField != null :
+				"fx:id=\"panelColumnsTextField\" was not injected: check your FXML file 'gifa-panel.fxml'.";
+		assert panelGridScrollPane != null :
+				"fx:id=\"panelGridScrollPane\" was not injected: check your FXML file 'gifa-panel.fxml'.";
 		assert panelGrid != null : "fx:id=\"panelGrid\" was not injected: check your FXML file 'gifa-panel.fxml'.";
 
 		this.location = location;
