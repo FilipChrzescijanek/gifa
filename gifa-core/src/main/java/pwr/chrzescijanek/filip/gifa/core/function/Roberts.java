@@ -7,7 +7,15 @@ import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
 
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
 
+/**
+ * Provides method to calculate TBA.
+ */
 public class Roberts implements EdgeEvaluationFunction {
+
+    /**
+     * Default constructor.
+     */
+    public Roberts() { }
 
     @Override
     public Mat[] preprocess(final Mat[] images) {

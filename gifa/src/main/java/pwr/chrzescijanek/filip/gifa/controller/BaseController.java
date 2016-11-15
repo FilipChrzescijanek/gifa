@@ -18,18 +18,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+/**
+ * Base class for controllers.
+ */
 public class BaseController {
 
-    public static final String THEME_PREFERENCE_KEY = "gifa.theme";
-    public static final String THEME_DARK = "/css/theme-dark.css";
-    public static final String THEME_LIGHT = "/css/theme-light.css";
+    private static final String THEME_PREFERENCE_KEY = "gifa.theme";
+    private static final String THEME_DARK = "/css/theme-dark.css";
+    private static final String THEME_LIGHT = "/css/theme-light.css";
 
+    /**
+     * Controller theme.
+     */
     protected static final StringProperty theme = new SimpleStringProperty(BaseController.THEME_LIGHT);
 
+    /**
+     * Panel columns.
+     */
     protected final IntegerProperty noOfColumns = new SimpleIntegerProperty(1);
+
+    /**
+     * Panel rows.
+     */
     protected final IntegerProperty noOfRows = new SimpleIntegerProperty(1);
+
+    /**
+     * Shared state.
+     */
     protected final SharedState state;
 
+    /**
+     * Constructs new BaseController with given shared state.
+     * @param state shared state
+     */
     protected BaseController(final SharedState state) {
         this.state = state;
         loadTheme();
@@ -44,21 +65,37 @@ public class BaseController {
             theme.set(BaseController.THEME_DARK);
     }
 
+    /**
+     * Binds given panel view size to panel cell size, calculated based on given scroll pane.
+     * @param view panel view
+     * @param gridScrollPane panel's scroll pane containing grid pane
+     */
     protected void bindSize(ImageView view, ScrollPane gridScrollPane) {
         bindSize(view, gridScrollPane, 1);
     }
 
+    /**
+     * Binds given panel view size to panel cell size, calculated based on given scroll pane,
+     * using scale (the bigger the scale, the lower the single cell height).
+     * @param view panel view
+     * @param gridScrollPane panel's scroll pane containing grid pane
+     * @param scale alignment scale
+     */
     protected void bindSize(ImageView view, ScrollPane gridScrollPane, double scale) {
         view.fitWidthProperty().bind((gridScrollPane.widthProperty().subtract(30).subtract((noOfColumns.subtract(1)).multiply(10)))
                 .divide(noOfColumns));
         view.fitHeightProperty().bind(gridScrollPane.heightProperty().subtract(new SimpleDoubleProperty(scale).multiply(20)));
     }
 
-    protected void injectStylesheets(Parent node) {
-        setTheme(node);
+    /**
+     * Injects current theme stylesheets to given parent and adds on theme changed listener.
+     * @param parent parent to be styled
+     */
+    protected void injectStylesheets(Parent parent) {
+        setTheme(parent);
         theme.addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !newValue.isEmpty())
-                setTheme(node);
+                setTheme(parent);
         });
     }
 
@@ -67,6 +104,40 @@ public class BaseController {
         node.getStylesheets().add(theme.get());
     }
 
+    /**
+     * Sets dark theme.
+     */
+    protected void setDarkTheme() {
+        theme.set(THEME_DARK);
+    }
+
+    /**
+     * Sets light theme.
+     */
+    protected void setLightTheme() {
+        theme.set(THEME_LIGHT);
+    }
+
+    /**
+     * @return true if light theme is selected; false otherwise
+     */
+    protected boolean isLightThemeSelected() {
+        return theme.get().equals(THEME_LIGHT);
+    }
+
+    /**
+     * @return true if dark theme is selected; false otherwise
+     */
+    protected boolean isDarkThemeSelected() {
+        return theme.get().equals(THEME_DARK);
+    }
+
+    /**
+     * Calculates the number of panel columns and rows based on given number of max. columns
+     * and nodes that need to placed onto the panel.
+     * @param maxColumns max. number of columns
+     * @param nodes nodes that need to be placed onto the panel
+     */
     protected void calculateColumnsAndRows(TextField maxColumns, List<? extends Node> nodes) {
         noOfColumns.set(Math.min(Integer.parseInt(maxColumns.getText()), nodes.size()));
         if (noOfColumns.get() > 0)
@@ -75,6 +146,11 @@ public class BaseController {
             noOfRows.set(0);
     }
 
+    /**
+     * Places given nodes into given panel grid.
+     * @param nodes nodes to be placed
+     * @param grid panel grid
+     */
     protected void placeNodes(List<? extends Node> nodes, GridPane grid) {
         if (nodes != null && !nodes.isEmpty()) {
             resetGrid(grid);

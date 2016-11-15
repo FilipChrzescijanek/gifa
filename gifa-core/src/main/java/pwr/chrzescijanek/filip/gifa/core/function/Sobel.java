@@ -7,10 +7,17 @@ import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
 
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
 
+/**
+ * Provides method to calculate TBA.
+ */
 public class Sobel implements EdgeEvaluationFunction {
 
     private int kernelSize;
 
+    /**
+     * Constructs new Sobel with given kernel size.
+     * @param kernelSize Sobel derivative kernel size
+     */
     public Sobel(final int kernelSize) {
         this.kernelSize = kernelSize;
     }

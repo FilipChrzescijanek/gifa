@@ -17,6 +17,9 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Panel controller class.
+ */
 public class PanelController extends BaseController implements Initializable {
 
     //FXML fields
@@ -54,34 +57,58 @@ public class PanelController extends BaseController implements Initializable {
 
     //FXML fields getters
 
+    /**
+     * @return root view
+     */
     public BorderPane getRoot() {
         return root;
     }
 
+    /**
+     * @return panel label horizontal box
+     */
     public HBox getPanelHBox() {
         return panelHBox;
     }
 
+    /**
+     * @return panel info label
+     */
     public Label getPanelInfo() {
         return panelInfo;
     }
 
+    /**
+     * @return panel controls horizontal box
+     */
     public HBox getPanelControls() {
         return panelControls;
     }
 
+    /**
+     * @return max. columns label
+     */
     public Label getPanelColumnsLabel() {
         return panelColumnsLabel;
     }
 
+    /**
+     * @return max. columns text field
+     */
     public TextField getPanelColumnsTextField() {
         return panelColumnsTextField;
     }
 
+    /**
+     * @return panel's scroll pane containing grid pane
+     */
     public ScrollPane getPanelGridScrollPane() {
         return panelGridScrollPane;
     }
 
+    /**
+     * @return panel's grid pane
+     */
     public GridPane getPanelGrid() {
         return panelGrid;
     }
@@ -92,8 +119,12 @@ public class PanelController extends BaseController implements Initializable {
 
     //setters
 
-    public void setImageViews(final List<? extends PanelView> imageViews) {
-        this.imageViews = imageViews;
+    /**
+     * Sets panel views.
+     * @param panelViews panel views
+     */
+    public void setPanelViews(final List<? extends PanelView> panelViews) {
+        this.imageViews = panelViews;
         addBoundsChangedListeners();
     }
 
@@ -103,17 +134,27 @@ public class PanelController extends BaseController implements Initializable {
         }
     }
 
+    /**
+     * Sets info label.
+     * @param info label content
+     */
     public void setInfo(String info) {
         panelInfo.setText(info);
     }
 
-
+    /**
+     * Constructs new PanelController with given shared state.
+     * @param state shared state
+     */
     @Inject
     public PanelController(final SharedState state) {
         super(state);
     }
 
-    public void placeImages() {
+    /**
+     * Refreshes panel.
+     */
+    public void refresh() {
         calculateColumnsAndRows(panelColumnsTextField, imageViews);
         placeNodes(imageViews, panelGrid);
     }
@@ -142,7 +183,7 @@ public class PanelController extends BaseController implements Initializable {
             if (!newValue.matches("\\d+"))
                 panelColumnsTextField.setText(oldValue);
             else
-                placeImages();
+                refresh();
         });
     }
 

@@ -3,8 +3,16 @@ package pwr.chrzescijanek.filip.gifa.model.panel;
 import javafx.scene.image.Image;
 import pwr.chrzescijanek.filip.gifa.model.sample.Sample;
 
+/**
+ * Represents single panel view that shows user-defined sample.
+ */
 public class SamplePanelView extends PanelView {
 
+	/**
+	 * Constructs a new SamplePanelView given JavaFX image and sample.
+	 * @param image JavaFX image
+	 * @param sample user-defined sample that will be shown
+     */
 	protected SamplePanelView( final Image image, final Sample sample ) {
 		super(image, sample);
 	}

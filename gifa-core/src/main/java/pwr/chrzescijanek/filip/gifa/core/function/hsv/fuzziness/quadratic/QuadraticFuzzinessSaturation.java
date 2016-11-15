@@ -7,7 +7,16 @@ import static org.opencv.imgproc.Imgproc.COLOR_BGR2HSV_FULL;
 import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateQuadraticFuzzinesses;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
 
+/**
+ * Provides method to calculate saturation quadratic fuzziness.
+ */
 public final class QuadraticFuzzinessSaturation implements EvaluationFunction {
+
+    /**
+     * Default constructor.
+     */
+    public QuadraticFuzzinessSaturation() {
+    }
 
     @Override
     public double[] evaluate(final Mat[] images) {

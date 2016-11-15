@@ -9,19 +9,33 @@ import org.opencv.core.Mat;
 import pwr.chrzescijanek.filip.gifa.model.sample.BaseSampleFactory;
 import pwr.chrzescijanek.filip.gifa.model.sample.Vertex;
 
+/**
+ * Represents image that will be aligned.
+ */
 public class ImageToAlignData extends ImageData {
 
-	protected static final String STROKE_STYLE = "-fx-stroke-type: inside;\n" +
-			"    -fx-stroke-width: 2;\n" +
-			"    -fx-stroke-dash-array: 12 2 4 2;\n" +
-			"    -fx-stroke-dash-offset: 6;\n" +
-			"    -fx-stroke-line-cap: butt;";
-
+	/**
+	 * JavaFX writable image.
+	 */
 	public final ObjectProperty<WritableImage> writableImage = new SimpleObjectProperty<>(null);
 
+	/**
+	 * Samples connected to triangle vertices.
+	 */
 	public final Vertex[] vertices = new Vertex[3];
+
+	/**
+	 * Triangle used for superimposing.
+	 */
 	public final Triangle triangle;
 
+	/**
+	 * Constructs a new ImageToAlignData with given JavaFX image and OpenCV image, that uses samples
+	 * factory for vertices initialization.
+	 * @param image JavaFX image
+	 * @param imageData OpenCV image
+	 * @param baseSampleFactory BasicSample subclasses factory used for vertices initialization
+     */
 	protected ImageToAlignData(final Image image, final Mat imageData, final BaseSampleFactory baseSampleFactory) {
 		super(image, imageData);
 		initializeVertices(baseSampleFactory);
@@ -35,6 +49,9 @@ public class ImageToAlignData extends ImageData {
 		initializeTriangle();
 	}
 
+	/**
+	 * Puts triangle vertices onto their default positions.
+	 */
 	public void recalculateVertices() {
 		Image image = this.image.get();
 		vertices[0].setSample(image.getWidth() * 1 / 2, image.getHeight() * 3 / 10, image.getWidth() / 10, image.getHeight() / 10,
@@ -56,9 +73,6 @@ public class ImageToAlignData extends ImageData {
 	}
 
 	private void initializeTriangle() {
-		triangle.setFill(Color.color(1.0, 1.0, 1.0, 0.35));
-		triangle.setStroke(Color.color(1.0, 1.0, 1.0, 0.6));
-		triangle.setStyle(STROKE_STYLE);
 		bindPoints();
 		bindScale();
 	}

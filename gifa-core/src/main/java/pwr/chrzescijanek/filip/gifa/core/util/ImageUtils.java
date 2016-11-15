@@ -1,14 +1,20 @@
 package pwr.chrzescijanek.filip.gifa.core.util;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import org.opencv.core.*;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,22 +22,38 @@ import static org.opencv.core.Core.*;
 import static org.opencv.imgcodecs.Imgcodecs.imencode;
 import static org.opencv.imgproc.Imgproc.*;
 
+/**
+ * Provides utility methods for handling images.
+ */
 public final class ImageUtils {
 
     private static final Logger LOGGER = Logger.getLogger(ImageUtils.class.getName());
 
-    private ImageUtils() {
-    }
+    private ImageUtils() {}
 
+    /**
+     * Converts given images to given type.
+     * @param images images to be converted
+     * @param type chosen type
+     */
     public static void convertType(final Mat[] images, final int type) {
         for (final Mat m : images)
             convertType(m, type);
     }
 
+    /**
+     * Converts given image to given type.
+     * @param image image to be converted
+     * @param type chosen type
+     */
     public static void convertType(final Mat image, final int type) {
         cvtColor(image, image, type);
     }
 
+    /**
+     * @param images OpenCV images to get data from
+     * @return byte images data
+     */
     public static byte[][] getImagesData(final Mat[] images) {
         final int noOfBytes = (int) images[0].total() * images[0].channels();
         final byte[][] imagesData = new byte[images.length][noOfBytes];
@@ -41,6 +63,10 @@ public final class ImageUtils {
         return imagesData;
     }
 
+    /**
+     * @param image OpenCV image to get data from
+     * @return byte image data
+     */
     public static byte[] getImageData(final Mat image) {
         final int noOfBytes = (int) image.total() * image.channels();
         final byte[] imageData = new byte[noOfBytes];
@@ -48,6 +74,10 @@ public final class ImageUtils {
         return imageData;
     }
 
+    /**
+     * @param images images to copy
+     * @return copy of given OpenCV images
+     */
     public static Mat[] getImagesCopy(final Mat[] images) {
         final Mat[] imagesCopy = new Mat[images.length];
         for (int i = 0; i < images.length; i++) {
@@ -56,12 +86,23 @@ public final class ImageUtils {
         return imagesCopy;
     }
 
+    /**
+     * @param image image to copy
+     * @return copy of given OpenCV image
+     */
     public static Mat getImageCopy(final Mat image) {
         final Mat imageCopy = new Mat(image.size(), image.type());
         image.copyTo(imageCopy);
         return imageCopy;
     }
 
+    /**
+     * Performs affine transformations on given images by superimposing given points
+     * using specified interpolation method.
+     * @param images images to be transformed
+     * @param points points to be superimposed
+     * @param interpolation interpolation method
+     */
     public static void performAffineTransformations(final Mat[] images, final MatOfPoint2f[] points, int interpolation) {
         checkIfTrianglesCountMatches(images, points);
         final int noOfImages = images.length;
@@ -84,16 +125,70 @@ public final class ImageUtils {
         }
     }
 
+    /**
+     * Creates JavaFX image from OpenCV image.
+     * @param image OpenCV image
+     * @return JavaFX image
+     */
     public static Image createImage(final Mat image) {
         MatOfByte byteMat = new MatOfByte();
         imencode(".png", image, byteMat);
         return new Image(new ByteArrayInputStream(byteMat.toArray()));
     }
 
+    /**
+     * Creates OpenCV image from JavaFX image.
+     * @param fxImage JavaFX image
+     * @return OpenCV image
+     */
+    public static Mat createMat(final Image fxImage) {
+        BufferedImage image = SwingFXUtils.fromFXImage(fxImage, null);
+        byte[] bytes = getBytes(image);
+        Mat src = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC4);
+        Mat dst = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC4);
+        src.put(0, 0, bytes);
+        return mixChannels(src, dst);
+    }
+
+    private static byte[] getBytes(BufferedImage image) {
+        int[] data = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
+        IntBuffer intBuffer = byteBuffer.asIntBuffer();
+        intBuffer.put(data);
+        return byteBuffer.array();
+    }
+
+    private static Mat mixChannels(Mat src, Mat dst) {
+        List<Mat> sources = new ArrayList<>();
+        sources.add(src);
+        List<Mat> destinations = new ArrayList<>();
+        destinations.add(dst);
+        Core.mixChannels(sources, destinations, new MatOfInt(0, 3, 1, 2, 2, 1, 3, 0));
+        return destinations.get(0);
+    }
+
+    /**
+     * Creates JavaFX image from OpenCV image with specified size, number of channels and pixel format.
+     * @param image OpenCV image
+     * @param width image width
+     * @param height image height
+     * @param noOfChannels image channels number
+     * @param format image pixel format
+     * @return JavaFX image
+     */
     public static Image createImage(final Mat image, final int width, final int height, final int noOfChannels, final PixelFormat format) {
         return createImage(getImageData(image), width, height, noOfChannels, format);
     }
 
+    /**
+     * Creates JavaFX image from byte image data with specified size, number of channels and pixel format.
+     * @param data byte image data
+     * @param width image width
+     * @param height image height
+     * @param noOfChannels image channels number
+     * @param format image pixel format
+     * @return JavaFX image
+     */
     public static Image createImage(final byte[] data, final int width, final int height, final int noOfChannels, final PixelFormat format) {
         final WritableImage img = new WritableImage(width, height);
         final PixelWriter pw = img.getPixelWriter();
@@ -101,6 +196,13 @@ public final class ImageUtils {
         return img;
     }
 
+    /**
+     * Performs transparency marking on given destination images based on source images.
+     * In short, if a pixel is not opaque in the source image, the corresponding pixel
+     * in the associated destination image will be marked transparent.
+     * @param transparencySources transparency source images
+     * @param transparencyDestinations transparency destination images
+     */
     public static void multiplyTransparencies(final Mat[] transparencySources, final Mat[] transparencyDestinations) {
         checkifSizesMatch(transparencySources, transparencyDestinations);
         for (int i = 0; i < transparencySources.length; i++)
@@ -117,6 +219,13 @@ public final class ImageUtils {
         }
     }
 
+    /**
+     * Performs transparency marking on given destination image based on source image.
+     * In short, if a pixel is not opaque in the source image, the corresponding pixel
+     * in the destination image will be marked transparent.
+     * @param transparencySource transparency source image
+     * @param transparencyDestination transparency destination image
+     */
     public static void multiplyTransparencies(final Mat transparencySource, final Mat transparencyDestination) {
         checkIfImageTypesMatch(transparencySource, transparencyDestination);
         final byte[] srcData = getImageData(transparencySource);
@@ -153,6 +262,12 @@ public final class ImageUtils {
         }
     }
 
+    /**
+     * Extracts specified channel from given OpenCV images.
+     * @param images OpenCV images
+     * @param channel index of channel that will be extracted
+     * @return extracted channel
+     */
     public static Mat[] extractChannel(final Mat[] images, final int channel) {
         Mat[] result = new Mat[images.length];
         for (int i = 0; i < images.length; i++)
@@ -160,6 +275,12 @@ public final class ImageUtils {
         return result;
     }
 
+    /**
+     * Extracts specified channel from given OpenCV image.
+     * @param image OpenCV image
+     * @param channel index of channel that will be extracted
+     * @return extracted channel
+     */
     public static Mat extractChannel(final Mat image, final int channel) {
         checkIndex(image.channels(), channel);
         Mat result = new Mat();
@@ -179,6 +300,12 @@ public final class ImageUtils {
         }
     }
 
+    /**
+     * Performs Sobel derivative on given OpenCV images.
+     * @param images OpenCV images
+     * @param kernelSize Sobel derivative kernel size
+     * @return processed images
+     */
     public static Mat[] sobelDerivative(final Mat[] images, final int kernelSize) {
         checkKernelSize(kernelSize);
         checkIfChannelsMatch(images, 1);
@@ -198,6 +325,12 @@ public final class ImageUtils {
         }
     }
 
+    /**
+     * Performs Sobel derivative on given OpenCV image.
+     * @param image OpenCV image
+     * @param kernelSize Sobel derivative kernel size
+     * @return processed image
+     */
     public static Mat sobelDerivative(final Mat image, final int kernelSize) {
         final Mat gradX = new Mat();
         final Mat gradY = new Mat();
@@ -206,6 +339,11 @@ public final class ImageUtils {
         return approximateGradient(gradX, gradY);
     }
 
+    /**
+     * Performs Scharr derivative on given OpenCV images.
+     * @param images OpenCV images
+     * @return processed images
+     */
     public static Mat[] scharrDerivative(final Mat[] images) {
         checkIfChannelsMatch(images, 1);
         Mat[] result = new Mat[images.length];
@@ -214,6 +352,11 @@ public final class ImageUtils {
         return result;
     }
 
+    /**
+     * Performs Scharr derivative on given OpenCV image.
+     * @param image OpenCV image
+     * @return processed image
+     */
     public static Mat scharrDerivative(final Mat image) {
         final Mat gradX = new Mat();
         final Mat gradY = new Mat();
@@ -222,6 +365,11 @@ public final class ImageUtils {
         return approximateGradient(gradX, gradY);
     }
 
+    /**
+     * Performs Roberts cross on given OpenCV images.
+     * @param images OpenCV images
+     * @return processed images
+     */
     public static Mat[] robertsCross(final Mat[] images) {
         checkIfChannelsMatch(images, 1);
         Mat[] result = new Mat[images.length];
@@ -230,6 +378,11 @@ public final class ImageUtils {
         return result;
     }
 
+    /**
+     * Performs Roberts cross on given OpenCV image.
+     * @param image OpenCV image
+     * @return processed image
+     */
     public static Mat robertsCross(final Mat image) {
         final Mat gradX = new Mat();
         final Mat gradY = new Mat();
@@ -266,6 +419,11 @@ public final class ImageUtils {
         return result;
     }
 
+    /**
+     * Performs Canny thresholding on given OpenCV images.
+     * @param images OpenCV images
+     * @return processed images
+     */
     public static Mat[] cannyThreshold(final Mat[] images) {
         checkIfChannelsMatch(images, 1);
         Mat[] result = new Mat[images.length];
@@ -274,6 +432,11 @@ public final class ImageUtils {
         return result;
     }
 
+    /**
+     * Performs Canny thresholding on given OpenCV image.
+     * @param image OpenCV image
+     * @return processed image
+     */
     public static Mat cannyThreshold(final Mat image) {
         final Mat edges = new Mat();
         final Mat result = new Mat();
@@ -282,6 +445,11 @@ public final class ImageUtils {
         return result;
     }
 
+    /**
+     * Performs Otsu thresholding on given OpenCV images.
+     * @param images OpenCV images
+     * @return processed images
+     */
     public static Mat[] otsuThreshold(final Mat[] images) {
         checkIfChannelsMatch(images, 1);
         Mat[] result = new Mat[images.length];
@@ -290,12 +458,24 @@ public final class ImageUtils {
         return result;
     }
 
+    /**
+     * Performs Otsu thresholding on given OpenCV image.
+     * @param image OpenCV image
+     * @return processed image
+     */
     public static Mat otsuThreshold(final Mat image) {
         final Mat result = new Mat();
         threshold(image, result, 0, 255, THRESH_BINARY | THRESH_OTSU);
         return result;
     }
 
+    /**
+     * Extracts meaningful pixels from given OpenCV images.
+     * A pixel is considered meaningful as long as it and all corresponding pixels
+     * from other images are opaque.
+     * @param images OpenCV images
+     * @return extracted pixels
+     */
     public static Mat[] extractMeaningfulPixels(final Mat[] images) {
         checkIfChannelsMatch(images, 4);
 

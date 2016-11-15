@@ -11,13 +11,10 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.stage.Stage;
-import pwr.chrzescijanek.filip.gifa.controller.PanelController;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
-import pwr.chrzescijanek.filip.gifa.model.panel.PanelView;
 import pwr.chrzescijanek.filip.gifa.model.panel.PanelViewFactory;
 import pwr.chrzescijanek.filip.gifa.model.panel.SamplePanelView;
-import pwr.chrzescijanek.filip.gifa.view.FXView;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,14 +26,31 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sin;
 import static java.lang.Math.tan;
-import static pwr.chrzescijanek.filip.gifa.model.sample.BaseSample.SampleSelection.NIL;
+import static pwr.chrzescijanek.filip.gifa.model.sample.BasicSample.SampleSelection.NIL;
+import static pwr.chrzescijanek.filip.gifa.util.StageUtils.getNewStage;
 
-public class Sample extends BaseSample {
+/**
+ * Represents user-defined sample.
+ */
+public class Sample extends BasicSample {
 
 	private final DoubleProperty semimajor = new SimpleDoubleProperty();
 	private final DoubleProperty semiminor = new SimpleDoubleProperty();
 	private double constantAngle = 0;
 
+	/**
+	 * Constructs a new Sample on given image, with given position, size, shared state,
+	 * panel views factory and bounds.
+	 * @param imageData image
+	 * @param x X position
+	 * @param y Y position
+	 * @param radiusX X radius
+	 * @param radiusY Y radius
+	 * @param state shared state
+	 * @param panelViewFactory panel views factory
+     * @param xBound X bound
+     * @param yBound Y bound
+     */
 	protected Sample(final SamplesImageData imageData, final double x, final double y, final double radiusX, final double radiusY,
 		   final SharedState state, final PanelViewFactory panelViewFactory, final double xBound, final double yBound ) {
 		super(imageData, x, y, radiusX, radiusY, state, panelViewFactory, xBound, yBound);
@@ -76,16 +90,8 @@ public class Sample extends BaseSample {
 		}
 	}
 
-	private Stage getNewStage( String viewPath, String info, String title, List< ? extends PanelView> views ) {
-		final Stage newStage = new Stage();
-		FXView fxView = new FXView(viewPath);
-		final PanelController controller = initializeController(info, views, fxView);
-		showStage(newStage, fxView, controller, title);
-		return newStage;
-	}
-
 	private void addCloseListeners( final Stage newStage ) {
-		((SamplesImageData) imageData).samples.addListener((ListChangeListener< ? super BaseSample >) c -> {
+		((SamplesImageData) imageData).samples.addListener((ListChangeListener< ? super BasicSample>) c -> {
 			while ( c.next() )
 				if ( c.wasRemoved() && c.getRemoved().contains(this) )
 					newStage.close();
@@ -135,7 +141,10 @@ public class Sample extends BaseSample {
 		setOnRotate();
 	}
 
-	protected void rotateBound() {
+	/**
+	 * Sets rotate mode property bindings.
+	 */
+	protected void rotateBindings() {
 		bindX();
 		bindY();
 		sampleArea.widthProperty().bind(( this.centerXProperty().subtract(sampleArea.xProperty()) ).multiply(2.0));
@@ -202,17 +211,21 @@ public class Sample extends BaseSample {
 			if (newValue) {
 				sampleSelection = NIL;
 				if (getRadiusX() < getRadiusY()) constantAngle = 90;
-				rotateBound();
+				rotateBindings();
 				recalculateTranslates();
 			} else {
 				constantAngle = 0;
 				setRotate(0);
-				defaultBound();
+				defaultBindings();
 				recalculateTranslates();
 			}
 		});
 	}
 
+	/**
+	 * Updates sample rotation angle based on given scroll event.
+	 * @param event scroll event
+     */
 	public void updateRotation(final ScrollEvent event) {
 		final double deltaY = event.getDeltaY();
 		double rotate = getRotate();
@@ -262,6 +275,10 @@ public class Sample extends BaseSample {
 		}
 	}
 
+	/**
+	 * Handles sample rotation based on given scroll event.
+	 * @param event scroll event
+     */
 	public void rotate(final ScrollEvent event) {
 		if ( event.isControlDown() ) {
 			updateRotation(event);

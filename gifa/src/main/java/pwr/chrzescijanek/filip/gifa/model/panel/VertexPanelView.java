@@ -7,8 +7,16 @@ import pwr.chrzescijanek.filip.gifa.model.image.ImageToAlignData;
 import pwr.chrzescijanek.filip.gifa.model.image.Triangle;
 import pwr.chrzescijanek.filip.gifa.model.sample.Vertex;
 
+/**
+ * Represents single panel view that shows vertex.
+ */
 public class VertexPanelView extends PanelView {
 
+	/**
+	 * Constructs a new VertexPanelView given JavaFX image and sample.
+	 * @param image JavaFX image
+	 * @param sample vertex that will be shown
+     */
 	protected VertexPanelView(final Image image, final Vertex sample ) {
 		super(image, sample);
 	}

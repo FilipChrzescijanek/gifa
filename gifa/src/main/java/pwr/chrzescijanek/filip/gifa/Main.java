@@ -12,6 +12,9 @@ import pwr.chrzescijanek.filip.gifa.view.FXView;
 import java.io.IOException;
 import java.util.logging.*;
 
+/**
+ * Main application class.
+ */
 public class Main extends Application {
 
 	private static final String LOGGING_FORMAT_PROPERTY = "java.util.logging.SimpleFormatter.format";
@@ -24,6 +27,11 @@ public class Main extends Application {
 		initializeLogger();
 	}
 
+	/**
+	 * Default constructor.
+	 */
+	public Main() { }
+
 	private static void initializeLogger() {
 		try {
 			Handler fileHandler = new FileHandler("log", 10000, 5, true);
@@ -34,10 +42,19 @@ public class Main extends Application {
 		}
 	}
 
+	/**
+	 * Starts the application.
+	 * @param args launch arguments
+     */
 	public static void main( final String... args ) {
 		launch(args);
 	}
 
+	/**
+	 * Prepares primary stage and shows GUI.
+	 * @param primaryStage application's primary stage
+	 * @throws Exception unhandled exception
+     */
 	@Override
 	public void start( final Stage primaryStage ) throws Exception {
 		FXView fxView = new FXView("/static/gifa.fxml");
@@ -46,6 +63,10 @@ public class Main extends Application {
 		primaryStage.show();
 	}
 
+	/**
+	 * Resets state on application stop.
+	 * @throws Exception unhandled exception
+     */
 	@Override
 	public void stop() throws Exception {
 		Injector.reset();

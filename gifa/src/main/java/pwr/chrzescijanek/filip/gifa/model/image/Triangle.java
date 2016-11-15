@@ -3,38 +3,68 @@ package pwr.chrzescijanek.filip.gifa.model.image;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ObservableList;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 
+/**
+ * Represents a triangle.
+ */
 public class Triangle extends Polygon {
 
+	/**
+	 * Triangle stroke style.
+	 */
+	protected static final String STROKE_STYLE = "-fx-stroke-type: inside;\n" +
+			"    -fx-stroke-width: 2;\n" +
+			"    -fx-stroke-dash-array: 12 2 4 2;\n" +
+			"    -fx-stroke-dash-offset: 6;\n" +
+			"    -fx-stroke-line-cap: butt;";
+
+	/**
+	 * Vertices coordinates.
+	 */
 	public final DoubleProperty[] pointsProperty;
 
 	private double xBound;
 	private double yBound;
 
+	/**
+	 * Constructs a new Triangle with given X and Y bounds.
+	 * @param xBound X bound
+	 * @param yBound Y bound
+     */
 	public Triangle(final double xBound, final double yBound) {
 		super(0,0,0,0,0,0);
 		this.xBound = xBound;
 		this.yBound = yBound;
 		this.pointsProperty = new DoubleProperty[6];
 		initializePointsWithZeros();
-		registerPointsListeners();
-		registerScaleListeners();
+		initializeListenersAndStyle();
 	}
 
+	/**
+	 * Constructs a new Triangle with given vertices and X and Y bounds.
+	 * @param p1 first vertex
+	 * @param p2 second vertex
+	 * @param p3 third vertex
+	 * @param xBound X bound
+     * @param yBound Y bound
+     */
 	public Triangle( final Point p1, final Point p2, final Point p3, final double xBound, final double yBound) {
 		super(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 		this.xBound = xBound;
 		this.yBound = yBound;
 		this.pointsProperty = new DoubleProperty[6];
 		initializePoints();
-		registerPointsListeners();
-		registerScaleListeners();
+		initializeListenersAndStyle();
 	}
 
-	public MatOfPoint2f getMatOfPoints() {
+	/**
+	 * @return matrix of triangle vertices
+     */
+	public MatOfPoint2f getMatOfVertices() {
 		return new MatOfPoint2f(
 				new Point(pointsProperty[0].getValue(), pointsProperty[1].getValue()),
 				new Point(pointsProperty[2].getValue(), pointsProperty[3].getValue()),
@@ -51,6 +81,12 @@ public class Triangle extends Polygon {
 		final ObservableList< Double > points = getPoints();
 		for ( int i = 0; i < pointsProperty.length; i++)
 			pointsProperty[i] = new SimpleDoubleProperty(points.get(i));
+	}
+
+	private void initializeListenersAndStyle() {
+		registerPointsListeners();
+		registerScaleListeners();
+		setStyle();
 	}
 
 	private void registerPointsListeners() {
@@ -111,6 +147,12 @@ public class Triangle extends Polygon {
 
 	private double getMax( final double firstPointY, final double secondPointY, final double thirdPointY ) {
 		return Math.max(firstPointY, Math.max(secondPointY, thirdPointY));
+	}
+
+	private void setStyle() {
+		setFill(Color.color(1.0, 1.0, 1.0, 0.35));
+		setStroke(Color.color(1.0, 1.0, 1.0, 0.6));
+		setStyle(STROKE_STYLE);
 	}
 
 }

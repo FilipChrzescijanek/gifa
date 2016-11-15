@@ -7,7 +7,16 @@ import static org.opencv.imgproc.Imgproc.COLOR_BGR2HSV_FULL;
 import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateVariances;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
 
+/**
+ * Provides method to calculate value variance.
+ */
 public final class VarianceValue implements EvaluationFunction {
+
+    /**
+     * Default constructor.
+     */
+    public VarianceValue() {
+    }
 
     @Override
     public double[] evaluate(final Mat[] images) {

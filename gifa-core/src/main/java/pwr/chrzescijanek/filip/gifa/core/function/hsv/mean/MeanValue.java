@@ -7,7 +7,16 @@ import static org.opencv.imgproc.Imgproc.COLOR_BGR2HSV_FULL;
 import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateMeans;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
 
+/**
+ * Provides method to calculate value mean.
+ */
 public final class MeanValue implements EvaluationFunction {
+
+    /**
+     * Default constructor.
+     */
+    public MeanValue() {
+    }
 
     @Override
     public double[] evaluate(final Mat[] images) {

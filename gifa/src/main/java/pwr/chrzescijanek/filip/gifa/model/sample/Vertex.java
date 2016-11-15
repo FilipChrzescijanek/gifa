@@ -24,7 +24,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Vertex extends BaseSample {
+import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.initializeController;
+import static pwr.chrzescijanek.filip.gifa.util.StageUtils.showStage;
+
+/**
+ * Represents triangle vertex.
+ */
+public class Vertex extends BasicSample {
 
 	private interface NumberChangeListener extends ChangeListener< Number > { }
 
@@ -33,6 +39,19 @@ public class Vertex extends BaseSample {
 	private final List< List< NumberChangeListener > > vertexChangeListeners = new ArrayList<>();
 	private final List< List< ColorChangeListener > > strokeChangeListeners = new ArrayList<>();
 
+	/**
+	 * Constructs a new Vertex on given image, with given position, size, shared state,
+	 * panel views factory and bounds.
+	 * @param imageData image
+	 * @param x X position
+	 * @param y Y position
+	 * @param radiusX X radius
+	 * @param radiusY Y radius
+	 * @param state shared state
+	 * @param panelViewFactory panel views factory
+	 * @param xBound X bound
+	 * @param yBound Y bound
+     */
 	protected Vertex(final ImageToAlignData imageData, final double x, final double y, final double radiusX, final double radiusY,
 		   final SharedState state, final PanelViewFactory panelViewFactory, final double xBound, final double yBound ) {
 		super(imageData, x, y, radiusX, radiusY, state, panelViewFactory, xBound, yBound);
@@ -95,12 +114,12 @@ public class Vertex extends BaseSample {
 					final List<VertexPanelView> vertexPanelViews = state.imagesToAlign.values().stream()
 							.map(img -> panelViewFactory.createVertexPanelView(img.writableImage.get(), img.vertices[index]))
 							.collect(Collectors.toList());
-					controller.setImageViews(vertexPanelViews);
+					controller.setPanelViews(vertexPanelViews);
 					initializeVertexChangeListeners();
 					initializeStrokeChangeListeners();
 					addVertexChangeListeners();
 					addStrokeChangeListeners();
-					Platform.runLater(() -> controller.placeImages());
+					Platform.runLater(controller::refresh);
 				}
 		);
 	}

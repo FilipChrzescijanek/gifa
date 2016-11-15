@@ -43,19 +43,32 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+/**
+ * Provides factory method for creating DataGenerator class instances.
+ */
 public class DataGeneratorFactory {
 
     private final Map<String, EvaluationFunction> availableFunctions = new TreeMap<>();
     private final Map<String, EvaluationFunction> chosenFunctions = new TreeMap<>();
 
+    /**
+     * Default constructor, injects basic functions.
+     */
     public DataGeneratorFactory() {
         injectBasicFunctions();
     }
 
+    /**
+     * Constructs a new DataGenerator with chosen functions.
+     * @return new DataGenerator class instance
+     */
     public DataGenerator createGenerator() {
         return new DataGenerator(chosenFunctions);
     }
 
+    /**
+     * Injects basic functions.
+     */
     public void injectBasicFunctions() {
 //		injectRedFunctions();
 //		injectGreenFunctions();
@@ -124,31 +137,57 @@ public class DataGeneratorFactory {
         injectFunction("Value quadratic fuzziness", new QuadraticFuzzinessValue());
     }
 
-    public void injectFunction(final String key, final EvaluationFunction function) {
-        availableFunctions.put(key, function);
+    /**
+     * Injects given function with given name.
+     * @param name function name
+     * @param function function to be injected
+     */
+    public void injectFunction(final String name, final EvaluationFunction function) {
+        availableFunctions.put(name, function);
     }
 
+    /**
+     * Clears available functions.
+     */
     public void clearAvailableFunctions() {
         availableFunctions.clear();
     }
 
+    /**
+     * @return available functions
+     */
     public Set<String> getAvailableFunctionsNames() {
         return new TreeSet<>(availableFunctions.keySet());
     }
 
+    /**
+     * Chooses all available functions.
+     */
     public void chooseAllAvailableFunctions() {
         chosenFunctions.putAll(availableFunctions);
     }
 
-    public void chooseFunction(final String key) {
-        chosenFunctions.put(key, availableFunctions.get(key));
+    /**
+     * Chooses function with given name.
+     * @param name function name
+     */
+    public void chooseFunction(final String name) {
+        chosenFunctions.put(name, availableFunctions.get(name));
     }
 
-    public void deselectFunction(final String key) {
-        chosenFunctions.remove(key);
+    /**
+     * Deselects function with given name.
+     * @param name function name
+     */
+    public void deselectFunction(final String name) {
+        chosenFunctions.remove(name);
     }
 
+    /**
+     * Clears chosen functions.
+     */
     public void clearChosenFunctions() {
         chosenFunctions.clear();
     }
+
 }

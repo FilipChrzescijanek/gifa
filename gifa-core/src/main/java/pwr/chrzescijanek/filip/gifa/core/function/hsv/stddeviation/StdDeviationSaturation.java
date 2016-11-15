@@ -7,7 +7,17 @@ import static org.opencv.imgproc.Imgproc.COLOR_BGR2HSV_FULL;
 import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateStdDeviations;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
 
+/**
+ * Provides method to calculate saturation standard deviation.
+ */
 public final class StdDeviationSaturation implements EvaluationFunction {
+
+    /**
+     * Default constructor.
+     */
+    public StdDeviationSaturation() {
+    }
+
     @Override
     public double[] evaluate(final Mat[] images) {
         convertType(images, COLOR_BGR2HSV_FULL);

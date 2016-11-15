@@ -13,6 +13,9 @@ import java.util.stream.DoubleStream;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.extractMeaningfulPixels;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.getImagesCopy;
 
+/**
+ * Provides methods for calculating results based on global image features evaluation.
+ */
 public class DataGenerator {
 
     private final Map<String, EvaluationFunction> functions;
@@ -22,10 +25,19 @@ public class DataGenerator {
         this.functions = Collections.unmodifiableMap(functions);
     }
 
+    /**
+     * @return preprocessed images
+     */
     public Map<String, Mat[]> getPreprocessedImages() {
         return new TreeMap<>(preprocessedImages);
     }
 
+    /**
+     * Evaluates global features of given images with given names.
+     * @param images images to be evaluated
+     * @param names associated image names
+     * @return result of evaluation
+     */
     public Result generateData(final Mat[] images, final List<String> names) {
         preprocessImages(images);
         final Mat[] adjustedImages = extractMeaningfulPixels(images);

@@ -34,9 +34,9 @@
                       accelerator="Shift+R"/>
             <MenuItem fx:id="alignMenuLoadImages" text="_Load images" onAction="#loadImages"
                       accelerator="Shortcut+L"/>
-            <MenuItem fx:id="alignMenuDeleteImage" text="_Delete image" onAction="#deleteImage"
+            <MenuItem fx:id="alignMenuRemoveImage" text="_Delete image" onAction="#deleteImage"
                       accelerator="Shortcut+Delete"/>
-            <MenuItem fx:id="alignMenuClear" text="_Clear image list" onAction="#clearImages"
+            <MenuItem fx:id="alignMenuClearImages" text="_Clear image list" onAction="#clearImages"
                       accelerator="Shortcut+Alt+Delete"/>
         </Menu>
         <Menu fx:id="samplesMenu" text="_Samples">
@@ -46,7 +46,7 @@
                       accelerator="Shortcut+Alt+S"/>
             <MenuItem fx:id="samplesMenuRotateMode" text="_Rotate mode" onAction="#setRotateMode"
                       accelerator="Shortcut+Alt+R"/>
-            <MenuItem fx:id="samplesMenuDeleteSample" text="Remo_ve sample" onAction="#deleteSample"
+            <MenuItem fx:id="samplesMenuRemoveSample" text="Remo_ve sample" onAction="#deleteSample"
                       accelerator="Shortcut+Delete"/>
             <MenuItem fx:id="samplesMenuClearSamples" text="C_lear samples" onAction="#clearSamples"
                       accelerator="Shortcut+Alt+Delete"/>
@@ -73,8 +73,8 @@
                       accelerator="Shift+Alt+I"/>
         </Menu>
         <Menu fx:id="runMenu" text="_Run">
-            <MenuItem fx:id="runMenuAlignButton" text="_Align images" onAction="#align" accelerator="F2"/>
-            <MenuItem fx:id="runMenuResultsButton" text="_Calculate results" onAction="#calculateResults" accelerator="F3"/>
+            <MenuItem fx:id="runMenuAlign" text="_Align images" onAction="#align" accelerator="F2"/>
+            <MenuItem fx:id="runMenuCalculateResults" text="_Calculate results" onAction="#calculateResults" accelerator="F3"/>
         </Menu>
         <Menu fx:id="optionsMenu" text="_Options">
             <Menu fx:id="optionsMenuTheme" text="_Theme">
@@ -247,7 +247,7 @@
                                 <RowConstraints minHeight="40.0"/>
                             </rowConstraints>
                             <Label fx:id="alignImageSizeLabel" text=""/>
-                            <Button fx:id="alignImagesButton" text="Align" onAction="#align"
+                            <Button fx:id="alignButton" text="Align" onAction="#align"
                                     prefWidth="120.0" GridPane.columnIndex="1"/>
                             <ComboBox fx:id="alignScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5"
                                       GridPane.columnIndex="2"/>
@@ -280,7 +280,7 @@
                                 <Insets right="5.0"/>
                             </HBox.margin>
                         </Button>
-                        <Button fx:id="deleteImageButton" mnemonicParsing="false" onAction="#deleteImage">
+                        <Button fx:id="removeImageButton" mnemonicParsing="false" onAction="#deleteImage">
                             <graphic>
                                 <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
                                            preserveRatio="true">
@@ -342,7 +342,7 @@
                     </TitledPane>
                     <TitledPane fx:id="samplesToolsTitledPane" text="Tools" collapsible="false">
                         <GridPane fx:id="samplesToolsGridPane" alignment="CENTER" vgap="10" hgap="10">
-                            <Button fx:id="deleteSampleButton" mnemonicParsing="false" onAction="#deleteSample">
+                            <Button fx:id="removeSampleButton" mnemonicParsing="false" onAction="#deleteSample">
                                 <graphic>
                                     <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
                                                preserveRatio="true">
@@ -419,7 +419,7 @@
                                 <RowConstraints minHeight="40.0"/>
                             </rowConstraints>
                             <Label fx:id="samplesImageSizeLabel" text=""/>
-                            <Button fx:id="resultsButton" text="Calculate results" onAction="#calculateResults"
+                            <Button fx:id="calculateResultsButton" text="Calculate results" onAction="#calculateResults"
                                     prefWidth="120.0" GridPane.columnIndex="1"/>
                             <ComboBox fx:id="samplesScaleCombo" editable="true" prefWidth="80.0" visibleRowCount="5"
                                       GridPane.columnIndex="2"/>
@@ -428,7 +428,7 @@
                     </bottom>
                 </BorderPane>
                 <TabPane fx:id="rightVBoxTabPane" tabClosingPolicy="UNAVAILABLE" GridPane.columnIndex="2">
-                    <Tab fx:id="toolboxTab" text="Images">
+                    <Tab fx:id="imageListTab" text="Images">
                         <GridPane fx:id="samplesImageListGrid">
                             <padding>
                                 <Insets bottom="20.0" left="20.0" right="20.0" top="10.0"/>
@@ -592,7 +592,7 @@
                                     <Insets right="5.0"/>
                                 </HBox.margin>
                             </Button>
-                            <Button fx:id="chartsShiftButton" onAction="#extract" alignment="CENTER">
+                            <Button fx:id="chartsExtractButton" onAction="#extract" alignment="CENTER">
                                 <graphic>
                                     <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
                                                preserveRatio="true">
@@ -603,7 +603,7 @@
                                     <Insets right="5.0"/>
                                 </HBox.margin>
                             </Button>
-                            <Button fx:id="chartsDeleteButton" onAction="#delete" alignment="CENTER">
+                            <Button fx:id="chartsRemoveButton" onAction="#delete" alignment="CENTER">
                                 <graphic>
                                     <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true"
                                                preserveRatio="true">

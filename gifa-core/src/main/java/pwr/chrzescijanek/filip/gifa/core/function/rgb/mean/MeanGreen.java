@@ -5,7 +5,16 @@ import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
 
 import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateMeans;
 
+/**
+ * Provides method to calculate green mean.
+ */
 public final class MeanGreen implements EvaluationFunction {
+
+    /**
+     * Default constructor.
+     */
+    public MeanGreen() {
+    }
 
     @Override
     public double[] evaluate(final Mat[] images) {

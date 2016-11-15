@@ -17,6 +17,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Provides methods for class instantiation using singleton components pool.
+ */
 public class Injector {
 
 	private static final Logger LOGGER = Logger.getLogger(Injector.class.getName());
@@ -71,12 +74,23 @@ public class Injector {
 				.toArray();
 	}
 
+	/**
+	 * @param clazz class
+	 * @param <T> type
+     * @return instance of given class
+     */
 	public static < T > T instantiate( Class< T > clazz ) {
 		@SuppressWarnings( "unchecked" )
 		T instance = injectFields((T) SUPPLIER.apply(clazz));
 		return instance;
 	}
 
+	/**
+	 * Instantiates class and, if needed, adds the new instance to singleton component pool.
+	 * @param clazz class
+	 * @param <T> type
+     * @return instance of given class
+     */
 	@SuppressWarnings( "unchecked" )
 	public static < T > T instantiateComponent( Class< T > clazz ) {
 		T product = (T) COMPONENTS.get(clazz);
@@ -87,6 +101,9 @@ public class Injector {
 		return clazz.cast(product);
 	}
 
+	/**
+	 * Clears singleton component pool.
+	 */
 	public static void reset() {
 		COMPONENTS.clear();
 	}

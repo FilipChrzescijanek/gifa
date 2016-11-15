@@ -11,7 +11,6 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -38,7 +37,7 @@ import pwr.chrzescijanek.filip.gifa.core.util.ImageUtils;
 import pwr.chrzescijanek.filip.gifa.core.util.Result;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageData;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageDataFactory;
-import pwr.chrzescijanek.filip.gifa.model.sample.BaseSample;
+import pwr.chrzescijanek.filip.gifa.model.sample.BasicSample;
 import pwr.chrzescijanek.filip.gifa.model.sample.BaseSampleFactory;
 import pwr.chrzescijanek.filip.gifa.model.sample.Sample;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
@@ -47,9 +46,7 @@ import pwr.chrzescijanek.filip.gifa.model.sample.Vertex;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
 import pwr.chrzescijanek.filip.gifa.util.StageUtils;
 
-import javax.imageio.ImageIO;
 import javax.inject.Inject;
-import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -63,8 +60,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.opencv.imgproc.Imgproc.*;
-import static pwr.chrzescijanek.filip.gifa.controller.ControllerUtils.*;
+import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.*;
 
+/**
+ * Application controller class.
+ */
 public class Controller extends BaseController implements Initializable {
 
     //FXML fields
@@ -88,7 +88,7 @@ public class Controller extends BaseController implements Initializable {
     private BorderPane alignBorderPane;
 
     @FXML
-    private Button chartsDeleteButton;
+    private Button chartsRemoveButton;
 
     @FXML
     private Button chartsMergeButton;
@@ -97,7 +97,7 @@ public class Controller extends BaseController implements Initializable {
     private Button chartsRefreshButton;
 
     @FXML
-    private Button chartsShiftButton;
+    private Button chartsExtractButton;
 
     @FXML
     private Button clearImagesButton;
@@ -106,10 +106,10 @@ public class Controller extends BaseController implements Initializable {
     private Button clearSamplesButton;
 
     @FXML
-    private Button deleteImageButton;
+    private Button removeImageButton;
 
     @FXML
-    private Button deleteSampleButton;
+    private Button removeSampleButton;
 
     @FXML
     private Button deselectAllButton;
@@ -121,7 +121,7 @@ public class Controller extends BaseController implements Initializable {
     private Button loadImagesButton;
 
     @FXML
-    private Button resultsButton;
+    private Button calculateResultsButton;
 
     @FXML
     private Button rotateLeftButton;
@@ -133,7 +133,7 @@ public class Controller extends BaseController implements Initializable {
     private Button selectAllButton;
 
     @FXML
-    private Button alignImagesButton;
+    private Button alignButton;
 
     @FXML
     private Button verticalFlipButton;
@@ -394,10 +394,10 @@ public class Controller extends BaseController implements Initializable {
     private MenuItem navMenuAlign;
 
     @FXML
-    private MenuItem runMenuResultsButton;
+    private MenuItem runMenuCalculateResults;
 
     @FXML
-    private MenuItem runMenuAlignButton;
+    private MenuItem runMenuAlign;
 
     @FXML
     private MenuItem samplesMenuClearSamples;
@@ -406,7 +406,7 @@ public class Controller extends BaseController implements Initializable {
     private MenuItem samplesMenuCreateMode;
 
     @FXML
-    private MenuItem samplesMenuDeleteSample;
+    private MenuItem samplesMenuRemoveSample;
 
     @FXML
     private MenuItem samplesMenuDeselectAllFeatures;
@@ -421,10 +421,10 @@ public class Controller extends BaseController implements Initializable {
     private MenuItem samplesMenuSelectMode;
 
     @FXML
-    private MenuItem alignMenuClear;
+    private MenuItem alignMenuClearImages;
 
     @FXML
-    private MenuItem alignMenuDeleteImage;
+    private MenuItem alignMenuRemoveImage;
 
     @FXML
     private MenuItem alignMenuHorizontalFlip;
@@ -508,7 +508,7 @@ public class Controller extends BaseController implements Initializable {
     private Tab samplesTab;
 
     @FXML
-    private Tab toolboxTab;
+    private Tab imageListTab;
 
     @FXML
     private Tab alignTab;
@@ -582,686 +582,1195 @@ public class Controller extends BaseController implements Initializable {
 
     //FXML fields getters
 
+    /**
+     * @return samples view image view anchor
+     */
     public AnchorPane getSamplesImageViewAnchor() {
         return samplesImageViewAnchor;
     }
 
+    /**
+     * @return align view image view anchor
+     */
     public AnchorPane getAlignImageViewAnchor() {
         return alignImageViewAnchor;
     }
 
+    /**
+     * @return charts view border pane
+     */
     public BorderPane getChartsMainPane() {
         return chartsMainPane;
     }
 
+    /**
+     * @return features tab border pane
+     */
     public BorderPane getFeaturesBorderPane() {
         return featuresBorderPane;
     }
 
+    /**
+     * @return samples view border pane
+     */
     public BorderPane getSamplesBorderPane() {
         return samplesBorderPane;
     }
 
+    /**
+     * @return align view border pane
+     */
     public BorderPane getAlignBorderPane() {
         return alignBorderPane;
     }
 
-    public Button getChartsDeleteButton() {
-        return chartsDeleteButton;
+    /**
+     * @return remove charts button
+     */
+    public Button getChartsRemoveButton() {
+        return chartsRemoveButton;
     }
 
+    /**
+     * @return merge charts button
+     */
     public Button getChartsMergeButton() {
         return chartsMergeButton;
     }
 
+    /**
+     * @return refresh charts button
+     */
     public Button getChartsRefreshButton() {
         return chartsRefreshButton;
     }
 
-    public Button getChartsShiftButton() {
-        return chartsShiftButton;
+    /**
+     * @return  charts extract button
+     */
+    public Button getChartsExtractButton() {
+        return chartsExtractButton;
     }
 
+    /**
+     * @return clear images button
+     */
     public Button getClearImagesButton() {
         return clearImagesButton;
     }
 
+    /**
+     * @return clear samples button
+     */
     public Button getClearSamplesButton() {
         return clearSamplesButton;
     }
 
-    public Button getDeleteImageButton() {
-        return deleteImageButton;
+    /**
+     * @return remove image button
+     */
+    public Button getRemoveImageButton() {
+        return removeImageButton;
     }
 
-    public Button getDeleteSampleButton() {
-        return deleteSampleButton;
+    /**
+     * @return remove sample button
+     */
+    public Button getRemoveSampleButton() {
+        return removeSampleButton;
     }
 
+    /**
+     * @return deselect all button
+     */
     public Button getDeselectAllButton() {
         return deselectAllButton;
     }
 
+    /**
+     * @return horizontal flip button
+     */
     public Button getHorizontalFlipButton() {
         return horizontalFlipButton;
     }
 
+    /**
+     * @return load images button
+     */
     public Button getLoadImagesButton() {
         return loadImagesButton;
     }
 
-    public Button getResultsButton() {
-        return resultsButton;
+    /**
+     * @return calculate results button
+     */
+    public Button getCalculateResultsButton() {
+        return calculateResultsButton;
     }
 
+    /**
+     * @return rotate left button
+     */
     public Button getRotateLeftButton() {
         return rotateLeftButton;
     }
 
+    /**
+     * @return rotate right button
+     */
     public Button getRotateRightButton() {
         return rotateRightButton;
     }
 
+    /**
+     * @return select all button
+     */
     public Button getSelectAllButton() {
         return selectAllButton;
     }
 
-    public Button getAlignImagesButton() {
-        return alignImagesButton;
+    /**
+     * @return align button
+     */
+    public Button getAlignButton() {
+        return alignButton;
     }
 
+    /**
+     * @return vertical flip button
+     */
     public Button getVerticalFlipButton() {
         return verticalFlipButton;
     }
 
+    /**
+     * @return sample border color picker
+     */
     public ColorPicker getSampleBorderColor() {
         return sampleBorderColor;
     }
 
+    /**
+     * @return sample fill color picker
+     */
     public ColorPicker getSampleFillColor() {
         return sampleFillColor;
     }
 
+    /**
+     * @return sample stroke color picker
+     */
     public ColorPicker getSampleStrokeColor() {
         return sampleStrokeColor;
     }
 
+    /**
+     * @return triangle fill color picker
+     */
     public ColorPicker getTriangleFillColor() {
         return triangleFillColor;
     }
 
+    /**
+     * @return triangle stroke color picker
+     */
     public ColorPicker getTriangleStrokeColor() {
         return triangleStrokeColor;
     }
 
+    /**
+     * @return vertex border color picker
+     */
     public ColorPicker getVertexBorderColor() {
         return vertexBorderColor;
     }
 
+    /**
+     * @return vertex fill color picker
+     */
     public ColorPicker getVertexFillColor() {
         return vertexFillColor;
     }
 
+    /**
+     * @return vertex stroke color picker
+     */
     public ColorPicker getVertexStrokeColor() {
         return vertexStrokeColor;
     }
 
+    /**
+     * @return charts view sample combo box
+     */
     public ComboBox<Integer> getChartsSampleComboBox() {
         return chartsSampleComboBox;
     }
 
+    /**
+     * @return samples view scale combo box
+     */
     public ComboBox<String> getSamplesScaleCombo() {
         return samplesScaleCombo;
     }
 
+    /**
+     * @return align view scale combo box
+     */
     public ComboBox<String> getAlignScaleCombo() {
         return alignScaleCombo;
     }
 
+    /**
+     * @return all charts view grid pane
+     */
     public GridPane getAllChartsGrid() {
         return allChartsGrid;
     }
 
+    /**
+     * @return charts by sample view grid pane
+     */
     public GridPane getChartsBySampleGrid() {
         return chartsBySampleGrid;
     }
 
+    /**
+     * @return charts view controls grid pane
+     */
     public GridPane getChartsControls() {
         return chartsControls;
     }
 
+    /**
+     * @return images by sample view grid pane
+     */
     public GridPane getImagesBySampleGrid() {
         return imagesBySampleGrid;
     }
 
+    /**
+     * @return root grid pane
+     */
     public GridPane getRoot() {
         return root;
     }
 
+    /**
+     * @return samples view color controls grid pane
+     */
     public GridPane getSampleColorControls() {
         return sampleColorControls;
     }
 
+    /**
+     * @return samples view bottom grid pane
+     */
     public GridPane getSamplesBottomGrid() {
         return samplesBottomGrid;
     }
 
+    /**
+     * @return samples view image list grid pane
+     */
     public GridPane getSamplesImageListGrid() {
         return samplesImageListGrid;
     }
 
+    /**
+     * @return samples view grid pane
+     */
     public GridPane getSamplesMainPane() {
         return samplesMainPane;
     }
 
+    /**
+     * @return samples view tools grid pane
+     */
     public GridPane getSamplesToolsGridPane() {
         return samplesToolsGridPane;
     }
 
+    /**
+     * @return align view bottom grid pane
+     */
     public GridPane getAlignBottomGrid() {
         return alignBottomGrid;
     }
 
+    /**
+     * @return align view color controls grid pane
+     */
     public GridPane getAlignColorControls() {
         return alignColorControls;
     }
 
+    /**
+     * @return align view image list grid pane
+     */
     public GridPane getAlignImageListGrid() {
         return alignImageListGrid;
     }
 
+    /**
+     * @return align view grid pane
+     */
     public GridPane getAlignMainPane() {
         return alignMainPane;
     }
 
+    /**
+     * @return align view tools grid pane
+     */
     public GridPane getAlignToolsGridPane() {
         return alignToolsGridPane;
     }
 
+    /**
+     * @return align view vertex color controls grid pane
+     */
     public GridPane getVertexColorControls() {
         return vertexColorControls;
     }
 
+    /**
+     * @return samples view image view group
+     */
     public Group getSamplesImageViewGroup() {
         return samplesImageViewGroup;
     }
 
+    /**
+     * @return align view image view group
+     */
     public Group getAlignImageViewGroup() {
         return alignImageViewGroup;
     }
 
+    /**
+     * @return charts view graphs horizontal box
+     */
     public HBox getChartsGraphsHBox() {
         return chartsGraphsHBox;
     }
 
+    /**
+     * @return charts view graphs toolbar horizontal box
+     */
     public HBox getChartsGraphsToolbar() {
         return chartsGraphsToolbar;
     }
 
+    /**
+     * @return samples view top horizontal box
+     */
     public HBox getSamplesTopHBox() {
         return samplesTopHBox;
     }
 
+    /**
+     * @return selection buttons horizontal box
+     */
     public HBox getSelectionButtonsHBox() {
         return selectionButtonsHBox;
     }
 
+    /**
+     * @return align view image list toolbar horizontal box
+     */
     public HBox getAlignImageListToolbar() {
         return alignImageListToolbar;
     }
 
+    /**
+     * @return align view top horizontal box
+     */
     public HBox getAlignTopHBox() {
         return alignTopHBox;
     }
 
+    /**
+     * @return samples view image view
+     */
     public ImageView getSamplesImageView() {
         return samplesImageView;
     }
 
+    /**
+     * @return align view image view
+     */
     public ImageView getAlignImageView() {
         return alignImageView;
     }
 
+    /**
+     * @return charts view max. column label
+     */
     public Label getChartsColumnsLabel() {
         return chartsColumnsLabel;
     }
 
+    /**
+     * @return charts view graphs info label
+     */
     public Label getChartsGraphsInfo() {
         return chartsGraphsInfo;
     }
 
+    /**
+     * @return charts view sample label
+     */
     public Label getChartsSampleLabel() {
         return chartsSampleLabel;
     }
 
+    /**
+     * @return sample border color label
+     */
     public Label getSampleBorderLabel() {
         return sampleBorderLabel;
     }
 
+    /**
+     * @return sample fill color label
+     */
     public Label getSampleFillLabel() {
         return sampleFillLabel;
     }
 
+    /**
+     * @return sample stroke color label
+     */
     public Label getSampleStrokeLabel() {
         return sampleStrokeLabel;
     }
 
+    /**
+     * @return samples view image size label
+     */
     public Label getSamplesImageSizeLabel() {
         return samplesImageSizeLabel;
     }
 
+    /**
+     * @return samples view info label
+     */
     public Label getSamplesInfo() {
         return samplesInfo;
     }
 
+    /**
+     * @return samples view mouse position label
+     */
     public Label getSamplesMousePositionLabel() {
         return samplesMousePositionLabel;
     }
 
+    /**
+     * @return align view image list info label
+     */
     public Label getAlignImageListInfo() {
         return alignImageListInfo;
     }
 
+    /**
+     * @return align view image size label
+     */
     public Label getAlignImageSizeLabel() {
         return alignImageSizeLabel;
     }
 
+    /**
+     * @return align view info label
+     */
     public Label getAlignInfo() {
         return alignInfo;
     }
 
+    /**
+     * @return align view mouse position label
+     */
     public Label getAlignMousePositionLabel() {
         return alignMousePositionLabel;
     }
 
+    /**
+     * @return triangle fill label
+     */
     public Label getTriangleFillLabel() {
         return triangleFillLabel;
     }
 
+    /**
+     * @return triangle stroke label
+     */
     public Label getTriangleStrokeLabel() {
         return triangleStrokeLabel;
     }
 
+    /**
+     * @return vertex border label
+     */
     public Label getVertexBorderLabel() {
         return vertexBorderLabel;
     }
 
+    /**
+     * @return vertex fill label
+     */
     public Label getVertexFillLabel() {
         return vertexFillLabel;
     }
 
+    /**
+     * @return vertex stroke label
+     */
     public Label getVertexStrokeLabel() {
         return vertexStrokeLabel;
     }
 
+    /**
+     * @return samples view image list
+     */
     public ListView<String> getSamplesImageList() {
         return samplesImageList;
     }
 
+    /**
+     * @return align view image list
+     */
     public ListView<String> getAlignImageList() {
         return alignImageList;
     }
 
+    /**
+     * @return charts menu
+     */
     public Menu getChartsMenu() {
         return chartsMenu;
     }
 
+    /**
+     * @return edit menu
+     */
     public Menu getEditMenu() {
         return editMenu;
     }
 
+    /**
+     * @return file menu
+     */
     public Menu getFileMenu() {
         return fileMenu;
     }
 
+    /**
+     * @return help menu
+     */
     public Menu getHelpMenu() {
         return helpMenu;
     }
 
+    /**
+     * @return navigation menu
+     */
     public Menu getNavMenu() {
         return navMenu;
     }
 
+    /**
+     * @return options menu
+     */
     public Menu getOptionsMenu() {
         return optionsMenu;
     }
 
+    /**
+     * @return options theme menu
+     */
     public Menu getOptionsMenuTheme() {
         return optionsMenuTheme;
     }
 
+    /**
+     * @return run menu
+     */
     public Menu getRunMenu() {
         return runMenu;
     }
 
+    /**
+     * @return samples menu
+     */
     public Menu getSamplesMenu() {
         return samplesMenu;
     }
 
+    /**
+     * @return align menu
+     */
     public Menu getAlignMenu() {
         return alignMenu;
     }
 
+    /**
+     * @return menu bar
+     */
     public MenuBar getMenuBar() {
         return menuBar;
     }
 
+    /**
+     * @return charts menu extract chart menu item
+     */
     public MenuItem getChartsMenuExtractChart() {
         return chartsMenuExtractChart;
     }
 
+    /**
+     * @return charts menu merge charts menu item
+     */
     public MenuItem getChartsMenuMergeCharts() {
         return chartsMenuMergeCharts;
     }
 
+    /**
+     * @return charts menu remove charts menu item
+     */
     public MenuItem getChartsMenuRemoveCharts() {
         return chartsMenuRemoveCharts;
     }
 
+    /**
+     * @return charts menu restore charts menu item
+     */
     public MenuItem getChartsMenuRestoreCharts() {
         return chartsMenuRestoreCharts;
     }
 
+    /**
+     * @return edit menu zoom in menu item
+     */
     public MenuItem getEditMenuZoomIn() {
         return editMenuZoomIn;
     }
 
+    /**
+     * @return edit menu zoom out menu item
+     */
     public MenuItem getEditMenuZoomOut() {
         return editMenuZoomOut;
     }
 
+    /**
+     * @return file menu exit menu item
+     */
     public MenuItem getFileMenuExit() {
         return fileMenuExit;
     }
 
+    /**
+     * @return file menu export to CSV menu item
+     */
     public MenuItem getFileMenuExportToCsv() {
         return fileMenuExportToCsv;
     }
 
+    /**
+     * @return file menu export to PNG menu item
+     */
     public MenuItem getFileMenuExportToPng() {
         return fileMenuExportToPng;
     }
 
+    /**
+     * @return help menu about menu item
+     */
     public MenuItem getHelpMenuAbout() {
         return helpMenuAbout;
     }
 
+    /**
+     * @return help menu help menu item
+     */
     public MenuItem getHelpMenuHelp() {
         return helpMenuHelp;
     }
 
+    /**
+     * @return navigation menu all charts menu item
+     */
     public MenuItem getNavMenuAllCharts() {
         return navMenuAllCharts;
     }
 
+    /**
+     * @return navigation menu charts menu item
+     */
     public MenuItem getNavMenuCharts() {
         return navMenuCharts;
     }
 
+    /**
+     * @return navigation menu charts by sample menu item
+     */
     public MenuItem getNavMenuChartsBySample() {
         return navMenuChartsBySample;
     }
 
+    /**
+     * @return navigation menu images by sample menu item
+     */
     public MenuItem getNavMenuImagesBySample() {
         return navMenuImagesBySample;
     }
 
+    /**
+     * @return navigation menu samples menu item
+     */
     public MenuItem getNavMenuSamples() {
         return navMenuSamples;
     }
 
+    /**
+     * @return navigation menu align menu item
+     */
     public MenuItem getNavMenuAlign() {
         return navMenuAlign;
     }
 
-    public MenuItem getRunMenuResultsButton() {
-        return runMenuResultsButton;
+    /**
+     * @return run menu calculate results menu item
+     */
+    public MenuItem getRunMenuCalculateResults() {
+        return runMenuCalculateResults;
     }
 
-    public MenuItem getRunMenuAlignButton() {
-        return runMenuAlignButton;
+    /**
+     * @return run menu align menu item
+     */
+    public MenuItem getRunMenuAlign() {
+        return runMenuAlign;
     }
 
+    /**
+     * @return samples menu clear samples menu item
+     */
     public MenuItem getSamplesMenuClearSamples() {
         return samplesMenuClearSamples;
     }
 
+    /**
+     * @return samples menu create mode menu item
+     */
     public MenuItem getSamplesMenuCreateMode() {
         return samplesMenuCreateMode;
     }
 
-    public MenuItem getSamplesMenuDeleteSample() {
-        return samplesMenuDeleteSample;
+    /**
+     * @return samples menu remove sample menu item
+     */
+    public MenuItem getSamplesMenuRemoveSample() {
+        return samplesMenuRemoveSample;
     }
 
+    /**
+     * @return samples menu deselect all features menu item
+     */
     public MenuItem getSamplesMenuDeselectAllFeatures() {
         return samplesMenuDeselectAllFeatures;
     }
 
+    /**
+     * @return samples menu rotate mode menu item
+     */
     public MenuItem getSamplesMenuRotateMode() {
         return samplesMenuRotateMode;
     }
 
+    /**
+     * @return samples menu select all features menu item
+     */
     public MenuItem getSamplesMenuSelectAllFeatures() {
         return samplesMenuSelectAllFeatures;
     }
 
+    /**
+     * @return samples menu select mode menu item
+     */
     public MenuItem getSamplesMenuSelectMode() {
         return samplesMenuSelectMode;
     }
 
-    public MenuItem getAlignMenuClear() {
-        return alignMenuClear;
+    /**
+     * @return align menu clear images menu item
+     */
+    public MenuItem getAlignMenuClearImages() {
+        return alignMenuClearImages;
     }
 
-    public MenuItem getAlignMenuDeleteImage() {
-        return alignMenuDeleteImage;
+    /**
+     * @return align menu remove image menu item
+     */
+    public MenuItem getAlignMenuRemoveImage() {
+        return alignMenuRemoveImage;
     }
 
+    /**
+     * @return align menu horizontal flip menu item
+     */
     public MenuItem getAlignMenuHorizontalFlip() {
         return alignMenuHorizontalFlip;
     }
 
+    /**
+     * @return align menu load images menu item
+     */
     public MenuItem getAlignMenuLoadImages() {
         return alignMenuLoadImages;
     }
 
+    /**
+     * @return align menu rotate left menu item
+     */
     public MenuItem getAlignMenuMenuRotateLeft() {
         return alignMenuMenuRotateLeft;
     }
 
+    /**
+     * @return align menu rotate right menu item
+     */
     public MenuItem getAlignMenuMenuRotateRight() {
         return alignMenuMenuRotateRight;
     }
 
+    /**
+     * @return align menu vertical flip menu item
+     */
     public MenuItem getAlignMenuVerticalFlip() {
         return alignMenuVerticalFlip;
     }
 
+    /**
+     * @return charts by sample radio button
+     */
     public RadioButton getChartsBySampleRadioButton() {
         return chartsBySampleRadioButton;
     }
 
+    /**
+     * @return create radio button
+     */
     public RadioButton getCreateRadioButton() {
         return createRadioButton;
     }
 
+    /**
+     * @return cubic interpolation radio button
+     */
     public RadioButton getCubicRadioButton() {
         return cubicRadioButton;
     }
 
+    /**
+     * @return images by sample radio button
+     */
     public RadioButton getImagesBySampleRadioButton() {
         return imagesBySampleRadioButton;
     }
 
+    /**
+     * @return linear interpolation radio button
+     */
     public RadioButton getLinearRadioButton() {
         return linearRadioButton;
     }
 
+    /**
+     * @return nearest neighbour interpolation radio button
+     */
     public RadioButton getNearestRadioButton() {
         return nearestRadioButton;
     }
 
+    /**
+     * @return rotate radio button
+     */
     public RadioButton getRotateRadioButton() {
         return rotateRadioButton;
     }
 
+    /**
+     * @return select radio button
+     */
     public RadioButton getSelectRadioButton() {
         return selectRadioButton;
     }
 
+    /**
+     * @return options menu dark theme radio menu item
+     */
     public RadioMenuItem getOptionsMenuThemeDark() {
         return optionsMenuThemeDark;
     }
 
+    /**
+     * @return options menu light theme radio menu item
+     */
     public RadioMenuItem getOptionsMenuThemeLight() {
         return optionsMenuThemeLight;
     }
 
+    /**
+     * @return resources
+     */
     public ResourceBundle getResources() {
         return resources;
     }
 
+    /**
+     * @return all charts view's scroll pane containing grid pane
+     */
     public ScrollPane getAllChartsGridScrollPane() {
         return allChartsGridScrollPane;
     }
 
+    /**
+     * @return charts by sample view's scroll pane containing grid pane
+     */
     public ScrollPane getChartsBySampleGridScrollPane() {
         return chartsBySampleGridScrollPane;
     }
 
+    /**
+     * @return features scroll pane
+     */
     public ScrollPane getFeaturesScrollPane() {
         return featuresScrollPane;
     }
 
+    /**
+     * @return images by sample view's scroll pane containing grid pane
+     */
     public ScrollPane getImagesBySampleGridScrollPane() {
         return imagesBySampleGridScrollPane;
     }
 
+    /**
+     * @return samples view scroll pane
+     */
     public ScrollPane getSamplesScrollPane() {
         return samplesScrollPane;
     }
 
+    /**
+     * @return align view scroll pane
+     */
     public ScrollPane getAlignScrollPane() {
         return alignScrollPane;
     }
 
+    /**
+     * @return all charts tab
+     */
     public Tab getAllChartsTab() {
         return allChartsTab;
     }
 
+    /**
+     * @return by sample tab
+     */
     public Tab getBySampleTab() {
         return bySampleTab;
     }
 
+    /**
+     * @return charts tab
+     */
     public Tab getChartsTab() {
         return chartsTab;
     }
 
+    /**
+     * @return features tab
+     */
     public Tab getFeaturesTab() {
         return featuresTab;
     }
 
+    /**
+     * @return samples tab
+     */
     public Tab getSamplesTab() {
         return samplesTab;
     }
 
-    public Tab getToolboxTab() {
-        return toolboxTab;
+    /**
+     * @return image list tab
+     */
+    public Tab getImageListTab() {
+        return imageListTab;
     }
 
+    /**
+     * @return align tab
+     */
     public Tab getAlignTab() {
         return alignTab;
     }
 
+    /**
+     * @return charts tab pane
+     */
     public TabPane getChartsTabPane() {
         return chartsTabPane;
     }
 
+    /**
+     * @return main tab pane
+     */
     public TabPane getMainTabPane() {
         return mainTabPane;
     }
 
+    /**
+     * @return samples view right tab pane
+     */
     public TabPane getRightVBoxTabPane() {
         return rightVBoxTabPane;
     }
 
+    /**
+     * @return max. columns text field
+     */
     public TextField getChartsColumnsTextField() {
         return chartsColumnsTextField;
     }
 
+    /**
+     * @return interpolation group titled pane
+     */
     public TitledPane getInterpolationTitledPane() {
         return interpolationTitledPane;
     }
 
+    /**
+     * @return sample group titled pane
+     */
     public TitledPane getSampleTitledPane() {
         return sampleTitledPane;
     }
 
+    /**
+     * @return samples view mode group titled pane
+     */
     public TitledPane getSamplesModeTitledPane() {
         return samplesModeTitledPane;
     }
 
+    /**
+     * @return samples view tools group titled pane
+     */
     public TitledPane getSamplesToolsTitledPane() {
         return samplesToolsTitledPane;
     }
 
+    /**
+     * @return align view tools group titled pane
+     */
     public TitledPane getToolsTitledPane() {
         return toolsTitledPane;
     }
 
+    /**
+     * @return triangle group titled pane
+     */
     public TitledPane getTriangleTitledPane() {
         return triangleTitledPane;
     }
 
+    /**
+     * @return vertex group titled pane
+     */
     public TitledPane getVertexTitledPane() {
         return vertexTitledPane;
     }
 
+    /**
+     * @return draw method toggle group
+     */
     public ToggleGroup getDrawMethod() {
         return drawMethod;
     }
 
+    /**
+     * @return interpolation toggle group
+     */
     public ToggleGroup getInterpolation() {
         return interpolation;
     }
 
+    /**
+     * @return by sample toggle group
+     */
     public ToggleGroup getBySampleToggle() {
         return bySampleToggle;
     }
 
+    /**
+     * @return theme toggle group
+     */
     public ToggleGroup getThemeToggleGroup() {
         return themeToggleGroup;
     }
 
+    /**
+     * @return location
+     */
     public URL getLocation() {
         return location;
     }
 
+    /**
+     * @return features vertical box
+     */
     public VBox getFeaturesVBox() {
         return featuresVBox;
     }
 
+    /**
+     * @return interpolation vertical box
+     */
     public VBox getInterpolationVBox() {
         return interpolationVBox;
     }
 
+    /**
+     * @return samples view right vertical box
+     */
     public VBox getRightVBox() {
         return rightVBox;
     }
 
+    /**
+     * @return samples view left vertical box
+     */
     public VBox getSamplesLeftVBox() {
         return samplesLeftVBox;
     }
 
+    /**
+     * @return samples view mode vertical box
+     */
     public VBox getSamplesModeVBox() {
         return samplesModeVBox;
     }
 
+    /**
+     * @return align view left vertical box
+     */
     public VBox getAlignLeftVBox() {
         return alignLeftVBox;
     }
-
 
     //fields
     private static final Logger LOGGER = Logger.getLogger(Controller.class.getName());
@@ -1284,7 +1793,14 @@ public class Controller extends BaseController implements Initializable {
     private final BaseSampleFactory baseSampleFactory;
     private final ImageDataFactory imageDataFactory;
 
-
+    /**
+     * Constructs new Controller with given shared state, data generators factory, samples factory
+     * and images data factory.
+     * @param state shared state
+     * @param generatorFactory data generators factory
+     * @param baseSampleFactory samples factory
+     * @param imageDataFactory images data factory
+     */
     @Inject
     public Controller(final SharedState state, final DataGeneratorFactory generatorFactory,
                       final BaseSampleFactory baseSampleFactory, final ImageDataFactory imageDataFactory) {
@@ -1296,7 +1812,7 @@ public class Controller extends BaseController implements Initializable {
 
     @FXML
     void about() {
-        Alert alert = getAboutDialog();
+        Alert alert = StageUtils.getAboutDialog();
         DialogPane dialogPane = alert.getDialogPane();
         injectStylesheets(dialogPane);
         alert.show();
@@ -1304,12 +1820,12 @@ public class Controller extends BaseController implements Initializable {
 
     @FXML
     void applyDarkTheme() {
-        theme.set(THEME_DARK);
+        setDarkTheme();
     }
 
     @FXML
     void applyLightTheme() {
-        theme.set(THEME_LIGHT);
+        setLightTheme();
     }
 
     @FXML
@@ -1373,7 +1889,7 @@ public class Controller extends BaseController implements Initializable {
 
     @FXML
     void exportToCsv() {
-        File csvFile = getFile(root.getScene().getWindow());
+        File csvFile = getCSVFile(root.getScene().getWindow());
         if (csvFile != null) {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {
                 bw.write(createCsvContents());
@@ -1383,8 +1899,13 @@ public class Controller extends BaseController implements Initializable {
         }
     }
 
+    private void handleException(Exception e, String alert) {
+        LOGGER.log( Level.SEVERE, e.toString(), e );
+        Platform.runLater(() -> showAlert(alert));
+    }
+
     private void showAlert(final String content) {
-        Alert alert = getErrorAlert(content);
+        Alert alert = StageUtils.getErrorAlert(content);
         DialogPane dialogPane = alert.getDialogPane();
         injectStylesheets(dialogPane);
         alert.showAndWait();
@@ -1696,8 +2217,8 @@ public class Controller extends BaseController implements Initializable {
         final List<Node> nodes = getSelectedCharts();
         final Integer seriesSize = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
                 (CHART_SELECTED_STYLE)).map(n -> ((BarChart) n).getData().size()).reduce(Integer::sum).orElse(0);
-        chartsShiftButton.setDisable(nodes.size() != 1 || seriesSize <= 1);
-        chartsDeleteButton.setDisable(nodes.isEmpty());
+        chartsExtractButton.setDisable(nodes.size() != 1 || seriesSize <= 1);
+        chartsRemoveButton.setDisable(nodes.isEmpty());
         chartsMergeButton.setDisable(nodes.size() < 2);
         chartsMenuMergeCharts.setDisable(nodes.size() < 2);
         chartsMenuExtractChart.setDisable(nodes.size() != 1 || seriesSize <= 1);
@@ -1823,7 +2344,7 @@ public class Controller extends BaseController implements Initializable {
     void calculateResults() {
         final Stage dialog = showPopup("Calculating results");
         Task<? extends Void> task = createCalculateResultsTask(dialog);
-        startRunnable(task);
+        startTask(task);
     }
 
     private Task<? extends Void> createCalculateResultsTask(final Stage dialog) {
@@ -1862,7 +2383,7 @@ public class Controller extends BaseController implements Initializable {
     private void calculateResults(SamplesImageData img) {
         for (int i = 0; i < img.samples.size(); i++) {
             samples.add(new ArrayList<>());
-            BaseSample sample = img.samples.get(i);
+            BasicSample sample = img.samples.get(i);
             final Mat[] images = prepareImages(i, sample);
             final DataGenerator generator = generatorFactory.createGenerator();
             final Result result = generator.generateData(ImageUtils.getImagesCopy(images), samplesImageList.getItems());
@@ -1871,7 +2392,7 @@ public class Controller extends BaseController implements Initializable {
         }
     }
 
-    private Mat[] prepareImages(int i, BaseSample sample) {
+    private Mat[] prepareImages(int i, BasicSample sample) {
         int index = 0;
         final Mat[] images = new Mat[state.samplesImages.size()];
         for (String key : samplesImageList.getItems()) {
@@ -1925,11 +2446,11 @@ public class Controller extends BaseController implements Initializable {
 
     @FXML
     void loadImages() {
-        List<File> selectedFiles = getFiles(root.getScene().getWindow());
+        List<File> selectedFiles = getImageFiles(root.getScene().getWindow());
         if (selectedFiles != null) {
             final Stage dialog = showPopup("Loading images");
             Task<? extends Void> task = createLoadImagesTask(dialog, selectedFiles);
-            startRunnable(task);
+            startTask(task);
         }
     }
 
@@ -1983,11 +2504,6 @@ public class Controller extends BaseController implements Initializable {
         });
     }
 
-    private void handleException(Exception e, String alert) {
-        LOGGER.log( Level.SEVERE, e.toString(), e );
-        Platform.runLater(() -> showAlert(alert));
-    }
-
     private void handleException(Stage dialog, Exception e, String alert) {
         Platform.runLater(dialog::close);
         LOGGER.log( Level.SEVERE, e.toString(), e );
@@ -2037,22 +2553,22 @@ public class Controller extends BaseController implements Initializable {
         assert featuresBorderPane != null : "fx:id=\"featuresBorderPane\" was not injected: check your FXML file 'gifa.fxml'.";
         assert samplesBorderPane != null : "fx:id=\"samplesBorderPane\" was not injected: check your FXML file 'gifa.fxml'.";
         assert alignBorderPane != null : "fx:id=\"alignBorderPane\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert chartsDeleteButton != null : "fx:id=\"chartsDeleteButton\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert chartsRemoveButton != null : "fx:id=\"chartsRemoveButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert chartsMergeButton != null : "fx:id=\"chartsMergeButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert chartsRefreshButton != null : "fx:id=\"chartsRefreshButton\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert chartsShiftButton != null : "fx:id=\"chartsShiftButton\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert chartsExtractButton != null : "fx:id=\"chartsExtractButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert clearImagesButton != null : "fx:id=\"clearImagesButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert clearSamplesButton != null : "fx:id=\"clearSamplesButton\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert deleteImageButton != null : "fx:id=\"deleteImageButton\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert deleteSampleButton != null : "fx:id=\"deleteSampleButton\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert removeImageButton != null : "fx:id=\"removeImageButton\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert removeSampleButton != null : "fx:id=\"removeSampleButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert deselectAllButton != null : "fx:id=\"deselectAllButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert horizontalFlipButton != null : "fx:id=\"horizontalFlipButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert loadImagesButton != null : "fx:id=\"loadImagesButton\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert resultsButton != null : "fx:id=\"resultsButton\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert calculateResultsButton != null : "fx:id=\"calculateResultsButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert rotateLeftButton != null : "fx:id=\"rotateLeftButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert rotateRightButton != null : "fx:id=\"rotateRightButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert selectAllButton != null : "fx:id=\"selectAllButton\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert alignImagesButton != null : "fx:id=\"alignImagesButton\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert alignButton != null : "fx:id=\"alignButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert verticalFlipButton != null : "fx:id=\"verticalFlipButton\" was not injected: check your FXML file 'gifa.fxml'.";
         assert sampleBorderColor != null : "fx:id=\"sampleBorderColor\" was not injected: check your FXML file 'gifa.fxml'.";
         assert sampleFillColor != null : "fx:id=\"sampleFillColor\" was not injected: check your FXML file 'gifa.fxml'.";
@@ -2139,17 +2655,17 @@ public class Controller extends BaseController implements Initializable {
         assert navMenuImagesBySample != null : "fx:id=\"navMenuImagesBySample\" was not injected: check your FXML file 'gifa.fxml'.";
         assert navMenuSamples != null : "fx:id=\"navMenuSamples\" was not injected: check your FXML file 'gifa.fxml'.";
         assert navMenuAlign != null : "fx:id=\"navMenuAlign\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert runMenuResultsButton != null : "fx:id=\"runMenuResultsButton\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert runMenuAlignButton != null : "fx:id=\"runMenuAlignButton\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert runMenuCalculateResults != null : "fx:id=\"runMenuCalculateResults\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert runMenuAlign != null : "fx:id=\"runMenuAlign\" was not injected: check your FXML file 'gifa.fxml'.";
         assert samplesMenuClearSamples != null : "fx:id=\"samplesMenuClearSamples\" was not injected: check your FXML file 'gifa.fxml'.";
         assert samplesMenuCreateMode != null : "fx:id=\"samplesMenuCreateMode\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert samplesMenuDeleteSample != null : "fx:id=\"samplesMenuDeleteSample\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert samplesMenuRemoveSample != null : "fx:id=\"samplesMenuRemoveSample\" was not injected: check your FXML file 'gifa.fxml'.";
         assert samplesMenuDeselectAllFeatures != null : "fx:id=\"samplesMenuDeselectAllFeatures\" was not injected: check your FXML file 'gifa.fxml'.";
         assert samplesMenuRotateMode != null : "fx:id=\"samplesMenuRotateMode\" was not injected: check your FXML file 'gifa.fxml'.";
         assert samplesMenuSelectAllFeatures != null : "fx:id=\"samplesMenuSelectAllFeatures\" was not injected: check your FXML file 'gifa.fxml'.";
         assert samplesMenuSelectMode != null : "fx:id=\"samplesMenuSelectMode\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert alignMenuClear != null : "fx:id=\"alignMenuClear\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert alignMenuDeleteImage != null : "fx:id=\"alignMenuDeleteImage\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert alignMenuClearImages != null : "fx:id=\"alignMenuClearImages\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert alignMenuRemoveImage != null : "fx:id=\"alignMenuRemoveImage\" was not injected: check your FXML file 'gifa.fxml'.";
         assert alignMenuHorizontalFlip != null : "fx:id=\"alignMenuHorizontalFlip\" was not injected: check your FXML file 'gifa.fxml'.";
         assert alignMenuLoadImages != null : "fx:id=\"alignMenuLoadImages\" was not injected: check your FXML file 'gifa.fxml'.";
         assert alignMenuMenuRotateLeft != null : "fx:id=\"alignMenuMenuRotateLeft\" was not injected: check your FXML file 'gifa.fxml'.";
@@ -2176,7 +2692,7 @@ public class Controller extends BaseController implements Initializable {
         assert chartsTab != null : "fx:id=\"chartsTab\" was not injected: check your FXML file 'gifa.fxml'.";
         assert featuresTab != null : "fx:id=\"featuresTab\" was not injected: check your FXML file 'gifa.fxml'.";
         assert samplesTab != null : "fx:id=\"samplesTab\" was not injected: check your FXML file 'gifa.fxml'.";
-        assert toolboxTab != null : "fx:id=\"toolboxTab\" was not injected: check your FXML file 'gifa.fxml'.";
+        assert imageListTab != null : "fx:id=\"imageListTab\" was not injected: check your FXML file 'gifa.fxml'.";
         assert alignTab != null : "fx:id=\"alignTab\" was not injected: check your FXML file 'gifa.fxml'.";
         assert chartsTabPane != null : "fx:id=\"chartsTabPane\" was not injected: check your FXML file 'gifa.fxml'.";
         assert mainTabPane != null : "fx:id=\"mainTabPane\" was not injected: check your FXML file 'gifa.fxml'.";
@@ -2301,7 +2817,7 @@ public class Controller extends BaseController implements Initializable {
         });
     }
 
-    private void uncheck(MouseEvent event, ObjectProperty<? extends BaseSample> property, ImageView samplesImageView) {
+    private void uncheck(MouseEvent event, ObjectProperty<? extends BasicSample> property, ImageView samplesImageView) {
         final Rectangle rectangle = property.get().sampleArea;
         double dX = event.getX() / samplesImageView.getScaleX() - rectangle.getX();
         double dY = event.getY() / samplesImageView.getScaleY() - rectangle.getY();
@@ -2406,7 +2922,7 @@ public class Controller extends BaseController implements Initializable {
         });
     }
 
-    private void calculateZoom(BaseSample sample, ScrollPane pane, ImageView view) {
+    private void calculateZoom(BasicSample sample, ScrollPane pane, ImageView view) {
         double newX = Math.max(0, sample.sampleArea.getX() - 50);
         double newY = Math.max(0, sample.sampleArea.getY() - 50);
         double newWidth = sample.sampleArea.getWidth() + 100;
@@ -2461,8 +2977,8 @@ public class Controller extends BaseController implements Initializable {
     }
 
     private void disableChartsControls() {
-        chartsShiftButton.setDisable(true);
-        chartsDeleteButton.setDisable(true);
+        chartsExtractButton.setDisable(true);
+        chartsRemoveButton.setDisable(true);
         chartsMergeButton.setDisable(true);
         chartsMenuMergeCharts.setDisable(true);
         chartsMenuExtractChart.setDisable(true);
@@ -2493,8 +3009,7 @@ public class Controller extends BaseController implements Initializable {
 
     private void initializeStyle() {
         injectStylesheets(root);
-        String s = theme.get();
-        if (s.equals(BaseController.THEME_LIGHT)) {
+        if (isLightThemeSelected()) {
             themeToggleGroup.selectToggle(optionsMenuThemeLight);
         } else {
             themeToggleGroup.selectToggle(optionsMenuThemeDark);
@@ -2558,7 +3073,7 @@ public class Controller extends BaseController implements Initializable {
 
     private void setImagesControlsTooltips() {
         loadImagesButton.setTooltip(new Tooltip("Load images"));
-        deleteImageButton.setTooltip(new Tooltip("Remove image"));
+        removeImageButton.setTooltip(new Tooltip("Remove image"));
         clearImagesButton.setTooltip(new Tooltip("Clear image list"));
     }
 
@@ -2570,15 +3085,15 @@ public class Controller extends BaseController implements Initializable {
     }
 
     private void setSamplesControlsTooltips() {
-        deleteSampleButton.setTooltip(new Tooltip("Remove sample"));
+        removeSampleButton.setTooltip(new Tooltip("Remove sample"));
         clearSamplesButton.setTooltip(new Tooltip("Clear samples"));
     }
 
     private void setChartsControlsTooltips() {
         chartsRefreshButton.setTooltip(new Tooltip("Restore charts"));
         chartsMergeButton.setTooltip(new Tooltip("Merge charts"));
-        chartsShiftButton.setTooltip(new Tooltip("Extract chart"));
-        chartsDeleteButton.setTooltip(new Tooltip("Remove charts"));
+        chartsExtractButton.setTooltip(new Tooltip("Extract chart"));
+        chartsRemoveButton.setTooltip(new Tooltip("Remove charts"));
     }
 
     private void setImageViewControls(ImageView imageView, ScrollPane imageScrollPane, Group imageViewGroup, ComboBox<String> scaleCombo, Label
@@ -2750,18 +3265,18 @@ public class Controller extends BaseController implements Initializable {
         final BooleanBinding noImages = Bindings.or(emptyAlignImages, alignMenuNotVisible);
         final BooleanBinding bySampleTabAndChartsTabSelected = Bindings.and(chartsTabSelected, bySampleTabSelected);
 
-        alignImagesButton.disableProperty().bind(emptyAlignImages);
+        alignButton.disableProperty().bind(emptyAlignImages);
 
         chartsMenuRestoreCharts.disableProperty().bind(Bindings.or(Bindings.or(chartsBySampleSelected.not(),
                 bySampleTabSelected.not()), chartsMenu.visibleProperty().not()));
 
-        alignMenuClear.disableProperty().bind(noImages);
+        alignMenuClearImages.disableProperty().bind(noImages);
         alignMenuVerticalFlip.disableProperty().bind(disableAlignControls);
         alignMenuHorizontalFlip.disableProperty().bind(disableAlignControls);
         alignMenuMenuRotateLeft.disableProperty().bind(disableAlignControls);
         alignMenuMenuRotateRight.disableProperty().bind(disableAlignControls);
         alignMenuLoadImages.disableProperty().bind(alignMenuNotVisible);
-        alignMenuDeleteImage.disableProperty()
+        alignMenuRemoveImage.disableProperty()
                 .bind(Bindings.or(alignImageList.getSelectionModel().selectedItemProperty().isNull(), alignMenuNotVisible));
 
         editMenuZoomIn.disableProperty().bind(disableZoom);
@@ -2777,11 +3292,11 @@ public class Controller extends BaseController implements Initializable {
         navMenuImagesBySample.disableProperty().bind(Bindings.and
                 (bySampleTabAndChartsTabSelected, imagesBySampleRadioButton.selectedProperty()));
 
-        runMenuAlignButton.disableProperty().bind(noImages);
+        runMenuAlign.disableProperty().bind(noImages);
     }
 
     private void setImageControlsEnablementBindings() {
-        deleteImageButton.disableProperty().bind(alignImageList.getSelectionModel().selectedItemProperty().isNull());
+        removeImageButton.disableProperty().bind(alignImageList.getSelectionModel().selectedItemProperty().isNull());
         clearImagesButton.disableProperty().bind(Bindings.isEmpty(alignImageList.getItems()));
     }
 
@@ -2804,12 +3319,12 @@ public class Controller extends BaseController implements Initializable {
                 Bindings.or(emptyList, Bindings.or(noFeaturesAvailable, noFeaturesChosen)));
 
         samplesTab.disableProperty().bind(emptyList);
-        deleteSampleButton.disableProperty().bind(noSampleSelected);
+        removeSampleButton.disableProperty().bind(noSampleSelected);
         clearSamplesButton.disableProperty().bind(noSamplesAdded);
-        samplesMenuDeleteSample.disableProperty().bind(Bindings.or(noSampleSelected, samplesMenuNotVisible));
+        samplesMenuRemoveSample.disableProperty().bind(Bindings.or(noSampleSelected, samplesMenuNotVisible));
         samplesMenuClearSamples.disableProperty().bind(Bindings.or(samplesMenuNotVisible, noSamplesAdded));
-        resultsButton.disableProperty().bind(cannotCalculateResults);
-        runMenuResultsButton.disableProperty().bind(Bindings.or(samplesMenuNotVisible, cannotCalculateResults));
+        calculateResultsButton.disableProperty().bind(cannotCalculateResults);
+        runMenuCalculateResults.disableProperty().bind(Bindings.or(samplesMenuNotVisible, cannotCalculateResults));
     }
 
     private BooleanBinding getNoFeaturesChosenBinding() {
@@ -2948,7 +3463,7 @@ public class Controller extends BaseController implements Initializable {
         label.setText((int) img.image.get().getWidth() + "x" + (int) img.image.get().getHeight() + " px");
     }
 
-    private void hideAll(ObjectProperty<? extends BaseSample> property, ImageView view, Label label) {
+    private void hideAll(ObjectProperty<? extends BasicSample> property, ImageView view, Label label) {
         view.setScaleX(1.0);
         view.setImage(null);
         label.setText("");
@@ -2959,7 +3474,7 @@ public class Controller extends BaseController implements Initializable {
     void align() {
         final Stage dialog = showPopup("Aligning images");
         Task<Void> task = createAlignTask(dialog);
-        startRunnable(task);
+        startTask(task);
     }
 
     private Task<Void> createAlignTask(final Stage dialog) {
@@ -2973,8 +3488,8 @@ public class Controller extends BaseController implements Initializable {
     }
 
     private Stage showPopup(String info) {
-        final Stage dialog = initDialog(root.getScene().getWindow());
-        final HBox box = getHBoxWithLabel(info);
+        final Stage dialog = StageUtils.initDialog(root.getScene().getWindow());
+        final HBox box = getHBoxWithLabelAndProgressIndicator(info);
         Scene scene = new Scene(box);
         injectStylesheets(box);
         dialog.setScene(scene);
@@ -2989,7 +3504,7 @@ public class Controller extends BaseController implements Initializable {
         int i = 0;
         for (String key : alignImageList.getItems()) {
             images[i] = state.imagesToAlign.get(key).imageData;
-            points[i] = state.imagesToAlign.get(key).triangle.getMatOfPoints();
+            points[i] = state.imagesToAlign.get(key).triangle.getMatOfVertices();
             i++;
         }
         int interpolation = getInterpolationType();
@@ -3092,23 +3607,37 @@ public class Controller extends BaseController implements Initializable {
     void exportToPng() {
         File selectedDirectory = getDirectory(root.getScene().getWindow());
         if (selectedDirectory != null) {
-            if (selectedDirectory.canWrite())
-                writeImages(selectedDirectory);
+            if (selectedDirectory.canWrite()) {
+                final Stage dialog = showPopup("Saving images");
+                Task<Void> task = createWriteImagesTask(selectedDirectory, dialog);
+                startTask(task);
+            }
             else
                 Platform.runLater(() -> showAlert("Save failed! Check your write permissions."));
         }
     }
 
-    private void writeImages(File selectedDirectory) {
+    private Task<Void> createWriteImagesTask(File selectedDirectory, final Stage dialog) {
+        return new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                writeImages(selectedDirectory, dialog);
+                return null;
+            }
+        };
+    }
+
+    private void writeImages(File selectedDirectory, final Stage dialog) {
         for (int i = 0; i < samples.size(); i++) {
             List<Pair<String, ImageView>> currentSamples = samples.get(i);
             for (int j = 0; j < currentSamples.size(); j++) {
                 try {
                     writeImage(selectedDirectory, currentSamples, i, j);
                 } catch (IOException e) {
-                    handleException(e, "Save failed! Check your write permissions.");
+                    handleException(dialog, e, "Save failed! Check your write permissions.");
                 }
             }
+            Platform.runLater(dialog::close);
         }
     }
 
