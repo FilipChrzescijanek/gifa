@@ -5,10 +5,11 @@ package pwr.chrzescijanek.filip.gifa.core.generator;
  */
 public interface FunctionManager {
 
-    /**
-     * Manages functions of given factory.
-     * @param factory factory to be managed
-     */
-    void manageFunctions(final DataGeneratorFactory factory);
+	/**
+	 * Manages functions of given factory.
+	 *
+	 * @param factory factory to be managed
+	 */
+	void manageFunctions(DataGeneratorFactory factory);
 
 }

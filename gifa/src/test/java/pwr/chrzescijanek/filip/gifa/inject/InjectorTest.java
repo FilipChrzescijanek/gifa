@@ -5,69 +5,72 @@ import org.junit.Test;
 import pwr.chrzescijanek.filip.gifa.controller.Controller;
 import pwr.chrzescijanek.filip.gifa.core.generator.DataGeneratorFactory;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageDataFactory;
-import pwr.chrzescijanek.filip.gifa.model.sample.BaseSampleFactory;
+import pwr.chrzescijanek.filip.gifa.model.sample.BasicSampleFactory;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
 
 import javax.inject.Inject;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static pwr.chrzescijanek.filip.gifa.inject.Injector.instantiate;
 import static pwr.chrzescijanek.filip.gifa.inject.Injector.instantiateComponent;
 
 public class InjectorTest {
 
-    private class ControllerMock extends Controller {
+	@After
+	public void tearDown() throws Exception {
+		Injector.reset();
+	}
 
-        SharedState getSharedState() {
-            return state;
-        }
+	@Test
+	public void instantiateComponentTest() throws Exception {
+		final ControllerMock firstMock = instantiateComponent(ControllerMock.class);
+		final ControllerMock secondMock = instantiateComponent(ControllerMock.class);
+		assertEquals(firstMock, secondMock);
+		assertMockFieldsNotNull(firstMock, secondMock);
+	}
 
-        DataGeneratorFactory getDataGeneratorFactory() {
-            return dataGeneratorFactory;
-        }
+	private void assertMockFieldsNotNull(final ControllerMock... mocks) {
+		for (final ControllerMock mock : mocks) {
+			assertNotNull(mock.getSharedState());
+			assertNotNull(mock.getDataGeneratorFactory());
+			assertNotNull(mock.getBaseSampleFactory());
+			assertNotNull(mock.getImageDataFactory());
+		}
+	}
 
-        BaseSampleFactory getBaseSampleFactory() {
-            return baseSampleFactory;
-        }
+	@Test
+	public void instantiateTest() throws Exception {
+		final ControllerMock firstMock = instantiate(ControllerMock.class);
+		final ControllerMock secondMock = instantiate(ControllerMock.class);
+		assertNotEquals(firstMock, secondMock);
+		assertMockFieldsNotNull(firstMock, secondMock);
+	}
 
-        ImageDataFactory getImageDataFactory() {
-            return imageDataFactory;
-        }
+	private class ControllerMock extends Controller {
 
-        @Inject
-        public ControllerMock(SharedState state, DataGeneratorFactory generatorFactory, BaseSampleFactory baseSampleFactory, ImageDataFactory imageDataFactory) {
-            super(state, generatorFactory, baseSampleFactory, imageDataFactory);
-        }
-    }
+		@Inject
+		public ControllerMock(final SharedState state, final DataGeneratorFactory generatorFactory,
+		                      final BasicSampleFactory basicSampleFactory, final ImageDataFactory imageDataFactory) {
+			super(state, generatorFactory, basicSampleFactory, imageDataFactory);
+		}
 
-    @After
-    public void tearDown() throws Exception {
-        Injector.reset();
-    }
+		SharedState getSharedState() {
+			return state;
+		}
 
-    @Test
-    public void instantiateComponentTest() throws Exception {
-        ControllerMock firstMock = instantiateComponent(ControllerMock.class);
-        ControllerMock secondMock = instantiateComponent(ControllerMock.class);
-        assertEquals(firstMock, secondMock);
-        assertMockFieldsNotNull(firstMock, secondMock);
-    }
+		DataGeneratorFactory getDataGeneratorFactory() {
+			return dataGeneratorFactory;
+		}
 
-    @Test
-    public void instantiateTest() throws Exception {
-        ControllerMock firstMock = instantiate(ControllerMock.class);
-        ControllerMock secondMock = instantiate(ControllerMock.class);
-        assertNotEquals(firstMock, secondMock);
-        assertMockFieldsNotNull(firstMock, secondMock);
-    }
+		BasicSampleFactory getBaseSampleFactory() {
+			return basicSampleFactory;
+		}
 
-    private void assertMockFieldsNotNull(ControllerMock... mocks) {
-        for (ControllerMock mock : mocks) {
-            assertNotNull(mock.getSharedState());
-            assertNotNull(mock.getDataGeneratorFactory());
-            assertNotNull(mock.getBaseSampleFactory());
-            assertNotNull(mock.getImageDataFactory());
-        }
-    }
+		ImageDataFactory getImageDataFactory() {
+			return imageDataFactory;
+		}
+	}
 
 }

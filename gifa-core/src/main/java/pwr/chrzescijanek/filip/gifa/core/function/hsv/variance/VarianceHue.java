@@ -12,15 +12,14 @@ import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
  */
 public final class VarianceHue implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public VarianceHue() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public VarianceHue() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        convertType(images, COLOR_BGR2HSV_FULL);
-        return calculateVariances(images, 0);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		convertType(images, COLOR_BGR2HSV_FULL);
+		return calculateVariances(images, 0);
+	}
 }

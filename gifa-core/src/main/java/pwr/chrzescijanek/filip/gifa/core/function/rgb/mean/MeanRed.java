@@ -10,14 +10,13 @@ import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateMean
  */
 public final class MeanRed implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public MeanRed() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public MeanRed() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        return calculateMeans(images, 2);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		return calculateMeans(images, 2);
+	}
 }

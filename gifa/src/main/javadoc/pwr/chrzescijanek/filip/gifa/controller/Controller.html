@@ -141,7 +141,7 @@ implements javafx.fxml.Initializable</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected <a href="../../../../../pwr/chrzescijanek/filip/gifa/model/sample/BaseSampleFactory.html" title="class in pwr.chrzescijanek.filip.gifa.model.sample">BaseSampleFactory</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../pwr/chrzescijanek/filip/gifa/controller/Controller.html#baseSampleFactory">baseSampleFactory</a></span></code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../pwr/chrzescijanek/filip/gifa/controller/Controller.html#basicSampleFactory">basicSampleFactory</a></span></code>
 <div class="block">Samples factory.</div>
 </td>
 </tr>
@@ -181,7 +181,7 @@ implements javafx.fxml.Initializable</pre>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../../../pwr/chrzescijanek/filip/gifa/controller/Controller.html#Controller-pwr.chrzescijanek.filip.gifa.util.SharedState-pwr.chrzescijanek.filip.gifa.core.generator.DataGeneratorFactory-pwr.chrzescijanek.filip.gifa.model.sample.BaseSampleFactory-pwr.chrzescijanek.filip.gifa.model.image.ImageDataFactory-">Controller</a></span>(<a href="../../../../../pwr/chrzescijanek/filip/gifa/util/SharedState.html" title="class in pwr.chrzescijanek.filip.gifa.util">SharedState</a>&nbsp;state,
           pwr.chrzescijanek.filip.gifa.core.generator.DataGeneratorFactory&nbsp;dataGeneratorFactory,
-          <a href="../../../../../pwr/chrzescijanek/filip/gifa/model/sample/BaseSampleFactory.html" title="class in pwr.chrzescijanek.filip.gifa.model.sample">BaseSampleFactory</a>&nbsp;baseSampleFactory,
+          <a href="../../../../../pwr/chrzescijanek/filip/gifa/model/sample/BaseSampleFactory.html" title="class in pwr.chrzescijanek.filip.gifa.model.sample">BaseSampleFactory</a>&nbsp;basicSampleFactory,
           <a href="../../../../../pwr/chrzescijanek/filip/gifa/model/image/ImageDataFactory.html" title="class in pwr.chrzescijanek.filip.gifa.model.image">ImageDataFactory</a>&nbsp;imageDataFactory)</code>
 <div class="block">Constructs new Controller with given shared state, data generators factory, samples factory
  and image data factory.</div>
@@ -926,13 +926,13 @@ implements javafx.fxml.Initializable</pre>
 <div class="block">Data generators factory.</div>
 </li>
 </ul>
-<a name="baseSampleFactory">
+<a name="basicSampleFactory">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>baseSampleFactory</h4>
-<pre>protected final&nbsp;<a href="../../../../../pwr/chrzescijanek/filip/gifa/model/sample/BaseSampleFactory.html" title="class in pwr.chrzescijanek.filip.gifa.model.sample">BaseSampleFactory</a> baseSampleFactory</pre>
+<h4>basicSampleFactory</h4>
+<pre>protected final&nbsp;<a href="../../../../../pwr/chrzescijanek/filip/gifa/model/sample/BaseSampleFactory.html" title="class in pwr.chrzescijanek.filip.gifa.model.sample">BaseSampleFactory</a> basicSampleFactory</pre>
 <div class="block">Samples factory.</div>
 </li>
 </ul>
@@ -963,7 +963,7 @@ implements javafx.fxml.Initializable</pre>
 <pre>@Inject
 public&nbsp;Controller(<a href="../../../../../pwr/chrzescijanek/filip/gifa/util/SharedState.html" title="class in pwr.chrzescijanek.filip.gifa.util">SharedState</a>&nbsp;state,
                            pwr.chrzescijanek.filip.gifa.core.generator.DataGeneratorFactory&nbsp;dataGeneratorFactory,
-                           <a href="../../../../../pwr/chrzescijanek/filip/gifa/model/sample/BaseSampleFactory.html" title="class in pwr.chrzescijanek.filip.gifa.model.sample">BaseSampleFactory</a>&nbsp;baseSampleFactory,
+                           <a href="../../../../../pwr/chrzescijanek/filip/gifa/model/sample/BaseSampleFactory.html" title="class in pwr.chrzescijanek.filip.gifa.model.sample">BaseSampleFactory</a>&nbsp;basicSampleFactory,
                            <a href="../../../../../pwr/chrzescijanek/filip/gifa/model/image/ImageDataFactory.html" title="class in pwr.chrzescijanek.filip.gifa.model.image">ImageDataFactory</a>&nbsp;imageDataFactory)</pre>
 <div class="block">Constructs new Controller with given shared state, data generators factory, samples factory
  and image data factory.</div>
@@ -971,7 +971,7 @@ public&nbsp;Controller(<a href="../../../../../pwr/chrzescijanek/filip/gifa/util
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>state</code> - shared state</dd>
 <dd><code>dataGeneratorFactory</code> - data generators factory</dd>
-<dd><code>baseSampleFactory</code> - samples factory</dd>
+<dd><code>basicSampleFactory</code> - samples factory</dd>
 <dd><code>imageDataFactory</code> - image data factory</dd>
 </dl>
 </li>

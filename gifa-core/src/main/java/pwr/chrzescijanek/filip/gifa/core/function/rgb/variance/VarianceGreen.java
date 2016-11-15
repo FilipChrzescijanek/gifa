@@ -10,14 +10,13 @@ import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateVari
  */
 public final class VarianceGreen implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public VarianceGreen() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public VarianceGreen() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        return calculateVariances(images, 1);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		return calculateVariances(images, 1);
+	}
 }

@@ -1,6 +1,11 @@
 package pwr.chrzescijanek.filip.gifa.core.generator;
 
-import pwr.chrzescijanek.filip.gifa.core.function.*;
+import pwr.chrzescijanek.filip.gifa.core.function.Canny;
+import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
+import pwr.chrzescijanek.filip.gifa.core.function.Roberts;
+import pwr.chrzescijanek.filip.gifa.core.function.Scharr;
+import pwr.chrzescijanek.filip.gifa.core.function.Sobel;
+import pwr.chrzescijanek.filip.gifa.core.function.SobelValue;
 import pwr.chrzescijanek.filip.gifa.core.function.hsv.entropy.EntropyHue;
 import pwr.chrzescijanek.filip.gifa.core.function.hsv.entropy.EntropySaturation;
 import pwr.chrzescijanek.filip.gifa.core.function.hsv.entropy.EntropyValue;
@@ -48,146 +53,150 @@ import java.util.TreeSet;
  */
 public class DataGeneratorFactory {
 
-    private final Map<String, EvaluationFunction> availableFunctions = new TreeMap<>();
-    private final Map<String, EvaluationFunction> chosenFunctions = new TreeMap<>();
+	private final Map<String, EvaluationFunction> availableFunctions = new TreeMap<>();
+	private final Map<String, EvaluationFunction> chosenFunctions = new TreeMap<>();
 
-    /**
-     * Default constructor, injects basic functions.
-     */
-    public DataGeneratorFactory() {
-        injectBasicFunctions();
-    }
+	/**
+	 * Default constructor, injects basic functions.
+	 */
+	public DataGeneratorFactory() {
+		injectBasicFunctions();
+	}
 
-    /**
-     * Constructs a new DataGenerator with chosen functions.
-     * @return new DataGenerator class instance
-     */
-    public DataGenerator createGenerator() {
-        return new DataGenerator(chosenFunctions);
-    }
+	/**
+	 * Injects basic functions.
+	 */
+	public void injectBasicFunctions() {
+		//		injectRedFunctions();
+		//		injectGreenFunctions();
+		//		injectBlueFunctions();
+		//		injectHueFunctions();
+		//		injectSaturationFunctions();
+		//		injectValueFunctions();
+		injectFunction("Sobel3 mean", new Sobel(3));
+		injectFunction("SobelValue7 mean", new SobelValue(7));
+		injectFunction("Scharr mean", new Scharr());
+		injectFunction("Canny mean", new Canny());
+		injectFunction("Roberts cross mean", new Roberts());
+	}
 
-    /**
-     * Injects basic functions.
-     */
-    public void injectBasicFunctions() {
-//		injectRedFunctions();
-//		injectGreenFunctions();
-//		injectBlueFunctions();
-//		injectHueFunctions();
-//		injectSaturationFunctions();
-//		injectValueFunctions();
-        injectFunction("Sobel3 mean", new Sobel(3));
-        injectFunction("SobelValue7 mean", new SobelValue(7));
-        injectFunction("Scharr mean", new Scharr());
-        injectFunction("Canny mean", new Canny());
-        injectFunction("Roberts cross mean", new Roberts());
-    }
+	/**
+	 * Injects given function with given name.
+	 *
+	 * @param name     function name
+	 * @param function function to be injected
+	 */
+	public void injectFunction(final String name, final EvaluationFunction function) {
+		availableFunctions.put(name, function);
+	}
 
-    private void injectRedFunctions() {
-        injectFunction("Red mean", new MeanRed());
-        injectFunction("Red variance", new VarianceRed());
-        injectFunction("Red std. deviation", new StdDeviationRed());
-        injectFunction("Red entropy", new EntropyRed());
-        injectFunction("Red linear fuzziness", new LinearFuzzinessRed());
-        injectFunction("Red quadratic fuzziness", new QuadraticFuzzinessRed());
-    }
+	/**
+	 * Constructs a new DataGenerator with chosen functions.
+	 *
+	 * @return new DataGenerator class instance
+	 */
+	public DataGenerator createGenerator() {
+		return new DataGenerator(chosenFunctions);
+	}
 
-    private void injectGreenFunctions() {
-        injectFunction("Green mean", new MeanGreen());
-        injectFunction("Green variance", new VarianceGreen());
-        injectFunction("Green std. deviation", new StdDeviationGreen());
-        injectFunction("Green entropy", new EntropyGreen());
-        injectFunction("Green linear fuzziness", new LinearFuzzinessGreen());
-        injectFunction("Green quadratic fuzziness", new QuadraticFuzzinessGreen());
-    }
+	private void injectRedFunctions() {
+		injectFunction("Red mean", new MeanRed());
+		injectFunction("Red variance", new VarianceRed());
+		injectFunction("Red std. deviation", new StdDeviationRed());
+		injectFunction("Red entropy", new EntropyRed());
+		injectFunction("Red linear fuzziness", new LinearFuzzinessRed());
+		injectFunction("Red quadratic fuzziness", new QuadraticFuzzinessRed());
+	}
 
-    private void injectBlueFunctions() {
-        injectFunction("Blue mean", new MeanBlue());
-        injectFunction("Blue variance", new VarianceBlue());
-        injectFunction("Blue std. deviation", new StdDeviationBlue());
-        injectFunction("Blue entropy", new EntropyBlue());
-        injectFunction("Blue linear fuzziness", new LinearFuzzinessBlue());
-        injectFunction("Blue quadratic fuzziness", new QuadraticFuzzinessBlue());
-    }
+	private void injectGreenFunctions() {
+		injectFunction("Green mean", new MeanGreen());
+		injectFunction("Green variance", new VarianceGreen());
+		injectFunction("Green std. deviation", new StdDeviationGreen());
+		injectFunction("Green entropy", new EntropyGreen());
+		injectFunction("Green linear fuzziness", new LinearFuzzinessGreen());
+		injectFunction("Green quadratic fuzziness", new QuadraticFuzzinessGreen());
+	}
 
-    private void injectHueFunctions() {
-        injectFunction("Hue mean", new MeanHue());
-        injectFunction("Hue variance", new VarianceHue());
-        injectFunction("Hue std. deviation", new StdDeviationHue());
-        injectFunction("Hue entropy", new EntropyHue());
-        injectFunction("Hue linear fuzziness", new LinearFuzzinessHue());
-        injectFunction("Hue quadratic fuzziness", new QuadraticFuzzinessHue());
-    }
+	private void injectBlueFunctions() {
+		injectFunction("Blue mean", new MeanBlue());
+		injectFunction("Blue variance", new VarianceBlue());
+		injectFunction("Blue std. deviation", new StdDeviationBlue());
+		injectFunction("Blue entropy", new EntropyBlue());
+		injectFunction("Blue linear fuzziness", new LinearFuzzinessBlue());
+		injectFunction("Blue quadratic fuzziness", new QuadraticFuzzinessBlue());
+	}
 
-    private void injectSaturationFunctions() {
-        injectFunction("Saturation mean", new MeanSaturation());
-        injectFunction("Saturation variance", new VarianceSaturation());
-        injectFunction("Saturation std. deviation", new StdDeviationSaturation());
-        injectFunction("Saturation entropy", new EntropySaturation());
-        injectFunction("Saturation linear fuzziness", new LinearFuzzinessSaturation());
-        injectFunction("Saturation quadratic fuzziness", new QuadraticFuzzinessSaturation());
-    }
+	private void injectHueFunctions() {
+		injectFunction("Hue mean", new MeanHue());
+		injectFunction("Hue variance", new VarianceHue());
+		injectFunction("Hue std. deviation", new StdDeviationHue());
+		injectFunction("Hue entropy", new EntropyHue());
+		injectFunction("Hue linear fuzziness", new LinearFuzzinessHue());
+		injectFunction("Hue quadratic fuzziness", new QuadraticFuzzinessHue());
+	}
 
-    private void injectValueFunctions() {
-        injectFunction("Value mean", new MeanValue());
-        injectFunction("Value variance", new VarianceValue());
-        injectFunction("Value std. deviation", new StdDeviationValue());
-        injectFunction("Value entropy", new EntropyValue());
-        injectFunction("Value linear fuzziness", new LinearFuzzinessValue());
-        injectFunction("Value quadratic fuzziness", new QuadraticFuzzinessValue());
-    }
+	private void injectSaturationFunctions() {
+		injectFunction("Saturation mean", new MeanSaturation());
+		injectFunction("Saturation variance", new VarianceSaturation());
+		injectFunction("Saturation std. deviation", new StdDeviationSaturation());
+		injectFunction("Saturation entropy", new EntropySaturation());
+		injectFunction("Saturation linear fuzziness", new LinearFuzzinessSaturation());
+		injectFunction("Saturation quadratic fuzziness", new QuadraticFuzzinessSaturation());
+	}
 
-    /**
-     * Injects given function with given name.
-     * @param name function name
-     * @param function function to be injected
-     */
-    public void injectFunction(final String name, final EvaluationFunction function) {
-        availableFunctions.put(name, function);
-    }
+	private void injectValueFunctions() {
+		injectFunction("Value mean", new MeanValue());
+		injectFunction("Value variance", new VarianceValue());
+		injectFunction("Value std. deviation", new StdDeviationValue());
+		injectFunction("Value entropy", new EntropyValue());
+		injectFunction("Value linear fuzziness", new LinearFuzzinessValue());
+		injectFunction("Value quadratic fuzziness", new QuadraticFuzzinessValue());
+	}
 
-    /**
-     * Clears available functions.
-     */
-    public void clearAvailableFunctions() {
-        availableFunctions.clear();
-    }
+	/**
+	 * Clears available functions.
+	 */
+	public void clearAvailableFunctions() {
+		availableFunctions.clear();
+	}
 
-    /**
-     * @return available functions
-     */
-    public Set<String> getAvailableFunctionsNames() {
-        return new TreeSet<>(availableFunctions.keySet());
-    }
+	/**
+	 * @return available functions
+	 */
+	public Set<String> getAvailableFunctionsNames() {
+		return new TreeSet<>(availableFunctions.keySet());
+	}
 
-    /**
-     * Chooses all available functions.
-     */
-    public void chooseAllAvailableFunctions() {
-        chosenFunctions.putAll(availableFunctions);
-    }
+	/**
+	 * Chooses all available functions.
+	 */
+	public void chooseAllAvailableFunctions() {
+		chosenFunctions.putAll(availableFunctions);
+	}
 
-    /**
-     * Chooses function with given name.
-     * @param name function name
-     */
-    public void chooseFunction(final String name) {
-        chosenFunctions.put(name, availableFunctions.get(name));
-    }
+	/**
+	 * Chooses function with given name.
+	 *
+	 * @param name function name
+	 */
+	public void chooseFunction(final String name) {
+		chosenFunctions.put(name, availableFunctions.get(name));
+	}
 
-    /**
-     * Deselects function with given name.
-     * @param name function name
-     */
-    public void deselectFunction(final String name) {
-        chosenFunctions.remove(name);
-    }
+	/**
+	 * Deselects function with given name.
+	 *
+	 * @param name function name
+	 */
+	public void deselectFunction(final String name) {
+		chosenFunctions.remove(name);
+	}
 
-    /**
-     * Clears chosen functions.
-     */
-    public void clearChosenFunctions() {
-        chosenFunctions.clear();
-    }
+	/**
+	 * Clears chosen functions.
+	 */
+	public void clearChosenFunctions() {
+		chosenFunctions.clear();
+	}
 
 }

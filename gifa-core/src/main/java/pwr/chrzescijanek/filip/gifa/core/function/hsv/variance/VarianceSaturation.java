@@ -12,15 +12,14 @@ import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
  */
 public final class VarianceSaturation implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public VarianceSaturation() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public VarianceSaturation() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        convertType(images, COLOR_BGR2HSV_FULL);
-        return calculateVariances(images, 1);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		convertType(images, COLOR_BGR2HSV_FULL);
+		return calculateVariances(images, 1);
+	}
 }

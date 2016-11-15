@@ -12,15 +12,14 @@ import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
  */
 public final class EntropySaturation implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public EntropySaturation() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public EntropySaturation() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        convertType(images, COLOR_BGR2HSV_FULL);
-        return calculateEntropies(images, 1);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		convertType(images, COLOR_BGR2HSV_FULL);
+		return calculateEntropies(images, 1);
+	}
 }

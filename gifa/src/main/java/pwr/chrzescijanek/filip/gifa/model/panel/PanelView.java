@@ -42,10 +42,11 @@ public abstract class PanelView extends ImageView {
 
 	/**
 	 * Constructs a new PanelView given JavaFX image and sample.
-	 * @param image JavaFX image
+	 *
+	 * @param image  JavaFX image
 	 * @param sample sample that will be shown
-     */
-	protected PanelView( final Image image, final BasicSample sample ) {
+	 */
+	protected PanelView(final Image image, final BasicSample sample) {
 		super(image);
 		this.sample = sample;
 		addListeners();
@@ -55,31 +56,21 @@ public abstract class PanelView extends ImageView {
 		createClip();
 	}
 
-	/**
-	 * Handles mouse single click.
-	 */
-	protected abstract void setOnMouseClicked();
+	private void addListeners() {
+		setOnMousePressed();
+		setOnMouseClicked();
+		setOnMouseDragged();
+		setOnScroll();
+	}
 
-	/**
-	 * Handles mouse drag.
-	 */
-	protected abstract void setOnMouseDragged();
-
-	/**
-	 * Handles scroll event.
-	 */
-	protected abstract void setOnScroll();
-
-	/**
-	 * Moves sample center by the difference between given mouse event position and drag start position.
-	 * @param event mouse event
-     */
-	protected void moveSampleCenter( final MouseEvent event ) {
-		final double deltaX = -( event.getX() - startX );
-		final double deltaY = -( event.getY() - startY );
-		startX = event.getX();
-		startY = event.getY();
-		sample.moveCenterBy(deltaX, deltaY);
+	private void setViewport() {
+		final Rectangle2D rectangle2D = new Rectangle2D(sample.sampleArea.getX(), sample.sampleArea.getY(),
+		                                                sample.sampleArea.getWidth(), sample.sampleArea.getHeight());
+		setViewport(rectangle2D);
+		onXPropertyChanged();
+		onYPropertyChanged();
+		onWidthPropertyChanged();
+		onHeightPropertyChanged();
 	}
 
 	private void bindScale() {
@@ -99,62 +90,6 @@ public abstract class PanelView extends ImageView {
 		});
 	}
 
-	private void addListeners() {
-		setOnMousePressed();
-		setOnMouseClicked();
-		setOnMouseDragged();
-		setOnScroll();
-	}
-
-	private void setOnMousePressed() {
-		setOnMousePressed(event -> {
-			startX = event.getX();
-			startY = event.getY();
-		});
-	}
-
-	private void setViewport() {
-		Rectangle2D rectangle2D = new Rectangle2D(sample.sampleArea.getX(), sample.sampleArea.getY(),
-				sample.sampleArea.getWidth(), sample.sampleArea.getHeight());
-		setViewport(rectangle2D);
-		onXPropertyChanged();
-		onYPropertyChanged();
-		onWidthPropertyChanged();
-		onHeightPropertyChanged();
-	}
-
-	private void onXPropertyChanged() {
-		sample.sampleArea.xProperty().addListener(( observable, oldValue, newValue ) -> {
-			Rectangle2D rec2D = new Rectangle2D(newValue.doubleValue(), sample.sampleArea.getY(),
-					sample.sampleArea.getWidth(), sample.sampleArea.getHeight());
-			setViewport(rec2D);
-		});
-	}
-
-	private void onYPropertyChanged() {
-		sample.sampleArea.yProperty().addListener(( observable, oldValue, newValue ) -> {
-			Rectangle2D rec2D = new Rectangle2D(sample.sampleArea.getX(), newValue.doubleValue(),
-					sample.sampleArea.getWidth(), sample.sampleArea.getHeight());
-			setViewport(rec2D);
-		});
-	}
-
-	private void onWidthPropertyChanged() {
-		sample.sampleArea.widthProperty().addListener(( observable, oldValue, newValue ) -> {
-			Rectangle2D rec2D = new Rectangle2D(sample.sampleArea.getX(), sample.sampleArea.getY(),
-					newValue.doubleValue(), sample.sampleArea.getHeight());
-			setViewport(rec2D);
-		});
-	}
-
-	private void onHeightPropertyChanged() {
-		sample.sampleArea.heightProperty().addListener(( observable, oldValue, newValue ) -> {
-			Rectangle2D rec2D = new Rectangle2D(sample.sampleArea.getX(), sample.sampleArea.getY(),
-					sample.sampleArea.getWidth(), newValue.doubleValue());
-			setViewport(rec2D);
-		});
-	}
-
 	private void createClip() {
 		clip.centerXProperty().bind(sample.sampleArea.widthProperty().divide(2.0).multiply(scale));
 		clip.centerYProperty().bind(sample.sampleArea.heightProperty().divide(2.0).multiply(scale));
@@ -164,6 +99,73 @@ public abstract class PanelView extends ImageView {
 		clip.scaleYProperty().bind(scale);
 		clip.rotateProperty().bind(sample.rotateProperty());
 		setClip(clip);
+	}
+
+	private void setOnMousePressed() {
+		setOnMousePressed(event -> {
+			startX = event.getX();
+			startY = event.getY();
+		});
+	}
+
+	/**
+	 * Handles mouse single click.
+	 */
+	protected abstract void setOnMouseClicked();
+
+	/**
+	 * Handles mouse drag.
+	 */
+	protected abstract void setOnMouseDragged();
+
+	/**
+	 * Handles scroll event.
+	 */
+	protected abstract void setOnScroll();
+
+	private void onXPropertyChanged() {
+		sample.sampleArea.xProperty().addListener((observable, oldValue, newValue) -> {
+			final Rectangle2D rec2D = new Rectangle2D(newValue.doubleValue(), sample.sampleArea.getY(),
+			                                          sample.sampleArea.getWidth(), sample.sampleArea.getHeight());
+			setViewport(rec2D);
+		});
+	}
+
+	private void onYPropertyChanged() {
+		sample.sampleArea.yProperty().addListener((observable, oldValue, newValue) -> {
+			final Rectangle2D rec2D = new Rectangle2D(sample.sampleArea.getX(), newValue.doubleValue(),
+			                                          sample.sampleArea.getWidth(), sample.sampleArea.getHeight());
+			setViewport(rec2D);
+		});
+	}
+
+	private void onWidthPropertyChanged() {
+		sample.sampleArea.widthProperty().addListener((observable, oldValue, newValue) -> {
+			final Rectangle2D rec2D = new Rectangle2D(sample.sampleArea.getX(), sample.sampleArea.getY(),
+			                                          newValue.doubleValue(), sample.sampleArea.getHeight());
+			setViewport(rec2D);
+		});
+	}
+
+	private void onHeightPropertyChanged() {
+		sample.sampleArea.heightProperty().addListener((observable, oldValue, newValue) -> {
+			final Rectangle2D rec2D = new Rectangle2D(sample.sampleArea.getX(), sample.sampleArea.getY(),
+			                                          sample.sampleArea.getWidth(), newValue.doubleValue());
+			setViewport(rec2D);
+		});
+	}
+
+	/**
+	 * Moves sample center by the difference between given mouse event position and drag start position.
+	 *
+	 * @param event mouse event
+	 */
+	protected void moveSampleCenter(final MouseEvent event) {
+		final double deltaX = -(event.getX() - startX);
+		final double deltaY = -(event.getY() - startY);
+		startX = event.getX();
+		startY = event.getY();
+		sample.moveCenterBy(deltaX, deltaY);
 	}
 
 }

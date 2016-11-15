@@ -1,6 +1,10 @@
 package pwr.chrzescijanek.filip.gifa.controller;
 
-import javafx.beans.property.*;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -23,186 +27,196 @@ import java.util.prefs.Preferences;
  */
 public class BaseController {
 
-    private static final String THEME_PREFERENCE_KEY = "gifa.theme";
-    private static final String THEME_DARK = "/css/theme-dark.css";
-    private static final String THEME_LIGHT = "/css/theme-light.css";
+	private static final String THEME_PREFERENCE_KEY = "gifa.theme";
 
-    /**
-     * Controller theme.
-     */
-    protected static final StringProperty theme = new SimpleStringProperty(BaseController.THEME_LIGHT);
+	private static final String THEME_DARK = "/css/theme-dark.css";
 
-    /**
-     * Panel columns.
-     */
-    protected final IntegerProperty noOfColumns = new SimpleIntegerProperty(1);
+	private static final String THEME_LIGHT = "/css/theme-light.css";
 
-    /**
-     * Panel rows.
-     */
-    protected final IntegerProperty noOfRows = new SimpleIntegerProperty(1);
+	/**
+	 * Controller theme.
+	 */
+	protected static final StringProperty theme = new SimpleStringProperty(BaseController.THEME_LIGHT);
 
-    /**
-     * Shared state.
-     */
-    protected final SharedState state;
+	/**
+	 * Panel columns.
+	 */
+	protected final IntegerProperty noOfColumns = new SimpleIntegerProperty(1);
 
-    /**
-     * Constructs new BaseController with given shared state.
-     * @param state shared state
-     */
-    protected BaseController(final SharedState state) {
-        this.state = state;
-        loadTheme();
-    }
+	/**
+	 * Panel rows.
+	 */
+	protected final IntegerProperty noOfRows = new SimpleIntegerProperty(1);
 
-    private void loadTheme() {
-        Preferences prefs = Preferences.userNodeForPackage(Main.class);
-        String s = prefs.get(BaseController.THEME_PREFERENCE_KEY, BaseController.THEME_LIGHT);
-        if (s.equals(BaseController.THEME_LIGHT))
-            theme.set(BaseController.THEME_LIGHT);
-        else
-            theme.set(BaseController.THEME_DARK);
-    }
+	/**
+	 * Shared state.
+	 */
+	protected final SharedState state;
 
-    /**
-     * Binds given panel view size to panel cell size, calculated based on given scroll pane.
-     * @param view panel view
-     * @param gridScrollPane panel's scroll pane containing grid pane
-     */
-    protected void bindSize(ImageView view, ScrollPane gridScrollPane) {
-        bindSize(view, gridScrollPane, 1);
-    }
+	/**
+	 * Constructs new BaseController with given shared state.
+	 *
+	 * @param state shared state
+	 */
+	protected BaseController(final SharedState state) {
+		this.state = state;
+		loadTheme();
+	}
 
-    /**
-     * Binds given panel view size to panel cell size, calculated based on given scroll pane,
-     * using scale (the bigger the scale, the lower the single cell height).
-     * @param view panel view
-     * @param gridScrollPane panel's scroll pane containing grid pane
-     * @param scale alignment scale
-     */
-    protected void bindSize(ImageView view, ScrollPane gridScrollPane, double scale) {
-        view.fitWidthProperty().bind((gridScrollPane.widthProperty().subtract(30).subtract((noOfColumns.subtract(1)).multiply(10)))
-                .divide(noOfColumns));
-        view.fitHeightProperty().bind(gridScrollPane.heightProperty().subtract(new SimpleDoubleProperty(scale).multiply(20)));
-    }
+	private void loadTheme() {
+		final Preferences prefs = Preferences.userNodeForPackage(Main.class);
+		final String s = prefs.get(BaseController.THEME_PREFERENCE_KEY, BaseController.THEME_LIGHT);
+		if (s.equals(BaseController.THEME_LIGHT))
+			theme.set(BaseController.THEME_LIGHT);
+		else
+			theme.set(BaseController.THEME_DARK);
+	}
 
-    /**
-     * Injects current theme stylesheets to given parent and adds on theme changed listener.
-     * @param parent parent to be styled
-     */
-    protected void injectStylesheets(Parent parent) {
-        setTheme(parent);
-        theme.addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && !newValue.isEmpty())
-                setTheme(parent);
-        });
-    }
+	/**
+	 * Binds given panel view size to panel cell size, calculated based on given scroll pane.
+	 *
+	 * @param view           panel view
+	 * @param gridScrollPane panel's scroll pane containing grid pane
+	 */
+	protected void bindSize(final ImageView view, final ScrollPane gridScrollPane) {
+		bindSize(view, gridScrollPane, 1);
+	}
 
-    private void setTheme(Parent node) {
-        node.getStylesheets().clear();
-        node.getStylesheets().add(theme.get());
-    }
+	/**
+	 * Binds given panel view size to panel cell size, calculated based on given scroll pane,
+	 * using scale (the bigger the scale, the lower the single cell height).
+	 *
+	 * @param view           panel view
+	 * @param gridScrollPane panel's scroll pane containing grid pane
+	 * @param scale          alignment scale
+	 */
+	protected void bindSize(final ImageView view, final ScrollPane gridScrollPane, final double scale) {
+		view.fitWidthProperty().bind((gridScrollPane.widthProperty().subtract(30)
+		                                            .subtract((noOfColumns.subtract(1)).multiply(10)))
+				                             .divide(noOfColumns));
+		view.fitHeightProperty().bind(gridScrollPane.heightProperty().subtract(new SimpleDoubleProperty(scale)
+				                                                                       .multiply(20)));
+	}
 
-    /**
-     * Sets dark theme.
-     */
-    protected void setDarkTheme() {
-        theme.set(THEME_DARK);
-    }
+	/**
+	 * Injects current theme stylesheets to given parent and adds on theme changed listener.
+	 *
+	 * @param parent parent to be styled
+	 */
+	protected void injectStylesheets(final Parent parent) {
+		setTheme(parent);
+		theme.addListener((observable, oldValue, newValue) -> {
+			if (newValue != null && !newValue.isEmpty())
+				setTheme(parent);
+		});
+	}
 
-    /**
-     * Sets light theme.
-     */
-    protected void setLightTheme() {
-        theme.set(THEME_LIGHT);
-    }
+	private void setTheme(final Parent node) {
+		node.getStylesheets().clear();
+		node.getStylesheets().add(theme.get());
+	}
 
-    /**
-     * @return true if light theme is selected; false otherwise
-     */
-    protected boolean isLightThemeSelected() {
-        return theme.get().equals(THEME_LIGHT);
-    }
+	/**
+	 * Sets dark theme.
+	 */
+	protected void setDarkTheme() {
+		theme.set(THEME_DARK);
+	}
 
-    /**
-     * @return true if dark theme is selected; false otherwise
-     */
-    protected boolean isDarkThemeSelected() {
-        return theme.get().equals(THEME_DARK);
-    }
+	/**
+	 * Sets light theme.
+	 */
+	protected void setLightTheme() {
+		theme.set(THEME_LIGHT);
+	}
 
-    /**
-     * Calculates the number of panel columns and rows based on given number of max. columns
-     * and nodes that need to placed onto the panel.
-     * @param maxColumns max. number of columns
-     * @param nodes nodes that need to be placed onto the panel
-     */
-    protected void calculateColumnsAndRows(TextField maxColumns, List<? extends Node> nodes) {
-        noOfColumns.set(Math.min(Integer.parseInt(maxColumns.getText()), nodes.size()));
-        if (noOfColumns.get() > 0)
-            noOfRows.set(nodes.size() / noOfColumns.get() + (nodes.size() % noOfColumns.get() == 0 ? 0 : 1));
-        else
-            noOfRows.set(0);
-    }
+	/**
+	 * @return true if light theme is selected; false otherwise
+	 */
+	protected boolean isLightThemeSelected() {
+		return theme.get().equals(THEME_LIGHT);
+	}
 
-    /**
-     * Places given nodes into given panel grid.
-     * @param nodes nodes to be placed
-     * @param grid panel grid
-     */
-    protected void placeNodes(List<? extends Node> nodes, GridPane grid) {
-        if (nodes != null && !nodes.isEmpty()) {
-            resetGrid(grid);
-            setColumnConstraints(grid);
-            setRowConstraints(grid);
-            populateGrid(nodes, grid);
-        }
-    }
+	/**
+	 * @return true if dark theme is selected; false otherwise
+	 */
+	protected boolean isDarkThemeSelected() {
+		return theme.get().equals(THEME_DARK);
+	}
 
-    private void resetGrid(GridPane grid) {
-        grid.getChildren().clear();
-        grid.getColumnConstraints().clear();
-        grid.getRowConstraints().clear();
-    }
+	/**
+	 * Calculates the number of panel columns and rows based on given number of max. columns
+	 * and nodes that need to placed onto the panel.
+	 *
+	 * @param maxColumns max. number of columns
+	 * @param nodes      nodes that need to be placed onto the panel
+	 */
+	protected void calculateColumnsAndRows(final TextField maxColumns, final List<? extends Node> nodes) {
+		noOfColumns.set(Math.min(Integer.parseInt(maxColumns.getText()), nodes.size()));
+		if (noOfColumns.get() > 0)
+			noOfRows.set(nodes.size() / noOfColumns.get() + (nodes.size() % noOfColumns.get() == 0 ? 0 : 1));
+		else
+			noOfRows.set(0);
+	}
 
-    private void setColumnConstraints(GridPane grid) {
-        for (int i = 0; i < noOfColumns.get(); i++) {
-            final ColumnConstraints columnConstraints = new ColumnConstraints();
-            columnConstraints.setPercentWidth(100.0 / noOfColumns.get());
-            columnConstraints.setHalignment(HPos.CENTER);
-            grid.getColumnConstraints().add(columnConstraints);
-        }
-    }
+	/**
+	 * Places given nodes into given panel grid.
+	 *
+	 * @param nodes nodes to be placed
+	 * @param grid  panel grid
+	 */
+	protected void placeNodes(final List<? extends Node> nodes, final GridPane grid) {
+		if (nodes != null && !nodes.isEmpty()) {
+			resetGrid(grid);
+			setColumnConstraints(grid);
+			setRowConstraints(grid);
+			populateGrid(nodes, grid);
+		}
+	}
 
-    private void setRowConstraints(GridPane grid) {
-        for (int i = 0; i < noOfRows.get(); i++) {
-            final RowConstraints rowConstraints = new RowConstraints();
-            rowConstraints.setPercentHeight(100.0 / noOfRows.get());
-            rowConstraints.setValignment(VPos.CENTER);
-            grid.getRowConstraints().add(rowConstraints);
-        }
-    }
+	private void resetGrid(final GridPane grid) {
+		grid.getChildren().clear();
+		grid.getColumnConstraints().clear();
+		grid.getRowConstraints().clear();
+	}
 
-    private void populateGrid(List<? extends Node> nodes, GridPane grid) {
-        for (int i = 0; i < noOfRows.get(); i++) {
-            List<Node> nodesInRow = populateRow(nodes, i);
-            grid.addRow(i, nodesInRow.toArray(new Node[0]));
-        }
-    }
+	private void setColumnConstraints(final GridPane grid) {
+		for (int i = 0; i < noOfColumns.get(); i++) {
+			final ColumnConstraints columnConstraints = new ColumnConstraints();
+			columnConstraints.setPercentWidth(100.0 / noOfColumns.get());
+			columnConstraints.setHalignment(HPos.CENTER);
+			grid.getColumnConstraints().add(columnConstraints);
+		}
+	}
 
-    private List<Node> populateRow(List<? extends Node> nodes, int i) {
-        List<Node> nodesInRow = new ArrayList<>();
-        int n = 0;
-        while (nodesLeft(nodes, i, n)) {
-            nodesInRow.add(nodes.get(i * noOfColumns.get() + n));
-            n++;
-        }
-        return nodesInRow;
-    }
+	private void setRowConstraints(final GridPane grid) {
+		for (int i = 0; i < noOfRows.get(); i++) {
+			final RowConstraints rowConstraints = new RowConstraints();
+			rowConstraints.setPercentHeight(100.0 / noOfRows.get());
+			rowConstraints.setValignment(VPos.CENTER);
+			grid.getRowConstraints().add(rowConstraints);
+		}
+	}
 
-    private boolean nodesLeft(List<? extends Node> nodes, int i, int n) {
-        return i * noOfColumns.get() + n < nodes.size() && n < noOfColumns.get();
-    }
+	private void populateGrid(final List<? extends Node> nodes, final GridPane grid) {
+		for (int i = 0; i < noOfRows.get(); i++) {
+			final List<Node> nodesInRow = populateRow(nodes, i);
+			grid.addRow(i, nodesInRow.toArray(new Node[0]));
+		}
+	}
+
+	private List<Node> populateRow(final List<? extends Node> nodes, final int row) {
+		final List<Node> nodesInRow = new ArrayList<>();
+		int column = 0;
+		while (nodesLeft(nodes, row, column)) {
+			nodesInRow.add(nodes.get(row * noOfColumns.get() + column));
+			column++;
+		}
+		return nodesInRow;
+	}
+
+	private boolean nodesLeft(final List<? extends Node> nodes, final int row, final int column) {
+		return row * noOfColumns.get() + column < nodes.size() && column < noOfColumns.get();
+	}
 
 }

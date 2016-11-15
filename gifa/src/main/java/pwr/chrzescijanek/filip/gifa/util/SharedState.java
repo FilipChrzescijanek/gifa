@@ -1,14 +1,18 @@
 package pwr.chrzescijanek.filip.gifa.util;
 
-import javafx.beans.property.*;
-import javafx.collections.FXCollections;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableMap;
-import pwr.chrzescijanek.filip.gifa.model.sample.Sample;
-import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageToAlignData;
+import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
+import pwr.chrzescijanek.filip.gifa.model.sample.Sample;
 import pwr.chrzescijanek.filip.gifa.model.sample.Vertex;
 
 import java.util.LinkedHashMap;
+
+import static javafx.collections.FXCollections.observableMap;
 
 /**
  * Represents application's state that is shared between components.
@@ -18,12 +22,12 @@ public class SharedState {
 	/**
 	 * Images to be aligned.
 	 */
-	public final ObservableMap< String, ImageToAlignData> imagesToAlign = FXCollections.observableMap(new LinkedHashMap<>());
+	public final ObservableMap<String, ImageToAlignData> imagesToAlign = observableMap(new LinkedHashMap<>());
 
 	/**
 	 * Aligned images that can be compared using user-defined samples.
 	 */
-	public final ObservableMap< String, SamplesImageData> samplesImages = FXCollections.observableMap(new LinkedHashMap<>());
+	public final ObservableMap<String, SamplesImageData> samplesImages = observableMap(new LinkedHashMap<>());
 
 	/**
 	 * Currently selected sample.

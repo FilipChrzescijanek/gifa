@@ -17,26 +17,28 @@ public class Triangle extends Polygon {
 	 * Triangle stroke style.
 	 */
 	protected static final String STROKE_STYLE = "-fx-stroke-type: inside;\n" +
-			"    -fx-stroke-width: 2;\n" +
-			"    -fx-stroke-dash-array: 12 2 4 2;\n" +
-			"    -fx-stroke-dash-offset: 6;\n" +
-			"    -fx-stroke-line-cap: butt;";
+	                                             "    -fx-stroke-width: 2;\n" +
+	                                             "    -fx-stroke-dash-array: 12 2 4 2;\n" +
+	                                             "    -fx-stroke-dash-offset: 6;\n" +
+	                                             "    -fx-stroke-line-cap: butt;";
 
 	/**
 	 * Vertices coordinates.
 	 */
 	public final DoubleProperty[] pointsProperty;
 
-	private double xBound;
-	private double yBound;
+	private final double xBound;
+
+	private final double yBound;
 
 	/**
 	 * Constructs a new Triangle with given X and Y bounds.
+	 *
 	 * @param xBound X bound
 	 * @param yBound Y bound
-     */
+	 */
 	public Triangle(final double xBound, final double yBound) {
-		super(0,0,0,0,0,0);
+		super(0, 0, 0, 0, 0, 0);
 		this.xBound = xBound;
 		this.yBound = yBound;
 		this.pointsProperty = new DoubleProperty[6];
@@ -46,13 +48,14 @@ public class Triangle extends Polygon {
 
 	/**
 	 * Constructs a new Triangle with given vertices and X and Y bounds.
-	 * @param p1 first vertex
-	 * @param p2 second vertex
-	 * @param p3 third vertex
+	 *
+	 * @param p1     first vertex
+	 * @param p2     second vertex
+	 * @param p3     third vertex
 	 * @param xBound X bound
-     * @param yBound Y bound
-     */
-	public Triangle( final Point p1, final Point p2, final Point p3, final double xBound, final double yBound) {
+	 * @param yBound Y bound
+	 */
+	public Triangle(final Point p1, final Point p2, final Point p3, final double xBound, final double yBound) {
 		super(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 		this.xBound = xBound;
 		this.yBound = yBound;
@@ -63,7 +66,7 @@ public class Triangle extends Polygon {
 
 	/**
 	 * @return matrix of triangle vertices
-     */
+	 */
 	public MatOfPoint2f getMatOfVertices() {
 		return new MatOfPoint2f(
 				new Point(pointsProperty[0].getValue(), pointsProperty[1].getValue()),
@@ -73,13 +76,13 @@ public class Triangle extends Polygon {
 	}
 
 	private void initializePointsWithZeros() {
-		for ( int i = 0; i < pointsProperty.length; i++)
+		for (int i = 0; i < pointsProperty.length; i++)
 			pointsProperty[i] = new SimpleDoubleProperty(0.0);
 	}
 
 	private void initializePoints() {
-		final ObservableList< Double > points = getPoints();
-		for ( int i = 0; i < pointsProperty.length; i++)
+		final ObservableList<Double> points = getPoints();
+		for (int i = 0; i < pointsProperty.length; i++)
 			pointsProperty[i] = new SimpleDoubleProperty(points.get(i));
 	}
 
@@ -90,9 +93,9 @@ public class Triangle extends Polygon {
 	}
 
 	private void registerPointsListeners() {
-		for ( int i = 0; i < pointsProperty.length; i++) {
+		for (int i = 0; i < pointsProperty.length; i++) {
 			final int index = i;
-			pointsProperty[index].addListener(( observable, oldValue, newValue ) -> {
+			pointsProperty[index].addListener((observable, oldValue, newValue) -> {
 				final double value = newValue.doubleValue();
 				getPoints().set(index, value);
 				if (index % 2 == 0) recalculateTranslateX();
@@ -102,7 +105,7 @@ public class Triangle extends Polygon {
 	}
 
 	private void registerScaleListeners() {
-		scaleXProperty().addListener(( observable, oldValue, newValue ) -> {
+		scaleXProperty().addListener((observable, oldValue, newValue) -> {
 			setScaleY(newValue.doubleValue());
 			recalculateTranslates();
 		});
@@ -114,39 +117,39 @@ public class Triangle extends Polygon {
 	}
 
 	private void recalculateTranslateX() {
-		setTranslateX(( xBound * 0.5 * ( getScaleX() - 1.0 ) ) -
-				( xBound * 0.5 - getTriangleMiddleX() ) * ( getScaleX() - 1.0 ));
+		setTranslateX((xBound * 0.5 * (getScaleX() - 1.0)) -
+		              (xBound * 0.5 - getTriangleMiddleX()) * (getScaleX() - 1.0));
 	}
 
 	private void recalculateTranslateY() {
-		setTranslateY(( yBound * 0.5 * ( getScaleY() - 1.0 ) ) -
-				( yBound * 0.5 - getTriangleMiddleY() ) * ( getScaleY() - 1.0 ));
+		setTranslateY((yBound * 0.5 * (getScaleY() - 1.0)) -
+		              (yBound * 0.5 - getTriangleMiddleY()) * (getScaleY() - 1.0));
 	}
 
 	private double getTriangleMiddleX() {
-		double firstPointX = getPoints().get(0);
-		double secondPointX = getPoints().get(2);
-		double thirdPointX = getPoints().get(4);
-		double minX = getMin(firstPointX, secondPointX, thirdPointX);
-		double maxX = getMax(firstPointX, secondPointX, thirdPointX);
-		return ( maxX - minX ) / 2.0 + minX;
+		final double firstPointX = getPoints().get(0);
+		final double secondPointX = getPoints().get(2);
+		final double thirdPointX = getPoints().get(4);
+		final double minX = getMin(firstPointX, secondPointX, thirdPointX);
+		final double maxX = getMax(firstPointX, secondPointX, thirdPointX);
+		return (maxX - minX) / 2.0 + minX;
 	}
 
 	private double getTriangleMiddleY() {
-		double firstPointY = getPoints().get(1);
-		double secondPointY = getPoints().get(3);
-		double thirdPointY = getPoints().get(5);
-		double minY = getMin(firstPointY, secondPointY, thirdPointY);
-		double maxY = getMax(firstPointY, secondPointY, thirdPointY);
-		return ( maxY - minY ) / 2.0 + minY;
+		final double firstPointY = getPoints().get(1);
+		final double secondPointY = getPoints().get(3);
+		final double thirdPointY = getPoints().get(5);
+		final double minY = getMin(firstPointY, secondPointY, thirdPointY);
+		final double maxY = getMax(firstPointY, secondPointY, thirdPointY);
+		return (maxY - minY) / 2.0 + minY;
 	}
 
-	private double getMin( final double firstPointX, final double secondPointX, final double thirdPointX ) {
-		return Math.min(firstPointX, Math.min(secondPointX, thirdPointX));
+	private double getMin(final double first, final double second, final double third) {
+		return Math.min(first, Math.min(second, third));
 	}
 
-	private double getMax( final double firstPointY, final double secondPointY, final double thirdPointY ) {
-		return Math.max(firstPointY, Math.max(secondPointY, thirdPointY));
+	private double getMax(final double first, final double second, final double third) {
+		return Math.max(first, Math.max(second, third));
 	}
 
 	private void setStyle() {

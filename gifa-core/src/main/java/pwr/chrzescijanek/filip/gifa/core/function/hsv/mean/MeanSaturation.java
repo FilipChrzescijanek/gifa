@@ -12,15 +12,14 @@ import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
  */
 public final class MeanSaturation implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public MeanSaturation() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public MeanSaturation() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        convertType(images, COLOR_BGR2HSV_FULL);
-        return calculateMeans(images, 1);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		convertType(images, COLOR_BGR2HSV_FULL);
+		return calculateMeans(images, 1);
+	}
 }

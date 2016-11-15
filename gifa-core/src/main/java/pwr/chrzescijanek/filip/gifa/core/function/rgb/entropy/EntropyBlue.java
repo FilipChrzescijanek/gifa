@@ -10,14 +10,13 @@ import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateEntr
  */
 public final class EntropyBlue implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public EntropyBlue() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public EntropyBlue() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        return calculateEntropies(images, 0);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		return calculateEntropies(images, 0);
+	}
 }

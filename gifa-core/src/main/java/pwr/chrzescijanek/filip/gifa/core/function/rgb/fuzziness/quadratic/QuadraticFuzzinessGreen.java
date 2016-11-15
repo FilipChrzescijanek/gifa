@@ -10,14 +10,13 @@ import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateQuad
  */
 public final class QuadraticFuzzinessGreen implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public QuadraticFuzzinessGreen() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public QuadraticFuzzinessGreen() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        return calculateQuadraticFuzzinesses(images, 1);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		return calculateQuadraticFuzzinesses(images, 1);
+	}
 }

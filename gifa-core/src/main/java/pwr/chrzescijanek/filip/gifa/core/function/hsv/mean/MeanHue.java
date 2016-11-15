@@ -12,15 +12,14 @@ import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
  */
 public final class MeanHue implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public MeanHue() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public MeanHue() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        convertType(images, COLOR_BGR2HSV_FULL);
-        return calculateMeans(images, 0);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		convertType(images, COLOR_BGR2HSV_FULL);
+		return calculateMeans(images, 0);
+	}
 }

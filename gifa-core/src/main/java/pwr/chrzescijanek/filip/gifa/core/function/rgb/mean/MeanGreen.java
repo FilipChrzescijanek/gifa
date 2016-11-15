@@ -10,14 +10,13 @@ import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateMean
  */
 public final class MeanGreen implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public MeanGreen() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public MeanGreen() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        return calculateMeans(images, 1);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		return calculateMeans(images, 1);
+	}
 }

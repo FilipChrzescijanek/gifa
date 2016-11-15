@@ -13,11 +13,6 @@ import org.opencv.core.Mat;
 public abstract class ImageData {
 
 	/**
-	 * JavaFX image.
-	 */
-	public ObjectProperty<Image> image = new SimpleObjectProperty<>(null);
-
-	/**
 	 * Current image scale.
 	 */
 	public final DoubleProperty scale = new SimpleDoubleProperty(1.0);
@@ -38,11 +33,17 @@ public abstract class ImageData {
 	public final Mat imageData;
 
 	/**
+	 * JavaFX image.
+	 */
+	public ObjectProperty<Image> image = new SimpleObjectProperty<>(null);
+
+	/**
 	 * Construct a new ImageData with given JavaFX image and OpenCV image.
-	 * @param image JavaFX image
+	 *
+	 * @param image     JavaFX image
 	 * @param imageData OpenCV image
-     */
-	protected ImageData( final Image image, final Mat imageData ) {
+	 */
+	protected ImageData(final Image image, final Mat imageData) {
 		this.image.set(image);
 		this.imageData = imageData;
 	}

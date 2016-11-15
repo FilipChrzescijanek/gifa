@@ -10,14 +10,13 @@ import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateLine
  */
 public final class LinearFuzzinessBlue implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public LinearFuzzinessBlue() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public LinearFuzzinessBlue() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        return calculateLinearFuzzinesses(images, 0);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		return calculateLinearFuzzinesses(images, 0);
+	}
 }

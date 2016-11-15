@@ -10,14 +10,13 @@ import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateStdD
  */
 public final class StdDeviationGreen implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public StdDeviationGreen() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public StdDeviationGreen() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        return calculateStdDeviations(images, 1);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		return calculateStdDeviations(images, 1);
+	}
 }

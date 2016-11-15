@@ -12,15 +12,14 @@ import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
  */
 public final class LinearFuzzinessValue implements EvaluationFunction {
 
-    /**
-     * Default constructor.
-     */
-    public LinearFuzzinessValue() {
-    }
+	/**
+	 * Default constructor.
+	 */
+	public LinearFuzzinessValue() {}
 
-    @Override
-    public double[] evaluate(final Mat[] images) {
-        convertType(images, COLOR_BGR2HSV_FULL);
-        return calculateLinearFuzzinesses(images, 2);
-    }
+	@Override
+	public double[] evaluate(final Mat[] images) {
+		convertType(images, COLOR_BGR2HSV_FULL);
+		return calculateLinearFuzzinesses(images, 2);
+	}
 }
