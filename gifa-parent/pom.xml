@@ -12,7 +12,7 @@
 	<repositories>
         <repository>
             <id>gifa-repository</id>
-            <url>https://github.com/lazzymf/gifa-repository/raw/master/</url>
+            <url>https://github.com/FilipChrzescijanek/gifa-repository/raw/master/</url>
         </repository>
     </repositories>
 	

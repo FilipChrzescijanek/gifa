@@ -31,7 +31,7 @@ public final class StageUtils {
 	public static Alert getAboutDialog() {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION,
 				"Global image features analyzer\n" +
-						"GitHub repository: https://github.com/lazzymf/gifa/\n" +
+						"GitHub repository: https://github.com/FilipChrzescijanek/gifa/\n" +
 						"\nCopyright © 2016 Filip Chrześcijanek\nfilip.chrzescijanek@gmail.com", ButtonType.OK);
 		alert.setTitle("About");
 		alert.setHeaderText("gifa");
