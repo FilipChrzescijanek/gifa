@@ -3,7 +3,6 @@ package pwr.chrzescijanek.filip.gifa.model.sample;
 import javafx.scene.image.Image;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageToAlignData;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
-import pwr.chrzescijanek.filip.gifa.model.panel.PanelViewFactory;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
 
 import javax.inject.Inject;
@@ -15,18 +14,14 @@ public class BasicSampleFactory {
 
 	private final SharedState state;
 
-	private final PanelViewFactory panelViewFactory;
-
 	/**
 	 * Constructs a new BasicSampleFactory with given shared state and panel views factory.
 	 *
-	 * @param state            shared state
-	 * @param panelViewFactory panel views factory
+	 * @param state shared state
 	 */
 	@Inject
-	public BasicSampleFactory(final SharedState state, final PanelViewFactory panelViewFactory) {
+	public BasicSampleFactory(final SharedState state) {
 		this.state = state;
-		this.panelViewFactory = panelViewFactory;
 	}
 
 	/**
@@ -42,7 +37,7 @@ public class BasicSampleFactory {
 	public Sample createNewSample(final SamplesImageData imageData, final double x, final double y,
 	                              final double radiusX, final double radiusY) {
 		final Image image = imageData.image.get();
-		final Sample sample = new Sample(imageData, x, y, radiusX, radiusY, state, panelViewFactory,
+		final Sample sample = new Sample(imageData, x, y, radiusX, radiusY, state,
 		                                 image.getWidth(), image.getHeight());
 		imageData.add(sample);
 		return sample;
@@ -61,8 +56,7 @@ public class BasicSampleFactory {
 	public Vertex createNewVertex(final ImageToAlignData imageData, final double x, final double y,
 	                              final double radiusX, final double radiusY) {
 		final Image image = imageData.image.get();
-		return new Vertex(imageData, x, y, radiusX, radiusY, state, panelViewFactory,
-		                  image.getWidth(), image.getHeight());
+		return new Vertex(imageData, x, y, radiusX, radiusY, state, image.getWidth(), image.getHeight());
 	}
 
 }

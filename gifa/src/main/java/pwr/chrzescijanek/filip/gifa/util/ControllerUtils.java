@@ -20,7 +20,6 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import pwr.chrzescijanek.filip.gifa.controller.PanelController;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
-import pwr.chrzescijanek.filip.gifa.model.panel.PanelView;
 import pwr.chrzescijanek.filip.gifa.model.sample.BasicSample;
 import pwr.chrzescijanek.filip.gifa.view.FXView;
 
@@ -43,18 +42,36 @@ public final class ControllerUtils {
 	private ControllerUtils() {}
 
 	/**
-	 * Loads panel controller from given FXML view and initializes it with given label and panel views.
+	 * Loads panel controller from given FXML view and initializes it with given label and panel views
+	 * of vertex with given index.
 	 *
-	 * @param info   label
-	 * @param views  panel views
-	 * @param fxView FXML view
+	 * @param info        label
+	 * @param vertexIndex vertex index
+	 * @param fxView      FXML view
 	 * @return new PanelController class instance
 	 */
-	public static PanelController initializeController(final String info, final List<? extends PanelView> views,
-	                                                   final FXView fxView) {
+	public static PanelController initializeVertexController(final String info, final int vertexIndex,
+	                                                         final FXView fxView) {
 		final PanelController controller = (PanelController) fxView.getController();
 		controller.setInfo(info);
-		controller.setPanelViews(views);
+		controller.setVertexPanelViews(vertexIndex);
+		return controller;
+	}
+
+	/**
+	 * Loads panel controller from given FXML view and initializes it with given label and panel views
+	 * of sample with given index.
+	 *
+	 * @param info        label
+	 * @param sampleIndex sample index
+	 * @param fxView      FXML view
+	 * @return new PanelController class instance
+	 */
+	public static PanelController initializeSampleController(final String info, final int sampleIndex,
+	                                                         final FXView fxView) {
+		final PanelController controller = (PanelController) fxView.getController();
+		controller.setInfo(info);
+		controller.setSamplePanelViews(sampleIndex);
 		return controller;
 	}
 
@@ -66,14 +83,14 @@ public final class ControllerUtils {
 	 * @param images           array of images of samples
 	 * @param samplesImageData aligned image of which given sample was taken
 	 */
-	public static void prepareImage(BasicSample sample, int index, Mat[] images, SamplesImageData samplesImageData) {
+	public static void prepareImage(final BasicSample sample, final int index, final Mat[] images, final SamplesImageData samplesImageData) {
 		final int x = (int) sample.sampleArea.getX();
 		final int y = (int) sample.sampleArea.getY();
-		int width = (int) sample.sampleArea.getWidth();
-		int height = (int) sample.sampleArea.getHeight();
+		final int width = (int) sample.sampleArea.getWidth();
+		final int height = (int) sample.sampleArea.getHeight();
 		images[index] = samplesImageData.imageData
 				.submat(new Rect(x, y, width, height)).clone();
-		Mat zeros = Mat.zeros(images[index].rows(), images[index].cols(), images[index].type());
+		final Mat zeros = Mat.zeros(images[index].rows(), images[index].cols(), images[index].type());
 		ellipse(zeros, new Point(sample.getCenterX() - x, sample.getCenterY() - y),
 		        new Size(sample.getRadiusX(), sample.getRadiusY()), sample.getRotate(), 0.0, 360.0,
 		        new Scalar(255, 255, 255, 255), FILLED);
@@ -89,9 +106,9 @@ public final class ControllerUtils {
 	 * @param imageIndex        index of aligned image of which given sample was taken
 	 * @throws IOException if image could not be written
 	 */
-	public static void writeImage(File selectedDirectory, List<Pair<String, ImageView>> currentSamples,
-	                              int sampleIndex, int imageIndex) throws IOException {
-		Mat image = createMat(currentSamples.get(imageIndex).getValue().getImage());
+	public static void writeImage(final File selectedDirectory, final List<Pair<String, ImageView>> currentSamples,
+	                              final int sampleIndex, final int imageIndex) throws IOException {
+		final Mat image = createMat(currentSamples.get(imageIndex).getValue().getImage());
 		final String key = currentSamples.get(imageIndex).getKey();
 		String extension = key.substring(key.indexOf('.') + 1);
 		final int indexOf = extension.indexOf('_');
@@ -106,8 +123,8 @@ public final class ControllerUtils {
 	 * @param window application window
 	 * @return CSV file
 	 */
-	public static File getCSVFile(Window window) {
-		FileChooser fileChooser = new FileChooser();
+	public static File getCSVFile(final Window window) {
+		final FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Export results to CSV file");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter("Comma-separated values", "*.csv"));
 		return fileChooser.showSaveDialog(window);
@@ -119,8 +136,8 @@ public final class ControllerUtils {
 	 * @param window application window
 	 * @return image files
 	 */
-	public static List<File> getImageFiles(Window window) {
-		FileChooser fileChooser = new FileChooser();
+	public static List<File> getImageFiles(final Window window) {
+		final FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Load images");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter("Image Files", "*.png", "*.jpg", "*.bmp", "*.tif"));
 		return fileChooser.showOpenMultipleDialog(window);
@@ -132,8 +149,8 @@ public final class ControllerUtils {
 	 * @param window application window
 	 * @return directory
 	 */
-	public static File getDirectory(Window window) {
-		DirectoryChooser chooser = new DirectoryChooser();
+	public static File getDirectory(final Window window) {
+		final DirectoryChooser chooser = new DirectoryChooser();
 		chooser.setTitle("Choose directory");
 		return chooser.showDialog(window);
 	}
@@ -142,7 +159,7 @@ public final class ControllerUtils {
 	 * @return help view
 	 */
 	public static WebView getHelpView() {
-		WebView view = new WebView();
+		final WebView view = new WebView();
 		view.getEngine().load(ControllerUtils.class.getResource("/help.html").toExternalForm());
 		return view;
 	}
@@ -151,7 +168,7 @@ public final class ControllerUtils {
 	 * @param info label
 	 * @return customized, centered horizontal box with given label and progress indicator
 	 */
-	public static HBox getHBoxWithLabelAndProgressIndicator(String info) {
+	public static HBox getHBoxWithLabelAndProgressIndicator(final String info) {
 		final Label label = new Label(info);
 		label.setAlignment(Pos.CENTER);
 		final HBox box = new HBox(label, new ProgressIndicator(-1.0));
@@ -167,7 +184,7 @@ public final class ControllerUtils {
 	 * @param task task to start
 	 */
 	public static void startTask(final Task<? extends Void> task) {
-		Thread th = new Thread(task);
+		final Thread th = new Thread(task);
 		th.setDaemon(true);
 		th.start();
 	}
@@ -176,7 +193,7 @@ public final class ControllerUtils {
 	 * @param color JavaFX color
 	 * @return given color in web color format
 	 */
-	public static String getWebColor(Color color) {
+	public static String getWebColor(final Color color) {
 		return String.format("#%02X%02X%02X%02X",
 		                     (int) (color.getRed() * 255),
 		                     (int) (color.getGreen() * 255),

@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.model.panel;
+package pwr.chrzescijanek.filip.gifa.view.panel;
 
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.DoubleProperty;

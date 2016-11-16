@@ -5,24 +5,28 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import pwr.chrzescijanek.filip.gifa.model.panel.PanelView;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
+import pwr.chrzescijanek.filip.gifa.view.panel.PanelView;
+import pwr.chrzescijanek.filip.gifa.view.panel.PanelViewFactory;
 
 import javax.inject.Inject;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Panel controller class.
  */
 public class PanelController extends BaseController implements Initializable {
 
-	//FXML fields
+	/**
+	 * Panel views factory.
+	 */
+	protected final PanelViewFactory panelViewFactory;
 
 	/**
 	 * Panel views list.
@@ -30,19 +34,25 @@ public class PanelController extends BaseController implements Initializable {
 	protected List<? extends PanelView> panelViews = null;
 
 	@FXML
-	private BorderPane root;
+	private URL location;
 
 	@FXML
-	private GridPane panelGrid;
+	private Label panelColumnsLabel;
+
+	@FXML
+	private TextField panelColumnsTextField;
 
 	@FXML
 	private HBox panelControls;
 
 	@FXML
-	private HBox panelHBox;
+	private GridPane panelGrid;
 
 	@FXML
-	private Label panelColumnsLabel;
+	private ScrollPane panelGridScrollPane;
+
+	@FXML
+	private HBox panelHBox;
 
 	@FXML
 	private Label panelInfo;
@@ -51,29 +61,58 @@ public class PanelController extends BaseController implements Initializable {
 	private ResourceBundle resources;
 
 	@FXML
-	private ScrollPane panelGridScrollPane;
-
-	@FXML
-	private TextField panelColumnsTextField;
-
-	@FXML
-	private URL location;
+	private BorderPane root;
 
 	/**
 	 * Constructs new PanelController with given shared state.
 	 *
-	 * @param state shared state
+	 * @param state            shared state
+	 * @param panelViewFactory panel views factory
 	 */
 	@Inject
-	public PanelController(final SharedState state) {
+	public PanelController(final SharedState state, final PanelViewFactory panelViewFactory) {
 		super(state);
+		this.panelViewFactory = panelViewFactory;
 	}
 
 	/**
-	 * @return root view
+	 * @return location
 	 */
-	public BorderPane getRoot() {
-		return root;
+	public URL getLocation() { return location; }
+
+	/**
+	 * @return max. columns label
+	 */
+	public Label getPanelColumnsLabel() {
+		return panelColumnsLabel;
+	}
+
+	/**
+	 * @return max. columns text field
+	 */
+	public TextField getPanelColumnsTextField() {
+		return panelColumnsTextField;
+	}
+
+	/**
+	 * @return panel controls horizontal box
+	 */
+	public HBox getPanelControls() {
+		return panelControls;
+	}
+
+	/**
+	 * @return panel's grid pane
+	 */
+	public GridPane getPanelGrid() {
+		return panelGrid;
+	}
+
+	/**
+	 * @return panel's scroll pane containing grid pane
+	 */
+	public ScrollPane getPanelGridScrollPane() {
+		return panelGridScrollPane;
 	}
 
 	/**
@@ -91,59 +130,47 @@ public class PanelController extends BaseController implements Initializable {
 	}
 
 	/**
-	 * @return panel controls horizontal box
+	 * @return resources
 	 */
-	public HBox getPanelControls() {
-		return panelControls;
+	public ResourceBundle getResources() { return resources; }
+
+	/**
+	 * @return root view
+	 */
+	public BorderPane getRoot() {
+		return root;
 	}
 
 	/**
-	 * @return max. columns label
-	 */
-	public Label getPanelColumnsLabel() {
-		return panelColumnsLabel;
-	}
-
-	/**
-	 * @return max. columns text field
-	 */
-	public TextField getPanelColumnsTextField() {
-		return panelColumnsTextField;
-	}
-
-
-	//fields
-
-	/**
-	 * @return panel's scroll pane containing grid pane
-	 */
-	public ScrollPane getPanelGridScrollPane() {
-		return panelGridScrollPane;
-	}
-
-	//setters
-
-	/**
-	 * @return panel's grid pane
-	 */
-	public GridPane getPanelGrid() {
-		return panelGrid;
-	}
-
-	/**
-	 * Sets panel views.
+	 * Creates and sets panel views of vertex with given index.
 	 *
-	 * @param panelViews panel views
+	 * @param vertexIndex vertex index
 	 */
-	public void setPanelViews(final List<? extends PanelView> panelViews) {
-		this.panelViews = panelViews;
+	public void setVertexPanelViews(final int vertexIndex) {
+		this.panelViews = state.imagesToAlign
+				.values().stream().map(img -> panelViewFactory
+						.createVertexPanelView(img.writableImage.get(), img.vertices[vertexIndex]))
+				.collect(Collectors.toList());
 		addBoundsChangedListeners();
 	}
 
 	private void addBoundsChangedListeners() {
-		for (final ImageView iv : this.panelViews) {
-			bindSize(iv, panelGridScrollPane);
+		for (final PanelView view : this.panelViews) {
+			bindSize(view, panelGridScrollPane);
 		}
+	}
+
+	/**
+	 * Creates and sets panel views of sample with given index.
+	 *
+	 * @param sampleIndex sample index
+	 */
+	public void setSamplePanelViews(final int sampleIndex) {
+		this.panelViews = state.samplesImages
+				.values().stream().map(img -> panelViewFactory
+						.createSamplePanelView(img.image.get(), img.samples.get(sampleIndex)))
+				.collect(Collectors.toList());
+		addBoundsChangedListeners();
 	}
 
 	/**

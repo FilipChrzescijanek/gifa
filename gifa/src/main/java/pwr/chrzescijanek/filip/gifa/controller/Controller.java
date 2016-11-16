@@ -125,9 +125,6 @@ import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.writeImage;
  */
 public class Controller extends BaseController implements Initializable {
 	
-	//FXML fields
-	
-	//fields
 	private static final Logger LOGGER = Logger.getLogger(Controller.class.getName());
 	
 	private static final String CHART_DEFAULT_STYLE = "-fx-border-color: null;";
@@ -633,8 +630,6 @@ public class Controller extends BaseController implements Initializable {
 	@FXML
 	private TitledPane samplesToolsTitledPane;
 	
-	
-	//FXML fields getters
 	@FXML
 	private TitledPane toolsTitledPane;
 	
@@ -655,7 +650,7 @@ public class Controller extends BaseController implements Initializable {
 	
 	@FXML
 	private ToggleGroup themeToggleGroup;
-	
+
 	@FXML
 	private URL location;
 	
@@ -1835,7 +1830,7 @@ public class Controller extends BaseController implements Initializable {
 	public ToggleGroup getThemeToggleGroup() {
 		return themeToggleGroup;
 	}
-	
+
 	/**
 	 * @return location
 	 */
@@ -3338,11 +3333,11 @@ public class Controller extends BaseController implements Initializable {
 	private void initializeScaleComboBoxes() {
 		alignScaleCombo.itemsProperty().get().addAll(
 				"25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%", "250%", "500%", "1000%"
-		                                            );
+		);
 		alignScaleCombo.setValue("100%");
 		samplesScaleCombo.itemsProperty().get().addAll(
 				"25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%", "250%", "500%", "1000%"
-		                                              );
+		);
 		samplesScaleCombo.setValue("100%");
 	}
 	
@@ -3652,7 +3647,7 @@ public class Controller extends BaseController implements Initializable {
 				                  .map(CheckBox.class::cast).noneMatch(CheckBox::isSelected),
 				featuresVBox.getChildren().stream().filter(CheckBox.class::isInstance)
 				            .map(CheckBox.class::cast).map(CheckBox::selectedProperty).toArray(Observable[]::new)
-		                                    );
+		);
 	}
 	
 	private BooleanBinding getNoSamplesAddedBinding() {
@@ -3660,7 +3655,7 @@ public class Controller extends BaseController implements Initializable {
 				() -> !samplesImageViewAnchor.getChildren().stream().filter(Sample.class::isInstance)
 				                             .findAny().isPresent(),
 				samplesImageViewAnchor.getChildren()
-		                                    );
+		);
 	}
 	
 	private void setSamplesMenuEnablementBindings() {
@@ -3720,7 +3715,7 @@ public class Controller extends BaseController implements Initializable {
 		alignImageViewAnchor.getChildren().add(img.triangle);
 		alignImageViewAnchor.getChildren().addAll(
 				Arrays.stream(img.vertices).map(r -> r.sampleArea).toArray(Rectangle[]::new)
-		                                         );
+		);
 		alignImageViewAnchor.getChildren().addAll(img.vertices);
 	}
 	

@@ -14,17 +14,14 @@ import javafx.stage.Stage;
 import pwr.chrzescijanek.filip.gifa.controller.PanelController;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageToAlignData;
 import pwr.chrzescijanek.filip.gifa.model.image.Triangle;
-import pwr.chrzescijanek.filip.gifa.model.panel.PanelViewFactory;
-import pwr.chrzescijanek.filip.gifa.model.panel.VertexPanelView;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
 import pwr.chrzescijanek.filip.gifa.view.FXView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.initializeController;
+import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.initializeVertexController;
 import static pwr.chrzescijanek.filip.gifa.util.StageUtils.showStage;
 
 /**
@@ -40,20 +37,18 @@ public class Vertex extends BasicSample {
 	 * Constructs a new Vertex on given image, with given position, size, shared state,
 	 * panel views factory and bounds.
 	 *
-	 * @param imageData        image
-	 * @param x                X position
-	 * @param y                Y position
-	 * @param radiusX          X radius
-	 * @param radiusY          Y radius
-	 * @param state            shared state
-	 * @param panelViewFactory panel views factory
-	 * @param xBound           X bound
-	 * @param yBound           Y bound
+	 * @param imageData image
+	 * @param x         X position
+	 * @param y         Y position
+	 * @param radiusX   X radius
+	 * @param radiusY   Y radius
+	 * @param state     shared state
+	 * @param xBound    X bound
+	 * @param yBound    Y bound
 	 */
 	protected Vertex(final ImageToAlignData imageData, final double x, final double y, final double radiusX,
-	                 final double radiusY, final SharedState state, final PanelViewFactory panelViewFactory,
-	                 final double xBound, final double yBound) {
-		super(imageData, x, y, radiusX, radiusY, state, panelViewFactory, xBound, yBound);
+	                 final double radiusY, final SharedState state, final double xBound, final double yBound) {
+		super(imageData, x, y, radiusX, radiusY, state, xBound, yBound);
 	}
 
 	@Override
@@ -75,13 +70,8 @@ public class Vertex extends BasicSample {
 			final String info = "Click on any image to move according triangle point. Drag to move the sample.";
 			final int index = getIndexOf();
 			final String title = "Vertex #" + (index + 1);
-			final List<VertexPanelView> vertexPanelViews =
-					state.imagesToAlign.values().stream()
-					                   .map(img -> panelViewFactory
-							                   .createVertexPanelView(img.writableImage.get(), img.vertices[index]))
-					                   .collect(Collectors.toList());
 			final FXView fxView = new FXView(viewPath);
-			final PanelController controller = initializeController(info, vertexPanelViews, fxView);
+			final PanelController controller = initializeVertexController(info, index, fxView);
 			final Stage newStage = new Stage();
 			showStage(newStage, fxView, controller, title);
 			postCreation(controller, newStage);
@@ -112,13 +102,7 @@ public class Vertex extends BasicSample {
 				(MapChangeListener<? super String, ? super ImageToAlignData>) c -> {
 					removeChangeListeners();
 					final int index = getIndexOf();
-					final List<VertexPanelView> vertexPanelViews =
-							state.imagesToAlign.values().stream()
-							                   .map(img -> panelViewFactory
-									                   .createVertexPanelView(
-											                   img.writableImage.get(), img.vertices[index]))
-							                   .collect(Collectors.toList());
-					controller.setPanelViews(vertexPanelViews);
+					controller.setVertexPanelViews(index);
 					initializeVertexChangeListeners();
 					initializeStrokeChangeListeners();
 					addVertexChangeListeners();

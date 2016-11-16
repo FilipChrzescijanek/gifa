@@ -9,15 +9,12 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import pwr.chrzescijanek.filip.gifa.controller.PanelController;
-import pwr.chrzescijanek.filip.gifa.model.panel.PanelView;
 import pwr.chrzescijanek.filip.gifa.view.FXView;
-
-import java.util.List;
 
 import static javafx.scene.control.Alert.AlertType;
 import static javafx.stage.Modality.APPLICATION_MODAL;
 import static javafx.stage.StageStyle.UNDECORATED;
-import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.initializeController;
+import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.initializeSampleController;
 
 /**
  * Provides utility methods for handling stages.
@@ -64,19 +61,20 @@ public final class StageUtils {
 	}
 
 	/**
-	 * Constructs new application's panel stage with FXML view from given path, label, title and panel views.
+	 * Constructs new application's panel stage with FXML view from given path, label, title and panel views
+	 * of vertex with given index.
 	 *
-	 * @param viewPath FXML view path
-	 * @param info     label
-	 * @param title    stage title
-	 * @param views    panel views
+	 * @param viewPath    FXML view path
+	 * @param info        label
+	 * @param title       stage title
+	 * @param sampleIndex sample index
 	 * @return new application's panel stage
 	 */
-	public static Stage getNewStage(final String viewPath, final String info, final String title, final List<? extends
-			PanelView> views) {
+	public static Stage getNewSampleStage(final String viewPath, final String info, final String title,
+	                                      final int sampleIndex) {
 		final Stage newStage = new Stage();
 		final FXView fxView = new FXView(viewPath);
-		final PanelController controller = initializeController(info, views, fxView);
+		final PanelController controller = initializeSampleController(info, sampleIndex, fxView);
 		showStage(newStage, fxView, controller, title);
 		return newStage;
 	}

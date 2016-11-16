@@ -5,7 +5,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageData;
-import pwr.chrzescijanek.filip.gifa.model.panel.PanelViewFactory;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
 
 import static javafx.scene.Cursor.DEFAULT;
@@ -64,11 +63,6 @@ public abstract class BasicSample extends Ellipse {
 	public final ImageData imageData;
 
 	/**
-	 * Panel views factory.
-	 */
-	protected final PanelViewFactory panelViewFactory;
-
-	/**
 	 * X bound.
 	 */
 	protected double xBound;
@@ -92,23 +86,20 @@ public abstract class BasicSample extends Ellipse {
 	 * Constructs a new BasicSample on given image, with given position, size, shared state,
 	 * panel views factory and bounds.
 	 *
-	 * @param imageData        image
-	 * @param x                X position
-	 * @param y                Y position
-	 * @param radiusX          X radius
-	 * @param radiusY          Y radius
-	 * @param state            shared state
-	 * @param panelViewFactory panel views factory
-	 * @param xBound           X bound
-	 * @param yBound           Y bound
+	 * @param imageData image
+	 * @param x         X position
+	 * @param y         Y position
+	 * @param radiusX   X radius
+	 * @param radiusY   Y radius
+	 * @param state     shared state
+	 * @param xBound    X bound
+	 * @param yBound    Y bound
 	 */
 	protected BasicSample(final ImageData imageData, final double x, final double y, final double radiusX,
-	                      final double radiusY, final SharedState state, final PanelViewFactory panelViewFactory,
-	                      final double xBound, final double yBound) {
+	                      final double radiusY, final SharedState state, final double xBound, final double yBound) {
 		super(x, y, radiusX, radiusY);
 		this.imageData = imageData;
 		this.state = state;
-		this.panelViewFactory = panelViewFactory;
 		this.xBound = xBound;
 		this.yBound = yBound;
 		bindToBounds();

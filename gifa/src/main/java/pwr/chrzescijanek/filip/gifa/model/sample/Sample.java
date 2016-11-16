@@ -12,12 +12,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.stage.Stage;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
-import pwr.chrzescijanek.filip.gifa.model.panel.PanelViewFactory;
-import pwr.chrzescijanek.filip.gifa.model.panel.SamplePanelView;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.atan;
@@ -27,7 +22,7 @@ import static java.lang.Math.min;
 import static java.lang.Math.sin;
 import static java.lang.Math.tan;
 import static pwr.chrzescijanek.filip.gifa.model.sample.BasicSample.SampleSelection.NIL;
-import static pwr.chrzescijanek.filip.gifa.util.StageUtils.getNewStage;
+import static pwr.chrzescijanek.filip.gifa.util.StageUtils.getNewSampleStage;
 
 /**
  * Represents user-defined sample.
@@ -44,20 +39,18 @@ public class Sample extends BasicSample {
 	 * Constructs a new Sample on given image, with given position, size, shared state,
 	 * panel views factory and bounds.
 	 *
-	 * @param imageData        image
-	 * @param x                X position
-	 * @param y                Y position
-	 * @param radiusX          X radius
-	 * @param radiusY          Y radius
-	 * @param state            shared state
-	 * @param panelViewFactory panel views factory
-	 * @param xBound           X bound
-	 * @param yBound           Y bound
+	 * @param imageData image
+	 * @param x         X position
+	 * @param y         Y position
+	 * @param radiusX   X radius
+	 * @param radiusY   Y radius
+	 * @param state     shared state
+	 * @param xBound    X bound
+	 * @param yBound    Y bound
 	 */
 	protected Sample(final SamplesImageData imageData, final double x, final double y, final double radiusX,
-	                 final double radiusY, final SharedState state, final PanelViewFactory panelViewFactory,
-	                 final double xBound, final double yBound) {
-		super(imageData, x, y, radiusX, radiusY, state, panelViewFactory, xBound, yBound);
+	                 final double radiusY, final SharedState state, final double xBound, final double yBound) {
+		super(imageData, x, y, radiusX, radiusY, state, xBound, yBound);
 		bindAxes();
 		overwriteListeners();
 	}
@@ -252,12 +245,7 @@ public class Sample extends BasicSample {
 			final String info = "Drag to move the sample.";
 			final int index = getIndexOf();
 			final String title = "Sample #" + (index + 1);
-			final List<SamplePanelView> samplePanelViews =
-					state.samplesImages.values().stream()
-					                   .map(img -> panelViewFactory
-							                   .createSamplePanelView(img.image.get(), img.samples.get(index)))
-					                   .collect(Collectors.toList());
-			final Stage newStage = getNewStage(viewPath, info, title, samplePanelViews);
+			final Stage newStage = getNewSampleStage(viewPath, info, title, index);
 			addCloseListeners(newStage);
 		}
 	}
@@ -275,7 +263,7 @@ public class Sample extends BasicSample {
 		});
 		state.samplesImages.addListener(
 				(MapChangeListener<? super String, ? super SamplesImageData>) c -> Platform.runLater(newStage::close)
-		                               );
+		);
 	}
 
 	private void setStart(final MouseEvent event) {

@@ -44,7 +44,7 @@ public class ImageToAlignData extends ImageData {
 						this.image.get().getPixelReader(),
 						(int) this.image.get().getWidth(),
 						(int) this.image.get().getHeight())
-		                 );
+		);
 		triangle = new Triangle(image.getWidth(), image.getHeight());
 		initializeTriangle();
 	}

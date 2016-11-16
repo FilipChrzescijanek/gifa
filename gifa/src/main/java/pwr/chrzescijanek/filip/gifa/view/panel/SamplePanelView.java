@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.model.panel;
+package pwr.chrzescijanek.filip.gifa.view.panel;
 
 import javafx.scene.image.Image;
 import pwr.chrzescijanek.filip.gifa.model.sample.Sample;
