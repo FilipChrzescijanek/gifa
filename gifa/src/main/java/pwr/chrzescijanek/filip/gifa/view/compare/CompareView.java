@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.view.panel;
+package pwr.chrzescijanek.filip.gifa.view.compare;
 
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.DoubleProperty;
@@ -11,9 +11,9 @@ import javafx.scene.shape.Ellipse;
 import pwr.chrzescijanek.filip.gifa.model.sample.BasicSample;
 
 /**
- * Represents single panel view.
+ * Represents single compare view.
  */
-public abstract class PanelView extends ImageView {
+public abstract class CompareView extends ImageView {
 
 	/**
 	 * Associated sample.
@@ -41,12 +41,12 @@ public abstract class PanelView extends ImageView {
 	protected double startY;
 
 	/**
-	 * Constructs a new PanelView given JavaFX image and sample.
+	 * Constructs a new CompareView given JavaFX image and sample.
 	 *
 	 * @param image  JavaFX image
 	 * @param sample sample that will be shown
 	 */
-	protected PanelView(final Image image, final BasicSample sample) {
+	protected CompareView(final Image image, final BasicSample sample) {
 		super(image);
 		this.sample = sample;
 		addListeners();

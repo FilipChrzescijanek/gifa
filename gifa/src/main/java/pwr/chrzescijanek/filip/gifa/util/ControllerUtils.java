@@ -18,7 +18,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import pwr.chrzescijanek.filip.gifa.controller.PanelController;
+import pwr.chrzescijanek.filip.gifa.controller.CompareViewController;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
 import pwr.chrzescijanek.filip.gifa.model.sample.BasicSample;
 import pwr.chrzescijanek.filip.gifa.view.FXView;
@@ -42,36 +42,36 @@ public final class ControllerUtils {
 	private ControllerUtils() {}
 
 	/**
-	 * Loads panel controller from given FXML view and initializes it with given label and panel views
+	 * Loads compare view's controller from given FXML view and initializes it with given label and compare views
 	 * of vertex with given index.
 	 *
 	 * @param info        label
 	 * @param vertexIndex vertex index
 	 * @param fxView      FXML view
-	 * @return new PanelController class instance
+	 * @return new CompareViewController class instance
 	 */
-	public static PanelController initializeVertexController(final String info, final int vertexIndex,
-	                                                         final FXView fxView) {
-		final PanelController controller = (PanelController) fxView.getController();
+	public static CompareViewController initializeVertexController(final String info, final int vertexIndex,
+	                                                               final FXView fxView) {
+		final CompareViewController controller = (CompareViewController) fxView.getController();
 		controller.setInfo(info);
-		controller.setVertexPanelViews(vertexIndex);
+		controller.setVertexCompareViews(vertexIndex);
 		return controller;
 	}
 
 	/**
-	 * Loads panel controller from given FXML view and initializes it with given label and panel views
+	 * Loads compare view's controller from given FXML view and initializes it with given label and compare views
 	 * of sample with given index.
 	 *
 	 * @param info        label
 	 * @param sampleIndex sample index
 	 * @param fxView      FXML view
-	 * @return new PanelController class instance
+	 * @return new CompareViewController class instance
 	 */
-	public static PanelController initializeSampleController(final String info, final int sampleIndex,
-	                                                         final FXView fxView) {
-		final PanelController controller = (PanelController) fxView.getController();
+	public static CompareViewController initializeSampleController(final String info, final int sampleIndex,
+	                                                               final FXView fxView) {
+		final CompareViewController controller = (CompareViewController) fxView.getController();
 		controller.setInfo(info);
-		controller.setSamplePanelViews(sampleIndex);
+		controller.setSampleCompareViews(sampleIndex);
 		return controller;
 	}
 
@@ -83,7 +83,8 @@ public final class ControllerUtils {
 	 * @param images           array of images of samples
 	 * @param samplesImageData aligned image of which given sample was taken
 	 */
-	public static void prepareImage(final BasicSample sample, final int index, final Mat[] images, final SamplesImageData samplesImageData) {
+	public static void prepareImage(final BasicSample sample, final int index, final Mat[] images,
+	                                final SamplesImageData samplesImageData) {
 		final int x = (int) sample.sampleArea.getX();
 		final int y = (int) sample.sampleArea.getY();
 		final int width = (int) sample.sampleArea.getWidth();

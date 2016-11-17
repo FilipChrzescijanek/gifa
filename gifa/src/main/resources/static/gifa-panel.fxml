@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <BorderPane fx:id="root" styleClass="root" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1"
-			fx:controller="pwr.chrzescijanek.filip.gifa.controller.PanelController" >
+            fx:controller="pwr.chrzescijanek.filip.gifa.controller.CompareViewController">
 	<top>
-		<HBox fx:id="panelHBox" alignment="CENTER">
-			<Label fx:id="panelInfo"/>
+		<HBox fx:id="compareViewHBox" alignment="CENTER">
+			<Label fx:id="compareViewInfo"/>
 		</HBox>
 	</top>
 	<center>
@@ -18,8 +24,8 @@
 			<rowConstraints>
 				<RowConstraints percentHeight="100.0" vgrow="SOMETIMES"/>
 			</rowConstraints>
-			<ScrollPane fx:id="panelGridScrollPane" fitToWidth="true">
-				<GridPane fx:id="panelGrid" vgap="10.0" hgap="10.0">
+			<ScrollPane fx:id="compareViewGridScrollPane" fitToWidth="true">
+				<GridPane fx:id="compareViewGrid" vgap="10.0" hgap="10.0">
 					<padding>
 						<Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
 					</padding>
@@ -28,13 +34,13 @@
 		</GridPane>
 	</center>
 	<bottom>
-		<HBox fx:id="panelControls" alignment="CENTER" minHeight="40.0">
-			<Label fx:id="panelColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns:">
+		<HBox fx:id="compareViewControls" alignment="CENTER" minHeight="40.0">
+			<Label fx:id="compareViewColumnsLabel" alignment="CENTER_RIGHT" text="Max. columns:">
 				<HBox.margin>
 					<Insets right="10"/>
 				</HBox.margin>
 			</Label>
-			<TextField fx:id="panelColumnsTextField" alignment="CENTER" text="3" prefWidth="50" />
+			<TextField fx:id="compareViewColumnsTextField" alignment="CENTER" text="3" prefWidth="50"/>
 		</HBox>
 	</bottom>
 </BorderPane>

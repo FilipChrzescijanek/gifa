@@ -1,20 +1,20 @@
-package pwr.chrzescijanek.filip.gifa.view.panel;
+package pwr.chrzescijanek.filip.gifa.view.compare;
 
 import javafx.scene.image.Image;
 import pwr.chrzescijanek.filip.gifa.model.sample.Sample;
 
 /**
- * Represents single panel view that shows user-defined sample.
+ * Represents single compare view that shows user-defined sample.
  */
-public class SamplePanelView extends PanelView {
+public class SampleCompareView extends CompareView {
 
 	/**
-	 * Constructs a new SamplePanelView given JavaFX image and sample.
+	 * Constructs a new SampleCompareView given JavaFX image and sample.
 	 *
 	 * @param image  JavaFX image
 	 * @param sample user-defined sample that will be shown
 	 */
-	protected SamplePanelView(final Image image, final Sample sample) {
+	protected SampleCompareView(final Image image, final Sample sample) {
 		super(image, sample);
 	}
 

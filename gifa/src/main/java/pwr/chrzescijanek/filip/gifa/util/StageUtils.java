@@ -8,7 +8,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import pwr.chrzescijanek.filip.gifa.controller.PanelController;
+import pwr.chrzescijanek.filip.gifa.controller.CompareViewController;
 import pwr.chrzescijanek.filip.gifa.view.FXView;
 
 import static javafx.scene.control.Alert.AlertType;
@@ -61,45 +61,46 @@ public final class StageUtils {
 	}
 
 	/**
-	 * Constructs new application's panel stage with FXML view from given path, label, title and panel views
+	 * Constructs new application's compare view's stage with FXML view from given path, label, title and compare views
 	 * of vertex with given index.
 	 *
 	 * @param viewPath    FXML view path
 	 * @param info        label
 	 * @param title       stage title
 	 * @param sampleIndex sample index
-	 * @return new application's panel stage
+	 * @return new application's compare stage
 	 */
-	public static Stage getNewSampleStage(final String viewPath, final String info, final String title,
-	                                      final int sampleIndex) {
+	public static Stage getCompareSampleStage(final String viewPath, final String info, final String title,
+	                                          final int sampleIndex) {
 		final Stage newStage = new Stage();
 		final FXView fxView = new FXView(viewPath);
-		final PanelController controller = initializeSampleController(info, sampleIndex, fxView);
+		final CompareViewController controller = initializeSampleController(info, sampleIndex, fxView);
 		showStage(newStage, fxView, controller, title);
 		return newStage;
 	}
 
 	/**
-	 * Shows given applications' panel stage.
+	 * Shows given applications' compare view's stage.
 	 *
 	 * @param newStage   stage
 	 * @param fxView     FXML view
-	 * @param controller panel controller
+	 * @param controller compare view's controller
 	 * @param title      stage title
 	 */
-	public static void showStage(final Stage newStage, final FXView fxView, final PanelController controller, final
-	String title) {
+	public static void showStage(final Stage newStage, final FXView fxView, final CompareViewController controller,
+	                             final
+	                             String title) {
 		preparePanelStage(newStage, title, fxView);
 		controller.refresh();
 		newStage.show();
 	}
 
 	/**
-	 * Prepares applications' panel stage.
+	 * Prepares applications' compare view's stage.
 	 *
-	 * @param stage stage on which panel will be shown
+	 * @param stage stage on which compare view will be shown
 	 * @param title stage title
-	 * @param view  panel view
+	 * @param view  compare view
 	 */
 	public static void preparePanelStage(final Stage stage, final String title, final FXView view) {
 		setTitleAndIcon(stage, title);

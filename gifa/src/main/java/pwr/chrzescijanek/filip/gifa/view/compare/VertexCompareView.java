@@ -1,4 +1,4 @@
-package pwr.chrzescijanek.filip.gifa.view.panel;
+package pwr.chrzescijanek.filip.gifa.view.compare;
 
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.image.Image;
@@ -10,17 +10,17 @@ import pwr.chrzescijanek.filip.gifa.model.sample.Vertex;
 import static java.lang.Math.abs;
 
 /**
- * Represents single panel view that shows vertex.
+ * Represents single compare view that shows vertex.
  */
-public class VertexPanelView extends PanelView {
+public class VertexCompareView extends CompareView {
 
 	/**
-	 * Constructs a new VertexPanelView given JavaFX image and sample.
+	 * Constructs a new VertexCompareView given JavaFX image and sample.
 	 *
 	 * @param image  JavaFX image
 	 * @param sample vertex that will be shown
 	 */
-	protected VertexPanelView(final Image image, final Vertex sample) {
+	protected VertexCompareView(final Image image, final Vertex sample) {
 		super(image, sample);
 	}
 
