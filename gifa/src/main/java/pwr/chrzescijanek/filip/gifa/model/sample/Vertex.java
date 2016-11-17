@@ -5,13 +5,15 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.MapChangeListener;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
-import pwr.chrzescijanek.filip.gifa.controller.PanelController;
+import pwr.chrzescijanek.filip.gifa.controller.CompareViewController;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageToAlignData;
 import pwr.chrzescijanek.filip.gifa.model.image.Triangle;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
@@ -34,8 +36,7 @@ public class Vertex extends BasicSample {
 	private final List<List<ColorChangeListener>> strokeChangeListeners = new ArrayList<>();
 
 	/**
-	 * Constructs a new Vertex on given image, with given position, size, shared state,
-	 * panel views factory and bounds.
+	 * Constructs a new Vertex on given image, with given position, size, shared state and bounds.
 	 *
 	 * @param imageData image
 	 * @param x         X position
@@ -67,11 +68,11 @@ public class Vertex extends BasicSample {
 	protected void handleDoubleClick(final MouseEvent event) {
 		if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() > 1) {
 			final String viewPath = "/static/gifa-panel.fxml";
-			final String info = "Click on any image to move according triangle point. Drag to move the sample.";
+			final String info = "Click on any image to move according vertex. Drag to move the sample.";
 			final int index = getIndexOf();
 			final String title = "Vertex #" + (index + 1);
 			final FXView fxView = new FXView(viewPath);
-			final PanelController controller = initializeVertexController(info, index, fxView);
+			final CompareViewController controller = initializeVertexController(info, index, fxView);
 			final Stage newStage = new Stage();
 			showStage(newStage, fxView, controller, title);
 			postCreation(controller, newStage);
@@ -83,13 +84,16 @@ public class Vertex extends BasicSample {
 		return Arrays.asList(((ImageToAlignData) imageData).vertices).indexOf(this);
 	}
 
-	private void postCreation(final PanelController controller, final Stage newStage) {
+	private void postCreation(final CompareViewController controller, final Stage newStage) {
 		addListeners(controller);
-		colorVertices();
-		newStage.setOnCloseRequest(e -> removeChangeListeners());
+		paintVertices();
+		newStage.setOnCloseRequest(e -> {
+			eraseVertices();
+			removeChangeListeners();
+		});
 	}
 
-	private void addListeners(final PanelController controller) {
+	private void addListeners(final CompareViewController controller) {
 		addImagesChangeListener(controller);
 		initializeVertexChangeListeners();
 		initializeStrokeChangeListeners();
@@ -97,12 +101,12 @@ public class Vertex extends BasicSample {
 		addStrokeChangeListeners();
 	}
 
-	private void addImagesChangeListener(final PanelController controller) {
+	private void addImagesChangeListener(final CompareViewController controller) {
 		state.imagesToAlign.addListener(
 				(MapChangeListener<? super String, ? super ImageToAlignData>) c -> {
 					removeChangeListeners();
 					final int index = getIndexOf();
-					controller.setVertexPanelViews(index);
+					controller.setVertexCompareViews(index);
 					initializeVertexChangeListeners();
 					initializeStrokeChangeListeners();
 					addVertexChangeListeners();
@@ -133,15 +137,15 @@ public class Vertex extends BasicSample {
 		}
 	}
 
-	private void colorVertices() {
+	private void paintVertices() {
 		for (final ImageToAlignData imageData : state.imagesToAlign.values()) {
 			final DoubleProperty[] pointsProperty = imageData.triangle.pointsProperty;
 			final Vertex[] vertices = imageData.vertices;
 			final WritableImage writableImage = imageData.writableImage.get();
+			final PixelWriter pixelWriter = writableImage.getPixelWriter();
 			for (int i = 0; i < vertices.length; i++) {
-				writableImage.getPixelWriter().setColor(
-						pointsProperty[i * 2].intValue(), pointsProperty[i * 2 + 1].intValue(),
-						(Color) vertices[i].getStroke());
+				pixelWriter.setColor(pointsProperty[i * 2].intValue(), pointsProperty[i * 2 + 1].intValue(),
+				                     (Color) vertices[i].getStroke());
 			}
 		}
 	}
@@ -149,11 +153,26 @@ public class Vertex extends BasicSample {
 	private void changeColor(final ImageToAlignData imageData,
 	                         final int oldX, final int oldY, final int newX, final int newY, final Color color) {
 		final WritableImage writableImage = imageData.writableImage.get();
+		final PixelWriter pixelWriter = writableImage.getPixelWriter();
 		if (oldX < xBound && oldY < yBound)
-			writableImage.getPixelWriter().setColor(oldX, oldY,
-			                                        imageData.image.get().getPixelReader().getColor(oldX, oldY));
+			pixelWriter.setColor(oldX, oldY, imageData.image.get().getPixelReader().getColor(oldX, oldY));
 		if (newX < xBound && newY < yBound)
-			writableImage.getPixelWriter().setColor(newX, newY, color);
+			pixelWriter.setColor(newX, newY, color);
+	}
+
+	private void eraseVertices() {
+		for (final ImageToAlignData imageData : state.imagesToAlign.values()) {
+			final DoubleProperty[] pointsProperty = imageData.triangle.pointsProperty;
+			final Vertex[] vertices = imageData.vertices;
+			final WritableImage writableImage = imageData.writableImage.get();
+			final PixelWriter pixelWriter = writableImage.getPixelWriter();
+			final PixelReader pixelReader = imageData.image.get().getPixelReader();
+			for (int i = 0; i < vertices.length; i++) {
+				final int x = pointsProperty[i * 2].intValue();
+				final int y = pointsProperty[i * 2 + 1].intValue();
+				pixelWriter.setColor(x, y, pixelReader.getColor(x, y));
+			}
+		}
 	}
 
 	private void removeChangeListeners() {

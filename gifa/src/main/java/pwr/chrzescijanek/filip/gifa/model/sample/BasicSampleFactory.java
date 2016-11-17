@@ -15,7 +15,7 @@ public class BasicSampleFactory {
 	private final SharedState state;
 
 	/**
-	 * Constructs a new BasicSampleFactory with given shared state and panel views factory.
+	 * Constructs a new BasicSampleFactory with given shared state.
 	 *
 	 * @param state shared state
 	 */

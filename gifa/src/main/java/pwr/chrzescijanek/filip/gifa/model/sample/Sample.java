@@ -22,7 +22,7 @@ import static java.lang.Math.min;
 import static java.lang.Math.sin;
 import static java.lang.Math.tan;
 import static pwr.chrzescijanek.filip.gifa.model.sample.BasicSample.SampleSelection.NIL;
-import static pwr.chrzescijanek.filip.gifa.util.StageUtils.getNewSampleStage;
+import static pwr.chrzescijanek.filip.gifa.util.StageUtils.getCompareSampleStage;
 
 /**
  * Represents user-defined sample.
@@ -36,8 +36,7 @@ public class Sample extends BasicSample {
 	private double constantAngle = 0;
 
 	/**
-	 * Constructs a new Sample on given image, with given position, size, shared state,
-	 * panel views factory and bounds.
+	 * Constructs a new Sample on given image, with given position, size, shared state and bounds.
 	 *
 	 * @param imageData image
 	 * @param x         X position
@@ -245,7 +244,7 @@ public class Sample extends BasicSample {
 			final String info = "Drag to move the sample.";
 			final int index = getIndexOf();
 			final String title = "Sample #" + (index + 1);
-			final Stage newStage = getNewSampleStage(viewPath, info, title, index);
+			final Stage newStage = getCompareSampleStage(viewPath, info, title, index);
 			addCloseListeners(newStage);
 		}
 	}

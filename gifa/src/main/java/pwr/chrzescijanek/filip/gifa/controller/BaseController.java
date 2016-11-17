@@ -73,21 +73,21 @@ public class BaseController {
 	}
 
 	/**
-	 * Binds given panel view size to panel cell size, calculated based on given scroll pane.
+	 * Binds given compare view size to compare cell size, calculated based on given scroll pane.
 	 *
-	 * @param view           panel view
-	 * @param gridScrollPane panel's scroll pane containing grid pane
+	 * @param view           compare view
+	 * @param gridScrollPane compare's view scroll pane containing grid pane
 	 */
 	protected void bindSize(final ImageView view, final ScrollPane gridScrollPane) {
 		bindSize(view, gridScrollPane, 1);
 	}
 
 	/**
-	 * Binds given panel view size to panel cell size, calculated based on given scroll pane,
+	 * Binds given compare view size to compare cell size, calculated based on given scroll pane,
 	 * using scale (the bigger the scale, the lower the single cell height).
 	 *
-	 * @param view           panel view
-	 * @param gridScrollPane panel's scroll pane containing grid pane
+	 * @param view           compare view
+	 * @param gridScrollPane compare's view scroll pane containing grid pane
 	 * @param scale          alignment scale
 	 */
 	protected void bindSize(final ImageView view, final ScrollPane gridScrollPane, final double scale) {
@@ -145,11 +145,11 @@ public class BaseController {
 	}
 
 	/**
-	 * Calculates the number of panel columns and rows based on given number of max. columns
-	 * and nodes that need to placed onto the panel.
+	 * Calculates the number of compare view's columns and rows based on given number of max. columns
+	 * and nodes that need to placed onto the compare view.
 	 *
 	 * @param maxColumns max. number of columns
-	 * @param nodes      nodes that need to be placed onto the panel
+	 * @param nodes      nodes that need to be placed onto the compare view
 	 */
 	protected void calculateColumnsAndRows(final TextField maxColumns, final List<? extends Node> nodes) {
 		noOfColumns.set(Math.min(Integer.parseInt(maxColumns.getText()), nodes.size()));
@@ -160,14 +160,14 @@ public class BaseController {
 	}
 
 	/**
-	 * Places given nodes into given panel grid.
+	 * Places given nodes into given compare view's grid.
 	 *
 	 * @param nodes nodes to be placed
-	 * @param grid  panel grid
+	 * @param grid  compare's view grid
 	 */
 	protected void placeNodes(final List<? extends Node> nodes, final GridPane grid) {
+		resetGrid(grid);
 		if (nodes != null && !nodes.isEmpty()) {
-			resetGrid(grid);
 			setColumnConstraints(grid);
 			setRowConstraints(grid);
 			populateGrid(nodes, grid);

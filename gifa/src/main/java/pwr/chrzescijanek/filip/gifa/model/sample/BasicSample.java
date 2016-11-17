@@ -83,8 +83,7 @@ public abstract class BasicSample extends Ellipse {
 	protected double startY;
 
 	/**
-	 * Constructs a new BasicSample on given image, with given position, size, shared state,
-	 * panel views factory and bounds.
+	 * Constructs a new BasicSample on given image, with given position, size, shared state and bounds.
 	 *
 	 * @param imageData image
 	 * @param x         X position
