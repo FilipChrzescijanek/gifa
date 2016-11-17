@@ -14,7 +14,6 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -99,6 +98,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
@@ -110,6 +110,8 @@ import java.util.stream.IntStream;
 import static org.opencv.imgproc.Imgproc.INTER_CUBIC;
 import static org.opencv.imgproc.Imgproc.INTER_LINEAR;
 import static org.opencv.imgproc.Imgproc.INTER_NEAREST;
+import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.createImage;
+import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.getImagesCopy;
 import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.getCSVFile;
 import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.getDirectory;
 import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.getHBoxWithLabelAndProgressIndicator;
@@ -1966,11 +1968,7 @@ public class Controller extends BaseController implements Initializable {
 		                                 .flatMap(r -> r.getScores().keySet().stream()).collect(Collectors.toSet());
 		final TreeSet<String> functions = new TreeSet<>(names);
 		String csvContents = createHeader(functions);
-		int sample = 0;
-		for (final Result result : results.get()) {
-			sample++;
-			csvContents += appendSampleScores(functions, result, sample);
-		}
+		csvContents += appendSampleScores(functions, results.get());
 		return csvContents;
 	}
 	
@@ -1986,12 +1984,10 @@ public class Controller extends BaseController implements Initializable {
 		return csvContents;
 	}
 	
-	private String appendSampleScores(final TreeSet<String> functions, final Result result, final int sample) {
+	private String appendSampleScores(final TreeSet<String> functions, final List<Result> results) {
 		String csvContents = "";
-		final Map<String, UnmodifiableArrayList<Double>> scores = result.getScores();
-		final List<String> images = result.getImageNames();
-		for (int i = 0; i < images.size(); i++)
-			csvContents += appendSampleScores(functions, scores, sample, images.get(i), i);
+		for (int i = 0; i < results.size(); i++)
+			csvContents += appendSampleScores(functions, results.get(i), i + 1);
 		return csvContents;
 	}
 	
@@ -2002,16 +1998,24 @@ public class Controller extends BaseController implements Initializable {
 		alert.showAndWait();
 	}
 	
-	private String appendSampleScores(final TreeSet<String> functions, final Map<String,
-			UnmodifiableArrayList<Double>> scores,
-	                                  final int sample, final String image, final int i) {
-		String csvContents = "\r\n" + sample + ",\"" + image + "\"";
-		for (final String s : functions) {
-			final double[] doubles = scores.get(s).stream().mapToDouble(Double::doubleValue).toArray();
-			if (doubles == null)
-				csvContents += ",";
-			else
-				csvContents += ",\"" + doubles[i] + "\"";
+	private String appendSampleScores(final TreeSet<String> functions, final Result result, final int sample) {
+		final List<List<String>> imageNames = result.getImageNames().stream().distinct().collect(Collectors.toList());
+		String csvContents = "";
+		for (final List<String> names : imageNames) {
+			for (int i = 0; i < names.size(); i++) {
+				csvContents += "\r\n" + sample + ",\"" + names.get(i) + "\"";
+				int index = 0;
+				for (final String s : functions) {
+					if (!result.getImageNames().get(index).contains(names.get(i)))
+						csvContents += ",";
+					else {
+						final double[] doubles = result.getScores().get(s).stream().mapToDouble(Double::doubleValue)
+						                               .toArray();
+						csvContents += ",\"" + doubles[i] + "\"";
+					}
+					index++;
+				}
+			}
 		}
 		return csvContents;
 	}
@@ -2022,7 +2026,7 @@ public class Controller extends BaseController implements Initializable {
 		final ImageToAlignData img = state.imagesToAlign.get(imageName);
 		Core.flip(img.imageData, img.imageData, 1);
 		final Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		final Image fxImage = ImageUtils.createImage(imageCopy);
+		final Image fxImage = createImage(imageCopy);
 		refreshImage(img, fxImage);
 	}
 	
@@ -2047,7 +2051,7 @@ public class Controller extends BaseController implements Initializable {
 		final ImageToAlignData img = state.imagesToAlign.get(imageName);
 		Core.flip(img.imageData, img.imageData, 0);
 		final Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		final Image fxImage = ImageUtils.createImage(imageCopy);
+		final Image fxImage = createImage(imageCopy);
 		refreshImage(img, fxImage);
 	}
 	
@@ -2058,7 +2062,7 @@ public class Controller extends BaseController implements Initializable {
 		Core.transpose(img.imageData, img.imageData);
 		Core.flip(img.imageData, img.imageData, 0);
 		final Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		final Image fxImage = ImageUtils.createImage(imageCopy);
+		final Image fxImage = createImage(imageCopy);
 		refreshImage(img, fxImage);
 	}
 	
@@ -2069,7 +2073,7 @@ public class Controller extends BaseController implements Initializable {
 		Core.transpose(img.imageData, img.imageData);
 		Core.flip(img.imageData, img.imageData, 1);
 		final Mat imageCopy = ImageUtils.getImageCopy(img.imageData);
-		final Image fxImage = ImageUtils.createImage(imageCopy);
+		final Image fxImage = createImage(imageCopy);
 		refreshImage(img, fxImage);
 	}
 	
@@ -2095,7 +2099,7 @@ public class Controller extends BaseController implements Initializable {
 	                            final String function) {
 		final LineChart<String, Number> chart = new LineChart<>(createCategoryAxis(), createValueAxis());
 		chart.setTitle(function);
-		final List<Series<String, Number>> series = createSeries(summary, function);
+		final List<Series<String, Number>> series = createSeries(charts.size(), summary, function);
 		series.forEach(chart.getData()::add);
 		charts.add(chart);
 	}
@@ -2106,32 +2110,33 @@ public class Controller extends BaseController implements Initializable {
 		return xAxis;
 	}
 	
-	private List<Series<String, Number>> createSeries(final List<Result> summary, final String function) {
+	private List<Series<String, Number>> createSeries(final int chartIndex, final List<Result> summary,
+	                                                  final String function) {
 		final List<Double[]> results = summary.stream()
 		                                      .map(r -> r.getScores().get(function)
-		                                                 .toArray(new Double[0])).collect(Collectors.toList());
-		final List<Series<String, Number>> series = populateSeries(summary, results);
+		                                                 .toArray(new Double[0]))
+		                                      .collect(Collectors.toList());
+		final List<Series<String, Number>> series = populateSeries(chartIndex, summary, results);
 		return series;
 	}
 	
-	private List<Series<String, Number>> populateSeries(final List<Result> summary, final List<Double[]> results) {
+	private List<Series<String, Number>> populateSeries(final int chartIndex, final List<Result> summary,
+	                                                    final List<Double[]> results) {
 		final List<Series<String, Number>> series = new ArrayList<>();
 		for (int i = 0; i < results.size(); i++) {
 			final double[] scores = Arrays.stream(results.get(i)).mapToDouble(Double::doubleValue).toArray();
-			final List<String> names = summary.stream().findFirst().map(Result::getImageNames).orElse(
-					IntStream.range(1, scores.length + 1).mapToObj(n -> "Series " + n)
-					         .collect(Collectors.toList()));
-			populateSeries(series, scores, names, i);
+			final List<List<String>> names = summary.get(i).getImageNames();
+			populateSeries(chartIndex, series, scores, names, i);
 		}
 		return series;
 	}
 	
-	private void populateSeries(final List<Series<String, Number>> series, final double[] scores, final List<String>
-			names, final int index) {
+	private void populateSeries(final int chartIndex, final List<Series<String, Number>> series, final double[] scores,
+	                            final List<List<String>> names, final int index) {
 		for (int i = 0; i < scores.length; i++) {
 			if (series.size() == i) {
 				final Series<String, Number> s = new Series<>();
-				s.setName(names.get(i));
+				s.setName(Optional.ofNullable(names.get(chartIndex).get(i)).orElse("Series " + (i + 1)));
 				series.add(s);
 			}
 			final Series<String, Number> current = series.get(i);
@@ -2194,14 +2199,18 @@ public class Controller extends BaseController implements Initializable {
 		placeNodes(summaryCharts, allChartsGrid);
 	}
 	
-	private List<Series<String, Number>> generateSeries(final Map<String, UnmodifiableArrayList<Double>> results) {
+	private List<Series<String, Number>> generateSeries(final Result results) {
+		final List<List<String>> imageNames = results.getImageNames();
 		final List<Series<String, Number>> series = new ArrayList<>();
-		for (final Entry<String, UnmodifiableArrayList<Double>> e : results.entrySet()) {
+		int index = 0;
+		for (final Entry<String, UnmodifiableArrayList<Double>> e : results.getScores().entrySet()) {
 			final Series<String, Number> s = new Series<>();
 			s.setName(e.getKey());
-			for (int i = 0; i < e.getValue().size(); i++)
-				s.getData().add(new XYChart.Data<>(samplesImageList.getItems().get(i), e.getValue().get(i)));
+			for (int i = 0; i < e.getValue().size(); i++) {
+				s.getData().add(new XYChart.Data<>(imageNames.get(index).get(i), e.getValue().get(i)));
+			}
 			series.add(s);
+			index++;
 		}
 		return series;
 	}
@@ -2304,16 +2313,16 @@ public class Controller extends BaseController implements Initializable {
 	
 	private void validateChartsControlsDisableProperties() {
 		final List<Node> nodes = getSelectedCharts();
-		final Integer seriesSize = chartsBySampleGrid.getChildren().stream().filter(n -> n.getStyle().equals
-				(CHART_SELECTED_STYLE)).map(n -> ((BarChart) n).getData().size()).reduce(Integer::sum).orElse(0);
+		final Integer seriesSize = checkSizes();
+		final boolean sameSeries = checkNames(nodes);
 		chartsExtractButton.setDisable(nodes.size() != 1 || seriesSize <= 1);
 		chartsRemoveButton.setDisable(nodes.isEmpty());
-		chartsMergeButton.setDisable(nodes.size() < 2);
+		chartsMergeButton.setDisable(nodes.size() < 2 || !sameSeries);
 		chartsMenuMergeCharts.setDisable(nodes.size() < 2);
 		chartsMenuExtractChart.setDisable(nodes.size() != 1 || seriesSize <= 1);
 		chartsMenuRemoveCharts.setDisable(nodes.isEmpty());
 	}
-	
+
 	private void colorSeries(final int index) {
 		final List<BarChart<String, Number>> charts = this.charts.get(index);
 		final List<Series<String, Number>> series = this.series.get(index);
@@ -2321,13 +2330,35 @@ public class Controller extends BaseController implements Initializable {
 				                                                ("#57b757"), Color.web("#41a9c9"),
 		                                                Color.web("#4258c9"), Color.web("#9a42c8"), Color.web
 						("#c84164"), Color.web("#888888"));
-		
+
 		for (int i = 0; i < series.size(); i++) {
 			final Series<String, Number> s = series.get(i);
 			final LegendItem item = getLegendItem(charts, s);
 			if (item != null)
 				item.setSymbol(instantiateColorPicker(defaultColors, index, charts, i, s));
 		}
+	}
+
+	private Integer checkSizes() {
+		return chartsBySampleGrid
+				.getChildren()
+				.stream()
+				.filter(n -> n.getStyle().equals(CHART_SELECTED_STYLE))
+				.map(n -> ((BarChart) n).getData().size())
+				.reduce(Integer::sum).orElse(0);
+	}
+	
+	private boolean checkNames(final List<Node> nodes) {
+		final List<List<String>> seriesNames = new ArrayList<>();
+		for (int i = 0; i < nodes.size(); i++) {
+			final List<Series<String, Number>> series = ((BarChart<String, Number>) nodes.get(i)).getData();
+			final List<String> names = new ArrayList<>();
+			for (int j = 0; j < series.size(); j++) {
+				names.add(series.get(j).getData().get(j).getXValue());
+			}
+			seriesNames.add(names);
+		}
+		return seriesNames.stream().allMatch(list -> list.equals(seriesNames.get(0)));
 	}
 	
 	private LegendItem getLegendItem(final List<BarChart<String, Number>> charts, final Series<? extends String, ?
@@ -2525,7 +2556,7 @@ public class Controller extends BaseController implements Initializable {
 			final Mat[] images = prepareImages(i, sample);
 			final DataGenerator generator = dataGeneratorFactory.createGenerator();
 			final Result result = generator
-					.generateData(ImageUtils.getImagesCopy(images), samplesImageList.getItems());
+					.generateData(getImagesCopy(images), samplesImageList.getItems());
 			addSamplesFromPreprocessedImages(i, generator);
 			saveResults(i, result);
 		}
@@ -2544,32 +2575,30 @@ public class Controller extends BaseController implements Initializable {
 	}
 	
 	private void createView(final int index, final Mat image, final String key) {
-		final ImageView view = new ImageView(ImageUtils.createImage(image));
+		final ImageView view = new ImageView(createImage(image));
 		view.setPreserveRatio(true);
 		bindSize(view, imagesBySampleGridScrollPane, 2);
 		samples.get(index).add(new Pair<>(key, view));
 	}
 	
 	private void addSamplesFromPreprocessedImages(final int index, final DataGenerator generator) {
-		final Map<String, Mat[]> preprocessedImages = generator.getPreprocessedImages();
-		for (final Entry<String, Mat[]> entry : preprocessedImages.entrySet()) {
-			final ObservableList<String> names = samplesImageList.getItems();
-			for (int i = 0; i < names.size(); i++)
-				createView(index, entry, names, i);
-		}
+		final Map<String, Pair<String[], Mat[]>> preprocessedImages = generator.getPreprocessedImages();
+		for (final Entry<String, Pair<String[], Mat[]>> entry : preprocessedImages.entrySet())
+			createViews(index, entry);
 	}
 	
-	private void createView(final int sampleIndex, final Entry<String, Mat[]> entry, final ObservableList<String>
-			names, final int index) {
-		
-		final String key = names.get(index);
-		final Mat image = entry.getValue()[index];
-		createView(sampleIndex, image, key + "_" + entry.getKey().toLowerCase().replaceAll("\\s+", "_"));
+	private void createViews(final int sampleIndex, final Entry<String, Pair<String[], Mat[]>> entry) {
+		final String[] names = entry.getValue().getKey();
+		final Mat[] images = entry.getValue().getValue();
+		for (int i = 0; i < names.length; i++) {
+			createView(sampleIndex, images[i], names[i].replaceAll("\\s+", "_") + "_" + entry.getKey().toLowerCase()
+			                                                                                 .replaceAll("\\s+", "_"));
+		}
 	}
 	
 	private void saveResults(final int i, final Result result) {
 		results.get().add(result);
-		series.add(generateSeries(result.getScores()));
+		series.add(generateSeries(result));
 		charts.add(new ArrayList<>());
 		seriesColors.add(new HashMap<>());
 		createCharts(i);
@@ -2642,7 +2671,7 @@ public class Controller extends BaseController implements Initializable {
 	
 	private Image getFXImage(final Mat image) {
 		final Mat imageCopy = ImageUtils.getImageCopy(image);
-		return ImageUtils.createImage(imageCopy);
+		return createImage(imageCopy);
 	}
 	
 	private void addNewImage(final String filePath, final Mat image, final Image fxImage) {
@@ -3598,12 +3627,12 @@ public class Controller extends BaseController implements Initializable {
 		navMenuAlign.disableProperty().bind(alignTabSelected);
 		navMenuSamples.disableProperty().bind(Bindings.or(Bindings.isEmpty(state.samplesImages), samplesTabSelected));
 		navMenuCharts.disableProperty().bind(Bindings.or(results.isNull(), chartsTabSelected));
-		navMenuAllCharts.disableProperty().bind(Bindings.and(chartsTabSelected, allChartsTab
+		navMenuAllCharts.disableProperty().bind(Bindings.or(navMenuCharts.disableProperty(), allChartsTab
 				.selectedProperty()));
-		navMenuChartsBySample.disableProperty().bind(Bindings.and(
-				bySampleTabAndChartsTabSelected, chartsBySampleSelected));
-		navMenuImagesBySample.disableProperty().bind(Bindings.and
-				(bySampleTabAndChartsTabSelected, imagesBySampleRadioButton.selectedProperty()));
+		navMenuChartsBySample.disableProperty().bind(Bindings.or(navMenuCharts.disableProperty(), Bindings.and(
+				bySampleTabAndChartsTabSelected, chartsBySampleSelected)));
+		navMenuImagesBySample.disableProperty().bind(Bindings.or(navMenuCharts.disableProperty(), Bindings.and
+				(bySampleTabAndChartsTabSelected, imagesBySampleRadioButton.selectedProperty())));
 		
 		runMenuAlign.disableProperty().bind(noImages);
 	}
@@ -3827,7 +3856,7 @@ public class Controller extends BaseController implements Initializable {
 	}
 	
 	private void align(final Stage dialog, final Mat[] images, final MatOfPoint2f[] points, final int interpolation) {
-		final SamplesImageData[] result = align(ImageUtils.getImagesCopy(images), points, interpolation);
+		final SamplesImageData[] result = align(getImagesCopy(images), points, interpolation);
 		Platform.runLater(() -> addSampleImages(dialog, result));
 	}
 	
@@ -3835,7 +3864,7 @@ public class Controller extends BaseController implements Initializable {
 		assert images.length == points.length : "Images count does not match passed vertices count!";
 		ImageUtils.performAffineTransformations(images, points, interpolation);
 		return Arrays.stream(images)
-		             .map(i -> imageDataFactory.createSamplesImageData(ImageUtils.createImage(i), i))
+		             .map(i -> imageDataFactory.createSamplesImageData(createImage(i), i))
 		             .toArray(SamplesImageData[]::new);
 	}
 	

@@ -2,6 +2,7 @@ package pwr.chrzescijanek.filip.gifa.core.util;
 
 import com.sun.javafx.UnmodifiableArrayList;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +14,8 @@ import static java.util.Collections.unmodifiableMap;
  */
 public final class Result {
 
-	private final List<String> imageNames;
+	private final List<List<String>> imageNames;
+
 	private final Map<String, UnmodifiableArrayList<Double>> scores;
 
 	/**
@@ -22,15 +24,18 @@ public final class Result {
 	 * @param imageNames image names
 	 * @param scores     associated scores
 	 */
-	public Result(final List<String> imageNames, final Map<String, UnmodifiableArrayList<Double>> scores) {
-		this.imageNames = unmodifiableList(imageNames);
+	public Result(final List<List<String>> imageNames, final Map<String, UnmodifiableArrayList<Double>> scores) {
+		final List<List<String>> imgNames = new ArrayList<>();
+		for (final List<String> names : imageNames)
+			imgNames.add(unmodifiableList(names));
+		this.imageNames = unmodifiableList(imgNames);
 		this.scores = unmodifiableMap(scores);
 	}
 
 	/**
 	 * @return image names
 	 */
-	public List<String> getImageNames() {
+	public List<List<String>> getImageNames() {
 		return imageNames;
 	}
 

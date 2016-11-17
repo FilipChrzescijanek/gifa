@@ -8,7 +8,7 @@ import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.getImagesCopy;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.multiplyTransparencies;
 
 /**
- * A function that evaluates global image edge features.
+ * A function that evaluates differences between images' edges.
  */
 public interface EdgeEvaluationFunction extends EvaluationFunction {
 

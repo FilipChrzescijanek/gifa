@@ -1,11 +1,14 @@
 package pwr.chrzescijanek.filip.gifa.core.generator;
 
 import com.sun.javafx.UnmodifiableArrayList;
+import javafx.util.Pair;
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import pwr.chrzescijanek.filip.gifa.core.function.EdgeEvaluationFunction;
 import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
 import pwr.chrzescijanek.filip.gifa.core.util.Result;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +26,8 @@ import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.getImagesCopy;
 public class DataGenerator {
 
 	private final Map<String, EvaluationFunction> functions;
-	private final Map<String, Mat[]> preprocessedImages = new HashMap<>();
+
+	private final Map<String, Pair<String[], Mat[]>> preprocessedImages = new HashMap<>();
 
 	DataGenerator(final Map<String, EvaluationFunction> functions) {
 		this.functions = unmodifiableMap(functions);
@@ -32,7 +36,7 @@ public class DataGenerator {
 	/**
 	 * @return preprocessed images
 	 */
-	public Map<String, Mat[]> getPreprocessedImages() {
+	public Map<String, Pair<String[], Mat[]>> getPreprocessedImages() {
 		return new TreeMap<>(preprocessedImages);
 	}
 
@@ -44,19 +48,42 @@ public class DataGenerator {
 	 * @return result of evaluation
 	 */
 	public Result generateData(final Mat[] images, final List<String> names) {
-		preprocessImages(images);
+		final List<String> pairs = getPairNames(names);
+		preprocessImages(images, pairs);
 		final Mat[] adjustedImages = extractMeaningfulPixels(images);
-		return new Result(names, calculateStatistics(adjustedImages));
+		final List<List<String>> imageNames = getImageNames(names, pairs);
+		return new Result(imageNames, calculateStatistics(adjustedImages));
 	}
 
-	private void preprocessImages(final Mat[] images) {
+	private List<String> getPairNames(final List<String> names) {
+		final List<String> pairs = new ArrayList<>();
+		for (int i = 0; i < names.size(); i++)
+			for (int j = i + 1; j < names.size(); j++)
+				pairs.add(names.get(i) + " x " + names.get(j));
+		return pairs;
+	}
+
+	private void preprocessImages(final Mat[] images, final List<String> pairs) {
 		functions.entrySet().stream().forEach(
 				entry -> {
 					final EvaluationFunction function = entry.getValue();
 					if (function instanceof EdgeEvaluationFunction && !preprocessedImages.containsKey(entry.getKey()))
-						preprocessedImages.put(entry.getKey(), ((EdgeEvaluationFunction) function).processBGRA
-								(images));
+						preprocessedImages.put(entry.getKey(),
+						                       new Pair<>(pairs.toArray(new String[0]),
+						                                  ((EdgeEvaluationFunction) function).processBGRA(images)));
 				});
+	}
+
+	private List<List<String>> getImageNames(final List<String> names, final List<String> pairs) {
+		final List<List<String>> imageNames = new ArrayList<>();
+		functions.entrySet().stream().forEach(entry -> {
+			final EvaluationFunction function = entry.getValue();
+			if (function instanceof EdgeEvaluationFunction)
+				imageNames.add(pairs);
+			else
+				imageNames.add(names);
+		});
+		return imageNames;
 	}
 
 	private Map<String, UnmodifiableArrayList<Double>> calculateStatistics(final Mat[] images) {
@@ -65,17 +92,14 @@ public class DataGenerator {
 		return results;
 	}
 
-	private void evaluate(final Mat[] images, final Map<String, UnmodifiableArrayList<Double>> results, final
-	Entry<String,
-			EvaluationFunction> entry) {
+	private void evaluate(final Mat[] images, final Map<String, UnmodifiableArrayList<Double>> results,
+	                      final Entry<String, EvaluationFunction> entry) {
 		final EvaluationFunction function = entry.getValue();
-		if (function instanceof EdgeEvaluationFunction) {
-			results.put(entry.getKey(), boxResult(function.evaluate(((EdgeEvaluationFunction) function).process
-					(getImagesCopy(images)))));
-		}
-		else {
+		if (function instanceof EdgeEvaluationFunction)
+			results.put(entry.getKey(), boxResult(
+					function.evaluate(((EdgeEvaluationFunction) function).process(getImagesCopy(images)))));
+		else
 			results.put(entry.getKey(), boxResult(function.evaluate(getImagesCopy(images))));
-		}
 	}
 
 	private UnmodifiableArrayList<Double> boxResult(final double[] results) {

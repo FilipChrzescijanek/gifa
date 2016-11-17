@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import static java.lang.Math.round;
 import static javafx.stage.FileChooser.ExtensionFilter;
 import static org.opencv.core.Core.FILLED;
 import static org.opencv.core.Core.bitwise_and;
@@ -85,12 +86,12 @@ public final class ControllerUtils {
 	 */
 	public static void prepareImage(final BasicSample sample, final int index, final Mat[] images,
 	                                final SamplesImageData samplesImageData) {
-		final int x = (int) sample.sampleArea.getX();
-		final int y = (int) sample.sampleArea.getY();
-		final int width = (int) sample.sampleArea.getWidth();
-		final int height = (int) sample.sampleArea.getHeight();
+		final double x = sample.sampleArea.getX();
+		final double y = sample.sampleArea.getY();
+		final double width = (int) sample.sampleArea.getWidth();
+		final double height = (int) sample.sampleArea.getHeight();
 		images[index] = samplesImageData.imageData
-				.submat(new Rect(x, y, width, height)).clone();
+				.submat(new Rect((int) round(x), (int) round(y), (int) round(width), (int) round(height))).clone();
 		final Mat zeros = Mat.zeros(images[index].rows(), images[index].cols(), images[index].type());
 		ellipse(zeros, new Point(sample.getCenterX() - x, sample.getCenterY() - y),
 		        new Size(sample.getRadiusX(), sample.getRadiusY()), sample.getRotate(), 0.0, 360.0,

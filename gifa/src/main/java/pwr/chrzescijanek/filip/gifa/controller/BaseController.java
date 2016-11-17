@@ -38,6 +38,17 @@ public class BaseController {
 	 */
 	protected static final StringProperty theme = new SimpleStringProperty(BaseController.THEME_LIGHT);
 
+	private static final Preferences preferences;
+
+	static {
+		preferences = Preferences.userNodeForPackage(Main.class);
+		final String s = preferences.get(BaseController.THEME_PREFERENCE_KEY, BaseController.THEME_LIGHT);
+		if (s.equals(BaseController.THEME_LIGHT))
+			theme.set(BaseController.THEME_LIGHT);
+		else
+			theme.set(BaseController.THEME_DARK);
+	}
+
 	/**
 	 * Panel columns.
 	 */
@@ -60,16 +71,6 @@ public class BaseController {
 	 */
 	protected BaseController(final SharedState state) {
 		this.state = state;
-		loadTheme();
-	}
-
-	private void loadTheme() {
-		final Preferences prefs = Preferences.userNodeForPackage(Main.class);
-		final String s = prefs.get(BaseController.THEME_PREFERENCE_KEY, BaseController.THEME_LIGHT);
-		if (s.equals(BaseController.THEME_LIGHT))
-			theme.set(BaseController.THEME_LIGHT);
-		else
-			theme.set(BaseController.THEME_DARK);
 	}
 
 	/**
@@ -121,6 +122,7 @@ public class BaseController {
 	 */
 	protected void setDarkTheme() {
 		theme.set(THEME_DARK);
+		preferences.put(BaseController.THEME_PREFERENCE_KEY, BaseController.THEME_DARK);
 	}
 
 	/**
@@ -128,6 +130,7 @@ public class BaseController {
 	 */
 	protected void setLightTheme() {
 		theme.set(THEME_LIGHT);
+		preferences.put(BaseController.THEME_PREFERENCE_KEY, BaseController.THEME_LIGHT);
 	}
 
 	/**

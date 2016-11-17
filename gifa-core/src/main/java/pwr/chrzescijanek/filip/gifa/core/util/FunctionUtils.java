@@ -22,6 +22,7 @@ import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.getImagesData;
 public final class FunctionUtils {
 
 	private static final Logger LOGGER = Logger.getLogger(FunctionUtils.class.getName());
+
 	private static final double EPSILON = 0.000000001;
 
 	private FunctionUtils() {}

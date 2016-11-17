@@ -28,11 +28,13 @@ import java.util.logging.Logger;
 import static org.opencv.core.Core.BORDER_CONSTANT;
 import static org.opencv.core.Core.BORDER_DEFAULT;
 import static org.opencv.core.Core.add;
+import static org.opencv.core.Core.bitwise_xor;
 import static org.opencv.core.Core.pow;
 import static org.opencv.core.Core.sqrt;
 import static org.opencv.imgcodecs.Imgcodecs.imencode;
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2BGRA;
 import static org.opencv.imgproc.Imgproc.Canny;
+import static org.opencv.imgproc.Imgproc.Laplacian;
 import static org.opencv.imgproc.Imgproc.Scharr;
 import static org.opencv.imgproc.Imgproc.Sobel;
 import static org.opencv.imgproc.Imgproc.THRESH_OTSU;
@@ -326,19 +328,34 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Sobel derivative on given OpenCV images.
+	 * Performs Sobel's derivative on given OpenCV images.
 	 *
 	 * @param images     OpenCV images
-	 * @param kernelSize Sobel derivative kernel size
+	 * @param kernelSize Sobel operator kernel size
 	 * @return processed images
 	 */
-	public static Mat[] sobelDerivative(final Mat[] images, final int kernelSize) {
-		checkKernelSize(kernelSize);
-		checkIfChannelsMatch(images, 1);
+	public static Mat[] sobel(final Mat[] images, final int kernelSize) {
 		final Mat[] result = new Mat[images.length];
 		for (int i = 0; i < images.length; i++)
-			result[i] = sobelDerivative(images[i], kernelSize);
+			result[i] = sobel(images[i], kernelSize);
 		return result;
+	}
+
+	/**
+	 * Performs Sobel's derivative on given OpenCV image.
+	 *
+	 * @param image      OpenCV image
+	 * @param kernelSize Sobel operator kernel size
+	 * @return processed image
+	 */
+	public static Mat sobel(final Mat image, final int kernelSize) {
+		checkKernelSize(kernelSize);
+		checkIfChannelsMatch(image, 1);
+		final Mat gradX = new Mat();
+		final Mat gradY = new Mat();
+		Sobel(image, gradX, -1, 1, 0, kernelSize, 1, 0, BORDER_DEFAULT);
+		Sobel(image, gradY, -1, 0, 1, kernelSize, 1, 0, BORDER_DEFAULT);
+		return approximateGradient(gradX, gradY);
 	}
 
 	private static void checkKernelSize(final int kernelSize) {
@@ -352,31 +369,15 @@ public final class ImageUtils {
 		}
 	}
 
-	private static void checkIfChannelsMatch(final Mat[] images, final int channels) {
-		for (final Mat image : images)
-			if (image.channels() != channels) {
-				final IllegalArgumentException ex = new IllegalArgumentException(
-						String.format("Received an image with number of channels equal to %d " +
-						              "when all passed images have to have %d channels", image.channels(), channels)
-				);
-				LOGGER.log(Level.SEVERE, ex.toString(), ex);
-				throw ex;
-			}
-	}
-
-	/**
-	 * Performs Sobel derivative on given OpenCV image.
-	 *
-	 * @param image      OpenCV image
-	 * @param kernelSize Sobel derivative kernel size
-	 * @return processed image
-	 */
-	public static Mat sobelDerivative(final Mat image, final int kernelSize) {
-		final Mat gradX = new Mat();
-		final Mat gradY = new Mat();
-		Sobel(image, gradX, -1, 1, 0, kernelSize, 1, 0, BORDER_DEFAULT);
-		Sobel(image, gradY, -1, 0, 1, kernelSize, 1, 0, BORDER_DEFAULT);
-		return approximateGradient(gradX, gradY);
+	private static void checkIfChannelsMatch(final Mat image, final int channels) {
+		if (image.channels() != channels) {
+			final IllegalArgumentException ex = new IllegalArgumentException(
+					String.format("Image contains wrong number of channels: %d, expected: %d",
+					              image.channels(), channels)
+			);
+			LOGGER.log(Level.SEVERE, ex.toString(), ex);
+			throw ex;
+		}
 	}
 
 	private static Mat approximateGradient(final Mat gradX, final Mat gradY) {
@@ -392,31 +393,57 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Scharr derivative on given OpenCV images.
+	 * Performs Scharr's derivative on given OpenCV images.
 	 *
 	 * @param images OpenCV images
 	 * @return processed images
 	 */
-	public static Mat[] scharrDerivative(final Mat[] images) {
-		checkIfChannelsMatch(images, 1);
+	public static Mat[] scharr(final Mat[] images) {
 		final Mat[] result = new Mat[images.length];
 		for (int i = 0; i < images.length; i++)
-			result[i] = scharrDerivative(images[i]);
+			result[i] = scharr(images[i]);
 		return result;
 	}
 
 	/**
-	 * Performs Scharr derivative on given OpenCV image.
+	 * Performs Scharr's derivative on given OpenCV image.
 	 *
 	 * @param image OpenCV image
 	 * @return processed image
 	 */
-	public static Mat scharrDerivative(final Mat image) {
+	public static Mat scharr(final Mat image) {
+		checkIfChannelsMatch(image, 1);
 		final Mat gradX = new Mat();
 		final Mat gradY = new Mat();
 		Scharr(image, gradX, -1, 1, 0, 1, 0, BORDER_DEFAULT);
 		Scharr(image, gradY, -1, 0, 1, 1, 0, BORDER_DEFAULT);
 		return approximateGradient(gradX, gradY);
+	}
+
+	/**
+	 * Performs Laplace's derivative on given OpenCV images.
+	 *
+	 * @param images OpenCV images
+	 * @return processed images
+	 */
+	public static Mat[] laplacian(final Mat[] images) {
+		final Mat[] result = new Mat[images.length];
+		for (int i = 0; i < images.length; i++)
+			result[i] = laplacian(images[i]);
+		return result;
+	}
+
+	/**
+	 * Performs Laplace's derivative on given OpenCV image.
+	 *
+	 * @param image OpenCV image
+	 * @return processed image
+	 */
+	public static Mat laplacian(final Mat image) {
+		checkIfChannelsMatch(image, 1);
+		final Mat result = new Mat();
+		Laplacian(image, result, -1);
+		return result;
 	}
 
 	/**
@@ -426,7 +453,6 @@ public final class ImageUtils {
 	 * @return processed images
 	 */
 	public static Mat[] robertsCross(final Mat[] images) {
-		checkIfChannelsMatch(images, 1);
 		final Mat[] result = new Mat[images.length];
 		for (int i = 0; i < images.length; i++)
 			result[i] = robertsCross(images[i]);
@@ -440,6 +466,7 @@ public final class ImageUtils {
 	 * @return processed image
 	 */
 	public static Mat robertsCross(final Mat image) {
+		checkIfChannelsMatch(image, 1);
 		final Mat gradX = new Mat();
 		final Mat gradY = new Mat();
 		final Mat gradientXKernel = getGradientXKernel();
@@ -469,11 +496,10 @@ public final class ImageUtils {
 	 * @param images OpenCV images
 	 * @return processed images
 	 */
-	public static Mat[] cannyThreshold(final Mat[] images) {
-		checkIfChannelsMatch(images, 1);
+	public static Mat[] canny(final Mat[] images) {
 		final Mat[] result = new Mat[images.length];
 		for (int i = 0; i < images.length; i++)
-			result[i] = cannyThreshold(images[i]);
+			result[i] = canny(images[i]);
 		return result;
 	}
 
@@ -483,7 +509,8 @@ public final class ImageUtils {
 	 * @param image OpenCV image
 	 * @return processed image
 	 */
-	public static Mat cannyThreshold(final Mat image) {
+	public static Mat canny(final Mat image) {
+		checkIfChannelsMatch(image, 1);
 		final Mat edges = new Mat();
 		final Mat result = new Mat();
 		Canny(image, edges, 25, 75, 3, true);
@@ -497,11 +524,10 @@ public final class ImageUtils {
 	 * @param images OpenCV images
 	 * @return processed images
 	 */
-	public static Mat[] otsuThreshold(final Mat[] images) {
-		checkIfChannelsMatch(images, 1);
+	public static Mat[] otsu(final Mat[] images) {
 		final Mat[] result = new Mat[images.length];
 		for (int i = 0; i < images.length; i++)
-			result[i] = otsuThreshold(images[i]);
+			result[i] = otsu(images[i]);
 		return result;
 	}
 
@@ -511,10 +537,38 @@ public final class ImageUtils {
 	 * @param image OpenCV image
 	 * @return processed image
 	 */
-	public static Mat otsuThreshold(final Mat image) {
+	public static Mat otsu(final Mat image) {
+		checkIfChannelsMatch(image, 1);
 		final Mat result = new Mat();
 		threshold(image, result, 0, 255, THRESH_OTSU);
 		return result;
+	}
+
+	/**
+	 * Performs xor binary operation on all possible image pairs.
+	 *
+	 * @param images OpenCV images
+	 * @return results of xor binary operations
+	 */
+	public static Mat[] xor(final Mat[] images) {
+		if (images.length < 2) return images;
+		final Mat[] result = new Mat[pairCount(images.length)];
+		for (int i = 0; i < result.length; i++)
+			result[i] = new Mat();
+		int index = 0;
+		for (int i = 0; i < images.length; i++)
+			for (int j = i + 1; j < images.length; j++)
+				bitwise_xor(images[i], images[j], result[index++]);
+		return result;
+	}
+
+	private static int pairCount(final int imagesCount) {
+		return imagesCount < 3 ? 1 : factorial(imagesCount) / (2 * factorial(imagesCount - 2));
+	}
+
+	private static int factorial(final int n) {
+		if (n < 3) return n;
+		return n * factorial(n - 1);
 	}
 
 	/**
@@ -576,6 +630,18 @@ public final class ImageUtils {
 		}
 
 		return resultImages;
+	}
+
+	private static void checkIfChannelsMatch(final Mat[] images, final int channels) {
+		for (final Mat image : images)
+			if (image.channels() != channels) {
+				final IllegalArgumentException ex = new IllegalArgumentException(
+						String.format("Image contains wrong number of channels: %d, expected: %d",
+						              image.channels(), channels)
+				);
+				LOGGER.log(Level.SEVERE, ex.toString(), ex);
+				throw ex;
+			}
 	}
 
 	/**

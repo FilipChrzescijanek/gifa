@@ -442,7 +442,7 @@
 					<Tab fx:id="featuresTab" text="Features">
 						<BorderPane fx:id="featuresBorderPane">
 							<center>
-								<ScrollPane fx:id="featuresScrollPane" fitToWidth="true">
+								<ScrollPane fx:id="featuresScrollPane">
 									<VBox fx:id="featuresVBox" spacing="5.0">
 										<padding>
 											<Insets bottom="5.0" left="10.0" right="10.0" top="5.0"/>

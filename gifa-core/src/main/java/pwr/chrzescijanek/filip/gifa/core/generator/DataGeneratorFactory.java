@@ -1,11 +1,9 @@
 package pwr.chrzescijanek.filip.gifa.core.generator;
 
-import pwr.chrzescijanek.filip.gifa.core.function.Canny;
 import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
-import pwr.chrzescijanek.filip.gifa.core.function.Roberts;
-import pwr.chrzescijanek.filip.gifa.core.function.Scharr;
-import pwr.chrzescijanek.filip.gifa.core.function.Sobel;
-import pwr.chrzescijanek.filip.gifa.core.function.SobelValue;
+import pwr.chrzescijanek.filip.gifa.core.function.edge.Canny;
+import pwr.chrzescijanek.filip.gifa.core.function.edge.Scharr;
+import pwr.chrzescijanek.filip.gifa.core.function.edge.Sobel;
 import pwr.chrzescijanek.filip.gifa.core.function.hsv.entropy.EntropyHue;
 import pwr.chrzescijanek.filip.gifa.core.function.hsv.entropy.EntropySaturation;
 import pwr.chrzescijanek.filip.gifa.core.function.hsv.entropy.EntropyValue;
@@ -54,6 +52,7 @@ import java.util.TreeSet;
 public class DataGeneratorFactory {
 
 	private final Map<String, EvaluationFunction> availableFunctions = new TreeMap<>();
+
 	private final Map<String, EvaluationFunction> chosenFunctions = new TreeMap<>();
 
 	/**
@@ -67,17 +66,94 @@ public class DataGeneratorFactory {
 	 * Injects basic functions.
 	 */
 	public void injectBasicFunctions() {
-		//		injectRedFunctions();
-		//		injectGreenFunctions();
-		//		injectBlueFunctions();
-		//		injectHueFunctions();
-		//		injectSaturationFunctions();
-		//		injectValueFunctions();
-		injectFunction("Sobel3 mean", new Sobel(3));
-		injectFunction("SobelValue7 mean", new SobelValue(7));
-		injectFunction("Scharr mean", new Scharr());
-		injectFunction("Canny mean", new Canny());
-		injectFunction("Roberts cross mean", new Roberts());
+		injectRedFunctions();
+		injectGreenFunctions();
+		injectBlueFunctions();
+		injectHueFunctions();
+		injectSaturationFunctions();
+		injectValueFunctions();
+		injectEdgeDifferenceFunctions();
+	}
+
+	/**
+	 * Injects basic red value evaluating functions.
+	 */
+	public void injectRedFunctions() {
+		injectFunction("Red mean", new MeanRed());
+		injectFunction("Red variance", new VarianceRed());
+		injectFunction("Red std. deviation", new StdDeviationRed());
+		injectFunction("Red entropy", new EntropyRed());
+		injectFunction("Red linear fuzziness", new LinearFuzzinessRed());
+		injectFunction("Red quadratic fuzziness", new QuadraticFuzzinessRed());
+	}
+
+	/**
+	 * Injects basic green value evaluating functions.
+	 */
+	public void injectGreenFunctions() {
+		injectFunction("Green mean", new MeanGreen());
+		injectFunction("Green variance", new VarianceGreen());
+		injectFunction("Green std. deviation", new StdDeviationGreen());
+		injectFunction("Green entropy", new EntropyGreen());
+		injectFunction("Green linear fuzziness", new LinearFuzzinessGreen());
+		injectFunction("Green quadratic fuzziness", new QuadraticFuzzinessGreen());
+	}
+
+	/**
+	 * Injects basic blue value evaluating functions.
+	 */
+	public void injectBlueFunctions() {
+		injectFunction("Blue mean", new MeanBlue());
+		injectFunction("Blue variance", new VarianceBlue());
+		injectFunction("Blue std. deviation", new StdDeviationBlue());
+		injectFunction("Blue entropy", new EntropyBlue());
+		injectFunction("Blue linear fuzziness", new LinearFuzzinessBlue());
+		injectFunction("Blue quadratic fuzziness", new QuadraticFuzzinessBlue());
+	}
+
+	/**
+	 * Injects basic hue evaluating functions.
+	 */
+	public void injectHueFunctions() {
+		injectFunction("Hue mean", new MeanHue());
+		injectFunction("Hue variance", new VarianceHue());
+		injectFunction("Hue std. deviation", new StdDeviationHue());
+		injectFunction("Hue entropy", new EntropyHue());
+		injectFunction("Hue linear fuzziness", new LinearFuzzinessHue());
+		injectFunction("Hue quadratic fuzziness", new QuadraticFuzzinessHue());
+	}
+
+	/**
+	 * Injects basic saturation evaluating functions.
+	 */
+	public void injectSaturationFunctions() {
+		injectFunction("Saturation mean", new MeanSaturation());
+		injectFunction("Saturation variance", new VarianceSaturation());
+		injectFunction("Saturation std. deviation", new StdDeviationSaturation());
+		injectFunction("Saturation entropy", new EntropySaturation());
+		injectFunction("Saturation linear fuzziness", new LinearFuzzinessSaturation());
+		injectFunction("Saturation quadratic fuzziness", new QuadraticFuzzinessSaturation());
+	}
+
+	/**
+	 * Injects basic value evaluating functions.
+	 */
+	public void injectValueFunctions() {
+		injectFunction("Value mean", new MeanValue());
+		injectFunction("Value variance", new VarianceValue());
+		injectFunction("Value std. deviation", new StdDeviationValue());
+		injectFunction("Value entropy", new EntropyValue());
+		injectFunction("Value linear fuzziness", new LinearFuzzinessValue());
+		injectFunction("Value quadratic fuzziness", new QuadraticFuzzinessValue());
+	}
+
+	/**
+	 * Injects basic edge differences evaluating functions.
+	 */
+	public void injectEdgeDifferenceFunctions() {
+		injectFunction("Edge differences - Canny detector", new Canny());
+		injectFunction("Edge differences - Scharr operator", new Scharr());
+		injectFunction("Edge differences - Sobel operator", new Sobel(3));
 	}
 
 	/**
@@ -99,59 +175,6 @@ public class DataGeneratorFactory {
 		return new DataGenerator(chosenFunctions);
 	}
 
-	private void injectRedFunctions() {
-		injectFunction("Red mean", new MeanRed());
-		injectFunction("Red variance", new VarianceRed());
-		injectFunction("Red std. deviation", new StdDeviationRed());
-		injectFunction("Red entropy", new EntropyRed());
-		injectFunction("Red linear fuzziness", new LinearFuzzinessRed());
-		injectFunction("Red quadratic fuzziness", new QuadraticFuzzinessRed());
-	}
-
-	private void injectGreenFunctions() {
-		injectFunction("Green mean", new MeanGreen());
-		injectFunction("Green variance", new VarianceGreen());
-		injectFunction("Green std. deviation", new StdDeviationGreen());
-		injectFunction("Green entropy", new EntropyGreen());
-		injectFunction("Green linear fuzziness", new LinearFuzzinessGreen());
-		injectFunction("Green quadratic fuzziness", new QuadraticFuzzinessGreen());
-	}
-
-	private void injectBlueFunctions() {
-		injectFunction("Blue mean", new MeanBlue());
-		injectFunction("Blue variance", new VarianceBlue());
-		injectFunction("Blue std. deviation", new StdDeviationBlue());
-		injectFunction("Blue entropy", new EntropyBlue());
-		injectFunction("Blue linear fuzziness", new LinearFuzzinessBlue());
-		injectFunction("Blue quadratic fuzziness", new QuadraticFuzzinessBlue());
-	}
-
-	private void injectHueFunctions() {
-		injectFunction("Hue mean", new MeanHue());
-		injectFunction("Hue variance", new VarianceHue());
-		injectFunction("Hue std. deviation", new StdDeviationHue());
-		injectFunction("Hue entropy", new EntropyHue());
-		injectFunction("Hue linear fuzziness", new LinearFuzzinessHue());
-		injectFunction("Hue quadratic fuzziness", new QuadraticFuzzinessHue());
-	}
-
-	private void injectSaturationFunctions() {
-		injectFunction("Saturation mean", new MeanSaturation());
-		injectFunction("Saturation variance", new VarianceSaturation());
-		injectFunction("Saturation std. deviation", new StdDeviationSaturation());
-		injectFunction("Saturation entropy", new EntropySaturation());
-		injectFunction("Saturation linear fuzziness", new LinearFuzzinessSaturation());
-		injectFunction("Saturation quadratic fuzziness", new QuadraticFuzzinessSaturation());
-	}
-
-	private void injectValueFunctions() {
-		injectFunction("Value mean", new MeanValue());
-		injectFunction("Value variance", new VarianceValue());
-		injectFunction("Value std. deviation", new StdDeviationValue());
-		injectFunction("Value entropy", new EntropyValue());
-		injectFunction("Value linear fuzziness", new LinearFuzzinessValue());
-		injectFunction("Value quadratic fuzziness", new QuadraticFuzzinessValue());
-	}
 
 	/**
 	 * Clears available functions.
