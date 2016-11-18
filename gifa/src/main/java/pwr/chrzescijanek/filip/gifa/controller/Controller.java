@@ -2552,8 +2552,7 @@ public class Controller extends BaseController implements Initializable {
 	private void calculateResults(final SamplesImageData img) {
 		for (int i = 0; i < img.samples.size(); i++) {
 			samples.add(new ArrayList<>());
-			final BasicSample sample = img.samples.get(i);
-			final Mat[] images = prepareImages(i, sample);
+			final Mat[] images = prepareImages(i);
 			final DataGenerator generator = dataGeneratorFactory.createGenerator();
 			final Result result = generator
 					.generateData(getImagesCopy(images), samplesImageList.getItems());
@@ -2562,12 +2561,12 @@ public class Controller extends BaseController implements Initializable {
 		}
 	}
 	
-	private Mat[] prepareImages(final int i, final BasicSample sample) {
+	private Mat[] prepareImages(final int i) {
 		int index = 0;
 		final Mat[] images = new Mat[state.samplesImages.size()];
 		for (final String key : samplesImageList.getItems()) {
-			final SamplesImageData samplesImageData = state.samplesImages.get(key);
-			prepareImage(sample, index, images, samplesImageData);
+			final SamplesImageData imageData = state.samplesImages.get(key);
+			prepareImage(imageData.samples.get(i), index, images, imageData);
 			createView(i, images[index], key);
 			index++;
 		}
