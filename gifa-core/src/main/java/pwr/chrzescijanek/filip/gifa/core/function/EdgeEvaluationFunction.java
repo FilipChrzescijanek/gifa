@@ -22,12 +22,14 @@ public interface EdgeEvaluationFunction extends EvaluationFunction {
 		Mat[] copy = getImagesCopy(images);
 		copy = preprocess(copy);
 		copy = postprocess(copy);
-		multiplyTransparencies(images, copy);
+		if (images.length > 0)
+			multiplyTransparencies(images[0], copy);
 		return copy;
 	}
 
 	/**
-	 * Pre-processes given images by converting them from BGRA to grayscale format.
+	 * Pre-processes given images by converting them from BGRA to binary format
+	 * and then appending result of performing binary xor operation on each possible image pair.
 	 *
 	 * @param images images in BGRA format
 	 * @return processed images
@@ -46,7 +48,8 @@ public interface EdgeEvaluationFunction extends EvaluationFunction {
 	}
 
 	/**
-	 * Processes given images by converting them from BGR to grayscale format.
+	 * Processes given images by converting them from BGR to binary format
+	 * and then performing binary xor operation on each possible image pair.
 	 *
 	 * @param images images in BGR format
 	 * @return processed images

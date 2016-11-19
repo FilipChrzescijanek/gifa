@@ -20,11 +20,11 @@ import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Arrays.asList;
 import static org.opencv.core.Core.BORDER_CONSTANT;
 import static org.opencv.core.Core.BORDER_DEFAULT;
 import static org.opencv.core.Core.add;
@@ -217,28 +217,16 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs transparency marking on given destination images based on source images.
+	 * Performs transparency marking on given destination images based on source image.
 	 * In short, if a pixel is not opaque in the source image, the corresponding pixel
 	 * in the associated destination image will be marked transparent.
 	 *
-	 * @param transparencySources      transparency source images
+	 * @param transparencySource       transparency source image
 	 * @param transparencyDestinations transparency destination images
 	 */
-	public static void multiplyTransparencies(final Mat[] transparencySources, final Mat[] transparencyDestinations) {
-		checkifSizesMatch(transparencySources, transparencyDestinations);
-		for (int i = 0; i < transparencySources.length; i++)
-			multiplyTransparencies(transparencySources[i], transparencyDestinations[i]);
-	}
-
-	private static void checkifSizesMatch(final Mat[] first, final Mat[] second) {
-		if (first.length != second.length) {
-			final IllegalArgumentException ex = new IllegalArgumentException(
-					String.format("Images count does not match! Lengths of passed arrays: %d, %d",
-					              first.length, second.length)
-			);
-			LOGGER.log(Level.SEVERE, ex.toString(), ex);
-			throw ex;
-		}
+	public static void multiplyTransparencies(final Mat transparencySource, final Mat[] transparencyDestinations) {
+		for (int i = 0; i < transparencyDestinations.length; i++)
+			multiplyTransparencies(transparencySource, transparencyDestinations[i]);
 	}
 
 	/**
@@ -359,7 +347,7 @@ public final class ImageUtils {
 	}
 
 	private static void checkKernelSize(final int kernelSize) {
-		if (!Arrays.asList(1, 3, 5, 7).contains(kernelSize)) {
+		if (!asList(1, 3, 5, 7).contains(kernelSize)) {
 			final IllegalArgumentException ex = new IllegalArgumentException(
 					String.format("Given kernel size: %d does not match any of the available values: 1, 3, 5, 7",
 					              kernelSize)
@@ -550,7 +538,7 @@ public final class ImageUtils {
 	 * @param images OpenCV images
 	 * @return results of xor binary operations
 	 */
-	public static Mat[] xor(final Mat[] images) {
+	public static Mat[] xorPairs(final Mat[] images) {
 		if (images.length < 2) return images;
 		final Mat[] result = new Mat[pairCount(images.length)];
 		for (int i = 0; i < result.length; i++)

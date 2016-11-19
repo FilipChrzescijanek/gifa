@@ -7,7 +7,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,7 +14,9 @@ import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Provides methods for class instantiation using singleton components pool.
@@ -46,8 +47,8 @@ public class Injector {
 	}
 
 	private static List<? extends Constructor<?>> getConstructors(final Class<?> c) {
-		return Arrays.stream(c.getConstructors()).filter(r -> r.isAnnotationPresent(Inject.class))
-		             .collect(Collectors.toList());
+		return stream(c.getConstructors()).filter(r -> r.isAnnotationPresent(Inject.class))
+		                                  .collect(toList());
 	}
 
 	private static void checkForTooManyConstructors(final Class<?> c, final List<? extends Constructor<?>>
@@ -71,10 +72,10 @@ public class Injector {
 
 	private static Object[] instantiateParameters(final Constructor<?> constructor) {
 		final Parameter[] parameters = constructor.getParameters();
-		return Arrays.stream(parameters)
-		             .filter(parameter -> checkIfNotPrimitiveOrString(parameter.getType()))
-		             .map(parameter -> instantiateComponent(parameter.getType()))
-		             .toArray();
+		return stream(parameters)
+				.filter(parameter -> checkIfNotPrimitiveOrString(parameter.getType()))
+				.map(parameter -> instantiateComponent(parameter.getType()))
+				.toArray();
 	}
 
 	/**
@@ -118,14 +119,14 @@ public class Injector {
 
 	private static void injectFields(final Class<?> clazz, final Object instance) {
 		final Field[] fields = clazz.getDeclaredFields();
-		Arrays.stream(fields)
-		      .filter(field -> field.isAnnotationPresent(Inject.class))
-		      .filter(field -> checkIfNotPrimitiveOrString(field.getType()))
-		      .forEach(field -> {
-			      final Object value = instantiateComponent(field.getType());
-			      if (Objects.nonNull(value))
-				      injectField(field, instance, value);
-		      });
+		stream(fields)
+				.filter(field -> field.isAnnotationPresent(Inject.class))
+				.filter(field -> checkIfNotPrimitiveOrString(field.getType()))
+				.forEach(field -> {
+					final Object value = instantiateComponent(field.getType());
+					if (Objects.nonNull(value))
+						injectField(field, instance, value);
+				});
 		final Class<?> superclass = clazz.getSuperclass();
 		if (Objects.nonNull(superclass))
 			injectFields(superclass, instance);

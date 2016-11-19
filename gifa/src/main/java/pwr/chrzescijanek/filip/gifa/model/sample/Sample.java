@@ -21,6 +21,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sin;
 import static java.lang.Math.tan;
+import static pwr.chrzescijanek.filip.gifa.model.sample.BasicSample.SampleSelection.DRAG;
 import static pwr.chrzescijanek.filip.gifa.model.sample.BasicSample.SampleSelection.NIL;
 import static pwr.chrzescijanek.filip.gifa.util.StageUtils.getCompareSampleStage;
 
@@ -124,16 +125,10 @@ public class Sample extends BasicSample {
 	 * @param event scroll event
 	 */
 	public void rotate(final ScrollEvent event) {
-		if (event.isControlDown()) {
-			updateRotation(event);
-			event.consume();
-		}
-		else {
-			final int index = getIndexOf();
-			state.samplesImages.values()
-			                   .forEach(img -> img.samples.get(index).updateRotation(event));
-			event.consume();
-		}
+		final int index = getIndexOf();
+		state.samplesImages.values()
+		                   .forEach(img -> img.samples.get(index).updateRotation(event));
+		event.consume();
 	}
 
 	/**
@@ -277,9 +272,8 @@ public class Sample extends BasicSample {
 	}
 
 	private void resize(final MouseEvent event) {
-		if (event.isControlDown()) {
+		if (event.isControlDown() && sampleSelection.equals(DRAG))
 			resizeAndPlace(event);
-		}
 		else {
 			final int index = getIndexOf();
 			final double deltaX = updateStartX(event);

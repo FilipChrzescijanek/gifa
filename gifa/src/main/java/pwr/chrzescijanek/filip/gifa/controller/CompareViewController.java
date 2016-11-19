@@ -16,7 +16,8 @@ import javax.inject.Inject;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Compare view controller class.
@@ -150,7 +151,7 @@ public class CompareViewController extends BaseController implements Initializab
 		this.compareViews = state.imagesToAlign
 				.values().stream().map(img -> compareViewFactory
 						.createVertexPanelView(img.writableImage.get(), img.vertices[vertexIndex]))
-				.collect(Collectors.toList());
+				.collect(toList());
 		addBoundsChangedListeners();
 	}
 
@@ -169,7 +170,7 @@ public class CompareViewController extends BaseController implements Initializab
 		this.compareViews = state.samplesImages
 				.values().stream().map(img -> compareViewFactory
 						.createSamplePanelView(img.image.get(), img.samples.get(sampleIndex)))
-				.collect(Collectors.toList());
+				.collect(toList());
 		addBoundsChangedListeners();
 	}
 

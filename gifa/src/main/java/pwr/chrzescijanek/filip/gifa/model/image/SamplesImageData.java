@@ -1,10 +1,11 @@
 package pwr.chrzescijanek.filip.gifa.model.image;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 import org.opencv.core.Mat;
 import pwr.chrzescijanek.filip.gifa.model.sample.Sample;
+
+import static javafx.collections.FXCollections.observableArrayList;
 
 /**
  * Represents aligned images that can be compared using user-defined samples.
@@ -14,7 +15,7 @@ public class SamplesImageData extends ImageData {
 	/**
 	 * User-defined samples.
 	 */
-	public final ObservableList<Sample> samples = FXCollections.observableArrayList();
+	public final ObservableList<Sample> samples = observableArrayList();
 
 	/**
 	 * Constructs a new SamplesImageData with given JavaFX image and OpenCV image.

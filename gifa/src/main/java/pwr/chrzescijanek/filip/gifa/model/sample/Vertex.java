@@ -20,9 +20,9 @@ import pwr.chrzescijanek.filip.gifa.util.SharedState;
 import pwr.chrzescijanek.filip.gifa.view.FXView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.initializeVertexController;
 import static pwr.chrzescijanek.filip.gifa.util.StageUtils.showStage;
 
@@ -81,7 +81,7 @@ public class Vertex extends BasicSample {
 
 	@Override
 	public int getIndexOf() {
-		return Arrays.asList(((ImageToAlignData) imageData).vertices).indexOf(this);
+		return asList(((ImageToAlignData) imageData).vertices).indexOf(this);
 	}
 
 	private void postCreation(final CompareViewController controller, final Stage newStage) {

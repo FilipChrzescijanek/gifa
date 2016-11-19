@@ -3,7 +3,6 @@ package pwr.chrzescijanek.filip.gifa.core.generator;
 import com.sun.javafx.UnmodifiableArrayList;
 import javafx.util.Pair;
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 import pwr.chrzescijanek.filip.gifa.core.function.EdgeEvaluationFunction;
 import pwr.chrzescijanek.filip.gifa.core.function.EvaluationFunction;
 import pwr.chrzescijanek.filip.gifa.core.util.Result;
@@ -56,7 +55,7 @@ public class DataGenerator {
 	}
 
 	private List<String> getPairNames(final List<String> names) {
-		final List<String> pairs = new ArrayList<>();
+		final List<String> pairs = new ArrayList<>(names);
 		for (int i = 0; i < names.size(); i++)
 			for (int j = i + 1; j < names.size(); j++)
 				pairs.add(names.get(i) + " x " + names.get(j));

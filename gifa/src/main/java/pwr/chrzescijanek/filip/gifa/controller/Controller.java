@@ -13,7 +13,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -92,7 +91,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,9 +102,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static javafx.collections.FXCollections.observableArrayList;
 import static org.opencv.imgproc.Imgproc.INTER_CUBIC;
 import static org.opencv.imgproc.Imgproc.INTER_LINEAR;
 import static org.opencv.imgproc.Imgproc.INTER_NEAREST;
@@ -1965,7 +1967,7 @@ public class Controller extends BaseController implements Initializable {
 	
 	private String createCsvContents() {
 		final Set<String> names = results.get().stream()
-		                                 .flatMap(r -> r.getScores().keySet().stream()).collect(Collectors.toSet());
+		                                 .flatMap(r -> r.getScores().keySet().stream()).collect(toSet());
 		final TreeSet<String> functions = new TreeSet<>(names);
 		String csvContents = createHeader(functions);
 		csvContents += appendSampleScores(functions, results.get());
@@ -1999,7 +2001,7 @@ public class Controller extends BaseController implements Initializable {
 	}
 	
 	private String appendSampleScores(final TreeSet<String> functions, final Result result, final int sample) {
-		final List<List<String>> imageNames = result.getImageNames().stream().distinct().collect(Collectors.toList());
+		final List<List<String>> imageNames = result.getImageNames().stream().distinct().collect(toList());
 		String csvContents = "";
 		for (final List<String> names : imageNames) {
 			for (int i = 0; i < names.size(); i++) {
@@ -2088,7 +2090,7 @@ public class Controller extends BaseController implements Initializable {
 		final List<LineChart<String, Number>> charts = new ArrayList<>();
 		final List<Result> summary = results.get();
 		final Set<String> collectedNames = summary.stream().flatMap(r -> r.getScores().keySet().stream())
-		                                          .collect(Collectors.toSet());
+		                                          .collect(toSet());
 		final Set<String> functions = new TreeSet<>(collectedNames);
 		for (final String function : functions)
 			populateCharts(charts, summary, function);
@@ -2115,7 +2117,7 @@ public class Controller extends BaseController implements Initializable {
 		final List<Double[]> results = summary.stream()
 		                                      .map(r -> r.getScores().get(function)
 		                                                 .toArray(new Double[0]))
-		                                      .collect(Collectors.toList());
+		                                      .collect(toList());
 		final List<Series<String, Number>> series = populateSeries(chartIndex, summary, results);
 		return series;
 	}
@@ -2124,7 +2126,7 @@ public class Controller extends BaseController implements Initializable {
 	                                                    final List<Double[]> results) {
 		final List<Series<String, Number>> series = new ArrayList<>();
 		for (int i = 0; i < results.size(); i++) {
-			final double[] scores = Arrays.stream(results.get(i)).mapToDouble(Double::doubleValue).toArray();
+			final double[] scores = stream(results.get(i)).mapToDouble(Double::doubleValue).toArray();
 			final List<List<String>> names = summary.get(i).getImageNames();
 			populateSeries(chartIndex, series, scores, names, i);
 		}
@@ -2145,7 +2147,7 @@ public class Controller extends BaseController implements Initializable {
 	}
 	
 	private void bindColors(final List<LineChart<String, Number>> charts) {
-		final List<Color> defaultColors = Arrays.asList(
+		final List<Color> defaultColors = asList(
 				Color.web("#f3622d"), Color.web("#fba71b"), Color.web("#57b757"), Color.web("#41a9c9"),
 				Color.web("#4258c9"), Color.web("#9a42c8"), Color.web("#c84164"), Color.web("#888888"));
 		for (final LineChart<String, Number> chart : charts) {
@@ -2271,7 +2273,7 @@ public class Controller extends BaseController implements Initializable {
 	private Series[] getAllOtherSeries(final BarChart<String, Number> chart, final Integer index, final Series s) {
 		final List<String> names = chart.getData().stream()
 		                                .filter(n -> !n.getName().equals(s.getName()))
-		                                .map(Series::getName).collect(Collectors.toList());
+		                                .map(Series::getName).collect(toList());
 		return series.get(index).stream().filter(n -> names.contains(n.getName())).toArray(Series[]::new);
 	}
 	
@@ -2300,7 +2302,7 @@ public class Controller extends BaseController implements Initializable {
 	private List<Node> getSelectedCharts() {
 		return chartsBySampleGrid.getChildren().stream()
 		                         .filter(n -> n.getStyle().equals(CHART_SELECTED_STYLE))
-		                         .collect(Collectors.toList());
+		                         .collect(toList());
 	}
 	
 	private void placeCharts() {
@@ -2326,9 +2328,9 @@ public class Controller extends BaseController implements Initializable {
 	private void colorSeries(final int index) {
 		final List<BarChart<String, Number>> charts = this.charts.get(index);
 		final List<Series<String, Number>> series = this.series.get(index);
-		final List<Color> defaultColors = Arrays.asList(Color.web("#f3622d"), Color.web("#fba71b"), Color.web
-				                                                ("#57b757"), Color.web("#41a9c9"),
-		                                                Color.web("#4258c9"), Color.web("#9a42c8"), Color.web
+		final List<Color> defaultColors = asList(Color.web("#f3622d"), Color.web("#fba71b"), Color.web
+				                                         ("#57b757"), Color.web("#41a9c9"),
+		                                         Color.web("#4258c9"), Color.web("#9a42c8"), Color.web
 						("#c84164"), Color.web("#888888"));
 
 		for (int i = 0; i < series.size(); i++) {
@@ -2604,8 +2606,8 @@ public class Controller extends BaseController implements Initializable {
 	}
 	
 	private void showCharts(final Stage dialog) {
-		chartsSampleComboBox.setItems(FXCollections.observableArrayList(
-				IntStream.range(1, results.get().size() + 1).boxed().collect(Collectors.toList())));
+		chartsSampleComboBox.setItems(observableArrayList(
+				IntStream.range(1, results.get().size() + 1).boxed().collect(toList())));
 		chartsSampleComboBox.setValue(1);
 		allCharts();
 		createSummaryCharts();
@@ -3247,7 +3249,7 @@ public class Controller extends BaseController implements Initializable {
 				vertexStrokeColor.setValue((Color) newValue.getStroke());
 				vertexBorderColor.setValue((Color) newValue.sampleArea.getStroke());
 				for (final Entry<String, ImageToAlignData> e : state.imagesToAlign.entrySet()) {
-					if (Arrays.asList(e.getValue().vertices).contains(newValue)) {
+					if (asList(e.getValue().vertices).contains(newValue)) {
 						alignTab();
 						alignImageList.getSelectionModel().select(e.getKey());
 						break;
@@ -3395,7 +3397,7 @@ public class Controller extends BaseController implements Initializable {
 			vbox.getChildren().add(pair.getValue());
 			vbox.getChildren().add(new Label(pair.getKey()));
 			return vbox;
-		}).collect(Collectors.toList());
+		}).collect(toList());
 	}
 	
 	private void addColumnsTextFieldListener() {
@@ -3720,11 +3722,11 @@ public class Controller extends BaseController implements Initializable {
 	}
 	
 	private void removeChildren(final ImageToAlignData img) {
-		if (Arrays.asList(img.vertices).contains(state.selectedVertex.get()))
+		if (asList(img.vertices).contains(state.selectedVertex.get()))
 			state.selectedVertex.set(null);
 		alignImageViewAnchor.getChildren().removeAll(img.vertices);
 		alignImageViewAnchor.getChildren().removeAll(
-				Arrays.stream(img.vertices).map(r -> r.sampleArea).toArray(Rectangle[]::new));
+				stream(img.vertices).map(r -> r.sampleArea).toArray(Rectangle[]::new));
 		alignImageViewAnchor.getChildren().remove(img.triangle);
 	}
 	
@@ -3742,7 +3744,7 @@ public class Controller extends BaseController implements Initializable {
 	private void addChildren(final ImageToAlignData img) {
 		alignImageViewAnchor.getChildren().add(img.triangle);
 		alignImageViewAnchor.getChildren().addAll(
-				Arrays.stream(img.vertices).map(r -> r.sampleArea).toArray(Rectangle[]::new)
+				stream(img.vertices).map(r -> r.sampleArea).toArray(Rectangle[]::new)
 		);
 		alignImageViewAnchor.getChildren().addAll(img.vertices);
 	}
@@ -3862,9 +3864,9 @@ public class Controller extends BaseController implements Initializable {
 	private SamplesImageData[] align(final Mat[] images, final MatOfPoint2f[] points, final int interpolation) {
 		assert images.length == points.length : "Images count does not match passed vertices count!";
 		ImageUtils.performAffineTransformations(images, points, interpolation);
-		return Arrays.stream(images)
-		             .map(i -> imageDataFactory.createSamplesImageData(createImage(i), i))
-		             .toArray(SamplesImageData[]::new);
+		return stream(images)
+				.map(i -> imageDataFactory.createSamplesImageData(createImage(i), i))
+				.toArray(SamplesImageData[]::new);
 	}
 	
 	private void addSampleImages(final Stage dialog, final SamplesImageData[] result) {
