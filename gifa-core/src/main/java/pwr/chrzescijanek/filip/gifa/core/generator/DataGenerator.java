@@ -78,7 +78,7 @@ public class DataGenerator {
 		functions.entrySet().stream().forEach(entry -> {
 			final EvaluationFunction function = entry.getValue();
 			if (function instanceof EdgeEvaluationFunction)
-				imageNames.add(pairs);
+				imageNames.add(pairs.subList(names.size(), pairs.size()));
 			else
 				imageNames.add(names);
 		});
