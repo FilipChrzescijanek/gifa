@@ -10,7 +10,7 @@
 <hr>
 <h3><a id="faq"></a>1. FAQ</h3>
 <p align=justify"><strong>1. How to use the application?</strong><br>
-    In the align view, place each of associated vertices on corresponding points of the images and then click ‘Align’ button. Then in the samples view create sample areas on image regions of your choice. After clicking on ‘Calculate results’ button you can interpret generated charts and verify created sample images. You can also save the results by clicking Ctrl + E or choosing suitable option from File menu or export sample images in PNG format by clicking Ctrl + S or choosing suitable option from File menu.<br>
+    In the align view, place each of associated vertices on corresponding points of the images and then click ‘Align’ button. Then in the samples view create sample areas on image regions of your choice. After clicking on ‘Calculate results’ button you can interpret generated charts and verify created sample images. You can also save the results by clicking Ctrl + E or choosing suitable option from File menu or export sample images by clicking Ctrl + S or choosing suitable option from File menu.<br>
     <strong>2. How can I change the position of triangle vertex?</strong><br>
     You can do it by dragging selected vertex onto another position or by double clicking the vertex and then changing its position by clicking on the zoomed vertex area.<br>
     <strong>3. How can I change the color of triangle vertex in panel view?</strong><br>
@@ -19,6 +19,7 @@
     Cubic interpolation is the most accurate method of resizing images, linear interpolation is less acurate and nearest neighbour interpolation is the least accurate of them. You can try out every interpolation method and compare obtained results.<br>
     <strong>5. How can I rotate selected sample?</strong><br>
     In samples view, you need to select rotate mode and then rotate the sample by hovering your mouse over the sample and scrolling up or down.<br>
+    <i>Reminder: samples rotation angles will be reset after leaving rotate mode, so do it just before calculating results.</i> <br>
     <strong>6. How can I change the color of chart series?</strong><br>
     You can do it by clicking on the colored square placed in the chart legend next to series name and then choosing the color in the pop-up color picker view.</p>
 <hr>
@@ -42,7 +43,7 @@
     <tr>
         <td>Ctrl + S</td>
         <td align="center">-</td>
-        <td>Save samples as PNG images</td>
+        <td>Save sample images</td>
     </tr>
     <tr>
         <td>Ctrl + Shift + A</td>
@@ -129,7 +130,7 @@
     <tr>
         <td>Shit + H</td>
         <td align="center"><img src="images/horizontal-flip.png" alt="flip_horizontally" title="Logo Title Text 1"></td>
-        <td>Flip Horizontally</td>
+        <td>Flip horizontally</td>
     </tr>
     <tr>
         <td>Shift + L</td>
@@ -152,7 +153,7 @@
         <td>Remove image</td>
     </tr>
     <tr>
-        <td>Ctrl + Alt + Delete</td>
+        <td>Ctrl + Shift + Delete</td>
         <td align="center"><img src="images/trash.png" alt="clear_image_list" title="Logo Title Text 1"></td>
         <td>Clear image list</td>
     </tr>
@@ -204,12 +205,17 @@
         <td>Rotate mode</td>
     </tr>
     <tr>
+        <td align="center">-</td>
+        <td>Click on image</td>
+        <td>Add sample</td>
+    </tr>
+    <tr>
         <td>Ctrl + Delete</td>
         <td align="center"><img src="images/delete.png" alt="remove_image" title="Logo Title Text 1"></td>
         <td>Remove sample</td>
     </tr>
     <tr>
-        <td>Ctrl + Alt + Delete</td>
+        <td>Ctrl + Shift + Delete</td>
         <td align="center"><img src="images/trash.png" alt="clear_image_list" title="Logo Title Text 1"></td>
         <td>Clear samples</td>
     </tr>
