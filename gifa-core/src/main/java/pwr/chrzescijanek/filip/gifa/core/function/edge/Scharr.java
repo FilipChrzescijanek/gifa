@@ -8,6 +8,7 @@ import static java.util.stream.Stream.concat;
 import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
 import static org.opencv.imgproc.Imgproc.COLOR_BGRA2GRAY;
 import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateMeans;
+import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.bilateralFilter;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.convertType;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.otsu;
 import static pwr.chrzescijanek.filip.gifa.core.util.ImageUtils.scharr;
@@ -26,7 +27,8 @@ public class Scharr implements EdgeEvaluationFunction {
 	@Override
 	public Mat[] preprocess(final Mat[] images) {
 		convertType(images, COLOR_BGRA2GRAY);
-		final Mat[] filtered = scharr(images);
+		final Mat[] blurred = bilateralFilter(images);
+		final Mat[] filtered = scharr(blurred);
 		final Mat[] binary = otsu(filtered);
 		return concat(stream(binary), stream(xorPairs(binary))).toArray(Mat[]::new);
 	}
@@ -34,6 +36,7 @@ public class Scharr implements EdgeEvaluationFunction {
 	@Override
 	public Mat[] process(final Mat[] images) {
 		convertType(images, COLOR_BGR2GRAY);
+		final Mat[] blurred = bilateralFilter(images);
 		final Mat[] filtered = scharr(images);
 		final Mat[] binary = otsu(filtered);
 		return xorPairs(binary);

@@ -29,6 +29,11 @@ public class FunctionUtilsTest {
 		image[9] = 120; image[10] = 10; image[11] = 80;
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void checkForException() throws Exception {
+		assertEquals(0.0, calculateMean(image, 3, 3), EPSILON);
+	}
+
 	@Test
 	public void calculateMeanTest() throws Exception {
 		assertEquals(132.75 / 255.0, calculateMean(image, 3, 0), EPSILON);

@@ -13,6 +13,7 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -316,7 +317,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Sobel's derivative on given OpenCV images.
+	 * Performs Sobel's derivative on given 1-channel OpenCV images.
 	 *
 	 * @param images     OpenCV images
 	 * @param kernelSize Sobel operator kernel size
@@ -330,7 +331,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Sobel's derivative on given OpenCV image.
+	 * Performs Sobel's derivative on given 1-channel OpenCV image.
 	 *
 	 * @param image      OpenCV image
 	 * @param kernelSize Sobel operator kernel size
@@ -381,7 +382,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Scharr's derivative on given OpenCV images.
+	 * Performs Scharr's derivative on given 1-channel OpenCV images.
 	 *
 	 * @param images OpenCV images
 	 * @return processed images
@@ -394,7 +395,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Scharr's derivative on given OpenCV image.
+	 * Performs Scharr's derivative on given 1-channel OpenCV image.
 	 *
 	 * @param image OpenCV image
 	 * @return processed image
@@ -409,7 +410,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Laplace's derivative on given OpenCV images.
+	 * Performs Laplace's derivative on given 1-channel OpenCV images.
 	 *
 	 * @param images OpenCV images
 	 * @return processed images
@@ -422,7 +423,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Laplace's derivative on given OpenCV image.
+	 * Performs Laplace's derivative on given 1-channel OpenCV image.
 	 *
 	 * @param image OpenCV image
 	 * @return processed image
@@ -435,7 +436,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Roberts cross on given OpenCV images.
+	 * Performs Roberts cross on given 1-channel OpenCV images.
 	 *
 	 * @param images OpenCV images
 	 * @return processed images
@@ -448,7 +449,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Roberts cross on given OpenCV image.
+	 * Performs Roberts cross on given 1-channel OpenCV image.
 	 *
 	 * @param image OpenCV image
 	 * @return processed image
@@ -479,7 +480,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Canny thresholding on given OpenCV images.
+	 * Performs Canny thresholding on given 1-channel OpenCV images.
 	 *
 	 * @param images OpenCV images
 	 * @return processed images
@@ -492,7 +493,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Canny thresholding on given OpenCV image.
+	 * Performs Canny thresholding on given 1-channel OpenCV image.
 	 *
 	 * @param image OpenCV image
 	 * @return processed image
@@ -507,7 +508,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Otsu thresholding on given OpenCV images.
+	 * Performs Otsu thresholding on given 1-channel OpenCV images.
 	 *
 	 * @param images OpenCV images
 	 * @return processed images
@@ -520,7 +521,7 @@ public final class ImageUtils {
 	}
 
 	/**
-	 * Performs Otsu thresholding on given OpenCV image.
+	 * Performs Otsu thresholding on given 1-channel OpenCV image.
 	 *
 	 * @param image OpenCV image
 	 * @return processed image
@@ -529,6 +530,32 @@ public final class ImageUtils {
 		checkIfChannelsMatch(image, 1);
 		final Mat result = new Mat();
 		threshold(image, result, 0, 255, THRESH_OTSU);
+		return result;
+	}
+
+	/**
+	 * Performs bilateral filtering on given 1-channel OpenCV images.
+	 *
+	 * @param images OpenCV images
+	 * @return processed images
+	 */
+	public static Mat[] bilateralFilter(final Mat[] images) {
+		final Mat[] result = new Mat[images.length];
+		for (int i = 0; i < images.length; i++)
+			result[i] = bilateralFilter(images[i]);
+		return result;
+	}
+
+	/**
+	 * Performs bilateral filtering on given 1-channel OpenCV image.
+	 *
+	 * @param image OpenCV image
+	 * @return processed image
+	 */
+	public static Mat bilateralFilter(final Mat image) {
+		checkIfChannelsMatch(image, 1);
+		final Mat result = new Mat();
+		Imgproc.bilateralFilter(image, result, -1, 9, 9);
 		return result;
 	}
 
