@@ -37,7 +37,7 @@
 			<MenuItem fx:id="alignMenuRemoveImage" text="_Delete image" onAction="#deleteImage"
 			          accelerator="Shortcut+Delete"/>
 			<MenuItem fx:id="alignMenuClearImages" text="_Clear image list" onAction="#clearImages"
-			          accelerator="Shortcut+Alt+Delete"/>
+			          accelerator="Shortcut+Shift+Delete"/>
 		</Menu>
 		<Menu fx:id="samplesMenu" text="_Samples">
 			<MenuItem fx:id="samplesMenuCreateMode" text="_Create mode" onAction="#setCreateMode"
@@ -49,7 +49,7 @@
 			<MenuItem fx:id="samplesMenuRemoveSample" text="Remo_ve sample" onAction="#deleteSample"
 			          accelerator="Shortcut+Delete"/>
 			<MenuItem fx:id="samplesMenuClearSamples" text="C_lear samples" onAction="#clearSamples"
-			          accelerator="Shortcut+Alt+Delete"/>
+			          accelerator="Shortcut+Shift+Delete"/>
 			<MenuItem fx:id="samplesMenuSelectAllFeatures" text="Select _all features" onAction="#selectAllFunctions"
 			          accelerator="F9"/>
 			<MenuItem fx:id="samplesMenuDeselectAllFeatures" text="Deselect all _features"
@@ -79,15 +79,15 @@
 		</Menu>
 		<Menu fx:id="optionsMenu" text="_Options">
 			<Menu fx:id="optionsMenuTheme" text="_Theme">
-				<RadioMenuItem fx:id="optionsMenuThemeLight" text="_Light" onAction="#applyLightTheme"
-				               accelerator="Shortcut+Alt+Shift+L">
+				<RadioMenuItem fx:id="optionsMenuThemeDark" text="_Dark" onAction="#applyDarkTheme"
+				               accelerator="Shortcut+Alt+Shift+D">
 					<toggleGroup>
 						<ToggleGroup fx:id="themeToggleGroup"/>
 					</toggleGroup>
 				</RadioMenuItem>
-				<RadioMenuItem fx:id="optionsMenuThemeDark" text="_Dark" onAction="#applyDarkTheme"
+				<RadioMenuItem fx:id="optionsMenuThemeLight" text="_Light" onAction="#applyLightTheme"
 				               toggleGroup="$themeToggleGroup"
-				               accelerator="Shortcut+Alt+Shift+D"/>
+				               accelerator="Shortcut+Alt+Shift+L"/>
 			</Menu>
 		</Menu>
 		<Menu fx:id="helpMenu" text="_Help">

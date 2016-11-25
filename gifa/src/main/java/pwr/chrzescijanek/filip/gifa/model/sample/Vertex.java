@@ -68,7 +68,7 @@ public class Vertex extends BasicSample {
 	protected void handleDoubleClick(final MouseEvent event) {
 		if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() > 1) {
 			final String viewPath = "/static/gifa-panel.fxml";
-			final String info = "Click on any image to move according vertex. Drag to move the sample.";
+			final String info = "Drag to move the vertex. Clicking will pin it to a new position.";
 			final int index = getIndexOf();
 			final String title = "Vertex #" + (index + 1);
 			final FXView fxView = new FXView(viewPath);

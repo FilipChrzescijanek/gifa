@@ -36,17 +36,17 @@ public class BaseController {
 	/**
 	 * Controller theme.
 	 */
-	protected static final StringProperty theme = new SimpleStringProperty(BaseController.THEME_LIGHT);
+	protected static final StringProperty theme = new SimpleStringProperty(THEME_DARK);
 
 	private static final Preferences preferences;
 
 	static {
 		preferences = Preferences.userNodeForPackage(Main.class);
-		final String s = preferences.get(BaseController.THEME_PREFERENCE_KEY, BaseController.THEME_LIGHT);
-		if (s.equals(BaseController.THEME_LIGHT))
-			theme.set(BaseController.THEME_LIGHT);
+		final String s = preferences.get(THEME_PREFERENCE_KEY, THEME_DARK);
+		if (s.equals(THEME_LIGHT))
+			theme.set(THEME_LIGHT);
 		else
-			theme.set(BaseController.THEME_DARK);
+			theme.set(THEME_DARK);
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class BaseController {
 	 */
 	protected void setDarkTheme() {
 		theme.set(THEME_DARK);
-		preferences.put(BaseController.THEME_PREFERENCE_KEY, BaseController.THEME_DARK);
+		preferences.put(THEME_PREFERENCE_KEY, THEME_DARK);
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class BaseController {
 	 */
 	protected void setLightTheme() {
 		theme.set(THEME_LIGHT);
-		preferences.put(BaseController.THEME_PREFERENCE_KEY, BaseController.THEME_LIGHT);
+		preferences.put(THEME_PREFERENCE_KEY, THEME_LIGHT);
 	}
 
 	/**

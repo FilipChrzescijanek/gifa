@@ -3,6 +3,7 @@ package pwr.chrzescijanek.filip.gifa.core.generator;
 /**
  * Interface that allows to manage DataGeneratorFactory functions.
  */
+@FunctionalInterface
 public interface FunctionManager {
 
 	/**
