@@ -7,6 +7,7 @@ import pwr.chrzescijanek.filip.gifa.core.generator.DataGeneratorFactory;
 import pwr.chrzescijanek.filip.gifa.model.image.ImageDataFactory;
 import pwr.chrzescijanek.filip.gifa.model.sample.BasicSampleFactory;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
+import pwr.chrzescijanek.filip.gifa.view.compare.CompareViewFactory;
 
 import javax.inject.Inject;
 
@@ -37,6 +38,7 @@ public class InjectorTest {
 			assertNotNull(mock.getDataGeneratorFactory());
 			assertNotNull(mock.getBaseSampleFactory());
 			assertNotNull(mock.getImageDataFactory());
+			assertNotNull(mock.getCompareViewFactory());
 		}
 	}
 
@@ -49,6 +51,9 @@ public class InjectorTest {
 	}
 
 	private class ControllerMock extends Controller {
+
+		@Inject
+		private CompareViewFactory compareViewFactory;
 
 		@Inject
 		public ControllerMock(final SharedState state, final DataGeneratorFactory generatorFactory,
@@ -70,6 +75,10 @@ public class InjectorTest {
 
 		ImageDataFactory getImageDataFactory() {
 			return imageDataFactory;
+		}
+
+		CompareViewFactory getCompareViewFactory() {
+			return compareViewFactory;
 		}
 	}
 

@@ -5,6 +5,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.scene.input.MouseButton;
@@ -13,6 +14,10 @@ import javafx.scene.input.ScrollEvent;
 import javafx.stage.Stage;
 import pwr.chrzescijanek.filip.gifa.model.image.SamplesImageData;
 import pwr.chrzescijanek.filip.gifa.util.SharedState;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.atan;
@@ -34,7 +39,14 @@ public class Sample extends BasicSample {
 
 	private final DoubleProperty semiminor = new SimpleDoubleProperty();
 
+	private final List<ListChangeListener<? super BasicSample>> samplesChangeListeners = new ArrayList<>();
+
+	private final List<MapChangeListener<? super String, ? super SamplesImageData>> sampleImagesChangeListeners =
+			new ArrayList<>();
+
 	private double constantAngle = 0;
+
+	private ChangeListener<Boolean> rotateListener;
 
 	/**
 	 * Constructs a new Sample on given image, with given position, size, shared state and bounds.
@@ -103,7 +115,7 @@ public class Sample extends BasicSample {
 	}
 
 	private void setOnRotate() {
-		state.rotate.addListener((observable, oldValue, newValue) -> {
+		rotateListener = (observable, oldValue, newValue) -> {
 			if (newValue) {
 				sampleSelection = NIL;
 				if (getRadiusX() < getRadiusY()) constantAngle = 90;
@@ -116,7 +128,8 @@ public class Sample extends BasicSample {
 				defaultBindings();
 				recalculateTranslates();
 			}
-		});
+		};
+		state.rotate.addListener(rotateListener);
 	}
 
 	/**
@@ -249,15 +262,59 @@ public class Sample extends BasicSample {
 		return ((SamplesImageData) imageData).samples.indexOf(this);
 	}
 
+	/**
+	 * Disposes sample before deleting it from view.
+	 */
+	public void dispose() {
+		state.rotate.removeListener(rotateListener);
+	}
+
 	private void addCloseListeners(final Stage newStage) {
-		((SamplesImageData) imageData).samples.addListener((ListChangeListener<? super BasicSample>) c -> {
-			while (c.next())
-				if (c.wasRemoved() && c.getRemoved().contains(this))
-					newStage.close();
+		final int firstIndex = samplesChangeListeners.size();
+		final int secondIndex = sampleImagesChangeListeners.size();
+
+		final ListChangeListener<? super BasicSample> samplesChangeListener = change -> {
+			while (change.next())
+				if (change.wasRemoved() && change.getRemoved().contains(this))
+					closeStage(newStage, firstIndex, secondIndex);
+		};
+		final MapChangeListener<? super String, ? super SamplesImageData> sampleImagesChangeListener =
+				change -> Platform.runLater(() -> closeStage(newStage, firstIndex, secondIndex));
+
+		samplesChangeListeners.add(samplesChangeListener);
+		((SamplesImageData) imageData).samples.addListener(samplesChangeListener);
+
+		sampleImagesChangeListeners.add(sampleImagesChangeListener);
+		state.samplesImages.addListener(sampleImagesChangeListener);
+
+		newStage.setOnCloseRequest(event -> {
+			removeListeners(firstIndex, secondIndex);
+			newStage.setOnCloseRequest(null);
 		});
-		state.samplesImages.addListener(
-				(MapChangeListener<? super String, ? super SamplesImageData>) c -> Platform.runLater(newStage::close)
-		);
+	}
+
+	private void closeStage(final Stage newStage, final int firstIndex, final int secondIndex) {
+		removeListeners(firstIndex, secondIndex);
+		newStage.close();
+	}
+
+	private void removeListeners(final int firstIndex, final int secondIndex) {
+		removeSamplesChangeListener(firstIndex);
+		removeSampleImagesChangeListener(secondIndex);
+	}
+
+	private void removeSamplesChangeListener(final int firstIndex) {
+		((SamplesImageData) imageData).samples.removeListener(samplesChangeListeners.get(firstIndex));
+		samplesChangeListeners.set(firstIndex, null);
+		if (samplesChangeListeners.stream().allMatch(Objects::isNull))
+			samplesChangeListeners.clear();
+	}
+
+	private void removeSampleImagesChangeListener(final int secondIndex) {
+		state.samplesImages.removeListener(sampleImagesChangeListeners.get(secondIndex));
+		sampleImagesChangeListeners.set(secondIndex, null);
+		if (sampleImagesChangeListeners.stream().allMatch(Objects::isNull))
+			sampleImagesChangeListeners.clear();
 	}
 
 	private void setStart(final MouseEvent event) {

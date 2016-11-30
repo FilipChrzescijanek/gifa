@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -31,12 +32,12 @@ public class BaseController {
 
 	private static final String THEME_DARK = "/css/theme-dark.css";
 
-	private static final String THEME_LIGHT = "/css/theme-light.css";
-
 	/**
 	 * Controller theme.
 	 */
 	protected static final StringProperty theme = new SimpleStringProperty(THEME_DARK);
+
+	private static final String THEME_LIGHT = "/css/theme-light.css";
 
 	private static final Preferences preferences;
 
@@ -106,15 +107,26 @@ public class BaseController {
 	 */
 	protected void injectStylesheets(final Parent parent) {
 		setTheme(parent);
-		theme.addListener((observable, oldValue, newValue) -> {
+		final ChangeListener<String> themeChangeListener = (observable, oldValue, newValue) -> {
 			if (newValue != null && !newValue.isEmpty())
 				setTheme(parent);
-		});
+		};
+		theme.addListener(themeChangeListener);
+		setOnCloseRequest(parent, themeChangeListener);
 	}
 
 	private void setTheme(final Parent node) {
 		node.getStylesheets().clear();
 		node.getStylesheets().add(theme.get());
+	}
+
+	private void setOnCloseRequest(final Parent parent, final ChangeListener<String> themeChangeListener) {
+		if (parent.getScene() != null && parent.getScene().getWindow() != null) {
+			parent.getScene().getWindow().setOnCloseRequest(e -> {
+				theme.removeListener(themeChangeListener);
+				parent.getScene().getWindow().setOnCloseRequest(null);
+			});
+		}
 	}
 
 	/**

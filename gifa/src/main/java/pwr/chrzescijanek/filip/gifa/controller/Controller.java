@@ -102,6 +102,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.Arrays.asList;
@@ -2352,20 +2353,19 @@ public class Controller extends BaseController implements Initializable {
 	
 	private boolean checkNames(final List<Node> nodes) {
 		final List<List<String>> seriesNames = new ArrayList<>();
-		for (int i = 0; i < nodes.size(); i++) {
-			final List<Series<String, Number>> series = ((BarChart<String, Number>) nodes.get(i)).getData();
-			final List<String> names = new ArrayList<>();
-			for (int j = 0; j < series.size(); j++) {
-				names.add(series.get(j).getData().get(j).getXValue());
+		for (final Node node : nodes) {
+			final List<Series<String, Number>> series = ((BarChart<String, Number>) node).getData();
+			for (final Series<String, Number> s : series) {
+				final List<String> names = s.getData()
+				                            .stream().map(XYChart.Data::getXValue).collect(Collectors.toList());
+				seriesNames.add(names);
 			}
-			seriesNames.add(names);
 		}
 		return seriesNames.stream().allMatch(list -> list.equals(seriesNames.get(0)));
 	}
 	
-	private LegendItem getLegendItem(final List<BarChart<String, Number>> charts, final Series<? extends String, ?
-			extends Number>
-			series) {
+	private LegendItem getLegendItem(final List<BarChart<String, Number>> charts,
+	                                 final Series<? extends String, ? extends Number> series) {
 		return charts.stream()
 		             .map(Parent::getChildrenUnmodifiable)
 		             .map(nodes -> nodes.stream()
@@ -2379,9 +2379,9 @@ public class Controller extends BaseController implements Initializable {
 		             .findAny().orElse(null);
 	}
 	
-	private ColorPicker instantiateColorPicker(final List<Color> defaultColors, final int chartIndex, final
-	List<BarChart<String,
-			Number>> charts, final int seriesIndex, final Series<? extends String, ? extends Number> series) {
+	private ColorPicker instantiateColorPicker(final List<Color> defaultColors, final int chartIndex,
+	                                           final List<BarChart<String, Number>> charts, final int seriesIndex,
+	                                           final Series<? extends String, ? extends Number> series) {
 		final ColorPicker picker = new ColorPicker();
 		picker.setMaxWidth(12);
 		picker.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -2394,9 +2394,9 @@ public class Controller extends BaseController implements Initializable {
 		return picker;
 	}
 	
-	private void updateColors(final int chartIndex, final List<BarChart<String, Number>> charts, final Series<?
-			extends String, ?
-			extends Number> series, final Color newValue, final String web) {
+	private void updateColors(final int chartIndex, final List<BarChart<String, Number>> charts,
+	                          final Series<? extends String, ? extends Number> series, final Color newValue,
+	                          final String web) {
 		charts.stream()
 		      .map(chart -> chart.getData().stream().filter(s -> s.getName().equals(series.getName()))
 		                         .findAny().orElse(null))
@@ -3097,12 +3097,18 @@ public class Controller extends BaseController implements Initializable {
 	private void initializeComponents(final URL location, final ResourceBundle resources) {
 		this.location = location;
 		this.resources = resources;
+		bindScrollPaneSize();
 		initializeStyle();
 		initializeComboBoxes();
 		initializeColorPickers();
 		createCheckBoxes();
 		disableChartsControls();
 		setTooltips();
+	}
+
+	private void bindScrollPaneSize() {
+		alignScrollPane.prefHeightProperty().bind(root.heightProperty());
+		alignScrollPane.prefWidthProperty().bind(root.widthProperty());
 	}
 	
 	private void addRotateListeners() {
@@ -3909,12 +3915,14 @@ public class Controller extends BaseController implements Initializable {
 		state.selectedSample.set(null);
 		samplesImageViewAnchor.getChildren().remove(sample.sampleArea);
 		samplesImageViewAnchor.getChildren().remove(sample);
+		sample.dispose();
 	}
 	
 	@FXML
 	void clearSamples() {
 		Platform.runLater(() -> {
 			for (final SamplesImageData img : state.samplesImages.values()) {
+				img.samples.forEach(Sample::dispose);
 				img.samples.clear();
 			}
 			state.selectedSample.set(null);

@@ -21,6 +21,7 @@ import pwr.chrzescijanek.filip.gifa.view.FXView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.Arrays.asList;
 import static pwr.chrzescijanek.filip.gifa.util.ControllerUtils.initializeVertexController;
@@ -34,6 +35,9 @@ public class Vertex extends BasicSample {
 	private final List<List<NumberChangeListener>> vertexChangeListeners = new ArrayList<>();
 
 	private final List<List<ColorChangeListener>> strokeChangeListeners = new ArrayList<>();
+
+	private final List<MapChangeListener<? super String, ? super ImageToAlignData>> imageToAlignChangeListeners =
+			new ArrayList<>();
 
 	/**
 	 * Constructs a new Vertex on given image, with given position, size, shared state and bounds.
@@ -85,34 +89,51 @@ public class Vertex extends BasicSample {
 	}
 
 	private void postCreation(final CompareViewController controller, final Stage newStage) {
-		addListeners(controller);
+		final int size = imageToAlignChangeListeners.size();
+		addListeners(controller, newStage);
 		paintVertices();
 		newStage.setOnCloseRequest(e -> {
 			eraseVertices();
 			removeChangeListeners();
+			removeListener(size);
+			newStage.setOnCloseRequest(null);
 		});
 	}
 
-	private void addListeners(final CompareViewController controller) {
-		addImagesChangeListener(controller);
+	private void addListeners(final CompareViewController controller, final Stage newStage) {
+		addImagesChangeListener(controller, newStage);
 		initializeVertexChangeListeners();
 		initializeStrokeChangeListeners();
 		addVertexChangeListeners();
 		addStrokeChangeListeners();
 	}
 
-	private void addImagesChangeListener(final CompareViewController controller) {
-		state.imagesToAlign.addListener(
-				(MapChangeListener<? super String, ? super ImageToAlignData>) c -> {
-					removeChangeListeners();
-					final int index = getIndexOf();
-					controller.setVertexCompareViews(index);
-					initializeVertexChangeListeners();
-					initializeStrokeChangeListeners();
-					addVertexChangeListeners();
-					addStrokeChangeListeners();
-					Platform.runLater(controller::refresh);
-				});
+	private void addImagesChangeListener(final CompareViewController controller, final Stage newStage) {
+		final int size = imageToAlignChangeListeners.size();
+		final MapChangeListener<? super String, ? super ImageToAlignData> listener = change -> {
+			removeChangeListeners();
+			final int index = getIndexOf();
+			controller.setVertexCompareViews(index);
+			initializeVertexChangeListeners();
+			initializeStrokeChangeListeners();
+			addVertexChangeListeners();
+			addStrokeChangeListeners();
+			if (!state.imagesToAlign.isEmpty())
+				Platform.runLater(controller::refresh);
+			else {
+				removeListener(size);
+				Platform.runLater(newStage::close);
+			}
+		};
+		imageToAlignChangeListeners.add(listener);
+		state.imagesToAlign.addListener(listener);
+	}
+
+	private void removeListener(final int index) {
+		state.imagesToAlign.removeListener(imageToAlignChangeListeners.get(index));
+		imageToAlignChangeListeners.set(index, null);
+		if (imageToAlignChangeListeners.stream().allMatch(Objects::isNull))
+			imageToAlignChangeListeners.clear();
 	}
 
 	private void addVertexChangeListeners() {
