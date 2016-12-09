@@ -121,6 +121,7 @@
 .dialog-pane > .button-bar > .container > .button {
     -fx-background-color: #666;
 }
+
 .dialog-pane > .button-bar > .container > .button:hover {
     -fx-background-color: #888;
 }
