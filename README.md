@@ -10,5 +10,5 @@ $ cd ../gifa-core
 $ mvn clean install
 $ cd ../gifa
 $ mvn clean package
-$ target/gifa/gifa.bat
+$ target/gifa-1.0.0/gifa.bat
 ```
