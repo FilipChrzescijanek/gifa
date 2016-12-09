@@ -77,12 +77,10 @@
 					<charset>UTF-8</charset>
 					<files>
 						<file>
-							<path>${build.directory}/gifa/README.txt</path>
+							<path>${build.directory}/${project.artifactId}-${project.version}/README.txt</path>
 							<lines>
 								<line>Use gifa.bat to start the app.</line>
-								<line>You can specify the path to the folder containing native OpenCV libraries or add
-									any other JVM arguments by changing the gifa.ini file (each line represents one
-									argument).
+								<line>You can specify the path to the folder containing native OpenCV libraries or add any other JVM arguments by changing the gifa.ini file (each line represents one argument).
 								</line>
 								<line>----</line>
 								<line>GitHub repository: ${scm.url}</line>
