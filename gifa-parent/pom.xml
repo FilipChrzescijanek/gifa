@@ -1,20 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>pwr.chrzescijanek.filip</groupId>
+	<groupId>pwr.chrzescijanek.filip.gifa</groupId>
 	<artifactId>gifa-parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>pom</packaging>
 
-	<repositories>
-		<repository>
-			<id>gifa-repository</id>
-			<url>https://github.com/FilipChrzescijanek/gifa-repository/raw/master/</url>
-		</repository>
-	</repositories>
+	<name>gifa-parent</name>
+	<description>Global image features analyzer - parent POM project</description>
+	<url>https://github.com/FilipChrzescijanek/gifa/tree/master/gifa-parent</url>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Filip Chrześcijanek</name>
+			<email>filip.chrzescijanek@gmail.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/FilipChrzescijanek/gifa.git</connection>
+		<developerConnection>scm:git:ssh://github.com:FilipChrzescijanek/gifa.git</developerConnection>
+		<url>https://github.com/FilipChrzescijanek/gifa</url>
+	</scm>
 	
 	<build>
 		<plugins>
@@ -27,50 +44,90 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.2</version>
+				<configuration>
+					<outputDirectory>${build.directory}/gifa/bin</outputDirectory>
+					<archive>
+						<manifestEntries>
+							<Built-By>${user.name}</Built-By>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.googlecode.mavennatives</groupId>
+				<artifactId>maven-nativedependencies-plugin</artifactId>
+				<version>0.0.7</version>
+				<configuration>
+					<nativesTargetDir>${build.directory}/gifa/natives</nativesTargetDir>
+				</configuration>
+				<executions>
+					<execution>
+						<id>unpacknatives</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.10</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${build.directory}/gifa/bin/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>ru.yaal.maven</groupId>
+				<artifactId>write-text-files-maven-plugin</artifactId>
+				<version>1.1</version>
+				<configuration>
+					<charset>UTF-8</charset>
+					<files combine.children="append">
+						<file>
+							<path>${build.directory}/gifa/gifa.ini</path>
+							<lines>
+								<line>-Djava.library.path=natives/</line>
+							</lines>
+						</file>
+						<file>
+							<path>${build.directory}/gifa/gifa.bat</path>
+							<lines>
+								<line>for /F "delims=" %%a in (gifa.ini) do (</line>
+								<line>set "args= %args% %%a"</line>
+								<line>)</line>
+								<line>start javaw %args% -jar bin/${project.artifactId}-${project.version}.jar</line>
+							</lines>
+						</file>
+					</files>
+				</configuration>
+				<executions>
+					<execution>
+						<id>write-text-files</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>write-text-files</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>natives</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>com.googlecode.mavennatives</groupId>
-						<artifactId>maven-nativedependencies-plugin</artifactId>
-						<version>0.0.7</version>
-						<executions>
-							<execution>
-								<id>unpacknatives</id>
-								<phase>generate-resources</phase>
-								<goals>
-									<goal>copy</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<artifactId>maven-dependency-plugin</artifactId>
-						<version>2.10</version>
-						<executions>
-							<execution>
-								<id>copy-dependencies</id>
-								<phase>package</phase>
-								<goals>
-									<goal>copy-dependencies</goal>
-								</goals>
-								<configuration>
-									<outputDirectory>${project.build.directory}/lib</outputDirectory>
-									<overWriteReleases>false</overWriteReleases>
-									<overWriteSnapshots>false</overWriteSnapshots>
-									<overWriteIfNewer>true</overWriteIfNewer>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 </project>

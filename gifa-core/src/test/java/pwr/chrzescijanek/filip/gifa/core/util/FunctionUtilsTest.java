@@ -15,6 +15,7 @@ import static pwr.chrzescijanek.filip.gifa.core.util.FunctionUtils.calculateVari
 public class FunctionUtilsTest {
 
 	private static final double EPSILON = 0.000000001;
+
 	private final byte[] image = new byte[12];
 
 	@Before
@@ -23,10 +24,18 @@ public class FunctionUtilsTest {
 	}
 
 	private void setUpImage() {
-		image[0] = -1; image[1] = -1; image[2] = -1;
-		image[3] = 56; image[4] = 34; image[5] = 20;
-		image[6] = 100; image[7] = -100; image[8] = -90;
-		image[9] = 120; image[10] = 10; image[11] = 80;
+		image[0] = -1;
+		image[1] = -1;
+		image[2] = -1;
+		image[3] = 56;
+		image[4] = 34;
+		image[5] = 20;
+		image[6] = 100;
+		image[7] = -100;
+		image[8] = -90;
+		image[9] = 120;
+		image[10] = 10;
+		image[11] = 80;
 	}
 
 	@Test(expected = IllegalArgumentException.class)

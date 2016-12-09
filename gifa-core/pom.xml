@@ -1,17 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<groupId>pwr.chrzescijanek.filip.gifa</groupId>
 	<artifactId>gifa-core</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 
-	<parent>
-		<groupId>pwr.chrzescijanek.filip</groupId>
-		<artifactId>gifa-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	</parent>
+	<name>gifa-core</name>
+	<description>Global image features analyzer - core libraries</description>
+	<url>https://github.com/FilipChrzescijanek/gifa/tree/master/gifa-core</url>
+
+	<properties>
+		<user.name>Filip Chrześcijanek</user.name>
+	</properties>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Filip Chrześcijanek</name>
+			<email>filip.chrzescijanek@gmail.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/FilipChrzescijanek/gifa.git</connection>
+		<developerConnection>scm:git:ssh://github.com:FilipChrzescijanek/gifa.git</developerConnection>
+		<url>https://github.com/FilipChrzescijanek/gifa</url>
+	</scm>
+
+	<repositories>
+		<repository>
+			<id>gifa-repository</id>
+			<url>https://github.com/FilipChrzescijanek/gifa-repository/raw/master/</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -31,5 +61,34 @@
 			<classifier>natives-windows-x86_64</classifier>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.6.0</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.2</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+						</manifest>
+						<manifestEntries>
+							<Built-By>${user.name}</Built-By>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

@@ -129,7 +129,7 @@ public abstract class BasicSample extends Ellipse {
 	private void setStyle() {
 		setStyle(STROKE_STYLE);
 		sampleArea.setStyle(STROKE_STYLE);
-		setFill(Color.color(0.3, 0.3, 0.3, 0.5));
+		setFill(Color.color(0.7, 0.7, 0.7, 0.3));
 		setStroke(Color.color(1.0, 1.0, 1.0, 0.8));
 		sampleArea.setFill(Color.color(0.0, 0.0, 0.0, 0.0));
 		sampleArea.setStroke(Color.color(1.0, 1.0, 1.0, 0.9));

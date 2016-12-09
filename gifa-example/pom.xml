@@ -1,23 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>gifa-example</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
+
+	<name>gifa-example</name>
+	<description>Global image features analyzer - extension example</description>
+	<url>https://github.com/FilipChrzescijanek/gifa/tree/master/gifa-example</url>
 
 	<parent>
-		<groupId>pwr.chrzescijanek.filip</groupId>
+		<groupId>pwr.chrzescijanek.filip.gifa</groupId>
 		<artifactId>gifa-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
+
+	<properties>
+		<user.name>Filip Chrześcijanek</user.name>
+	</properties>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Filip Chrześcijanek</name>
+			<email>filip.chrzescijanek@gmail.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/FilipChrzescijanek/gifa.git</connection>
+		<developerConnection>scm:git:ssh://github.com:FilipChrzescijanek/gifa.git</developerConnection>
+		<url>https://github.com/FilipChrzescijanek/gifa</url>
+	</scm>
 
 	<dependencies>
 		<dependency>
-			<groupId>pwr.chrzescijanek.filip</groupId>
+			<groupId>pwr.chrzescijanek.filip.gifa</groupId>
 			<artifactId>gifa</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 
@@ -25,7 +53,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
+				<version>3.0.2</version>
 				<configuration>
 					<archive>
 						<manifest>

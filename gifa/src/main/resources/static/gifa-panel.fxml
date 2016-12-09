@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
-<BorderPane fx:id="root" styleClass="root" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:id="root" styleClass="root" xmlns="http://javafx.com/javafx/8.0.60"
             fx:controller="pwr.chrzescijanek.filip.gifa.controller.CompareViewController">
 	<top>
 		<HBox fx:id="compareViewHBox" alignment="CENTER">

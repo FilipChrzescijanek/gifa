@@ -5,19 +5,47 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>gifa</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
+
+	<name>gifa</name>
+	<description>Global image features analyzer</description>
+	<url>https://github.com/FilipChrzescijanek/gifa/tree/master/gifa</url>
 
 	<parent>
-		<groupId>pwr.chrzescijanek.filip</groupId>
+		<groupId>pwr.chrzescijanek.filip.gifa</groupId>
 		<artifactId>gifa-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
+
+	<properties>
+		<user.name>Filip Chrześcijanek</user.name>
+	</properties>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Filip Chrześcijanek</name>
+			<email>filip.chrzescijanek@gmail.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/FilipChrzescijanek/gifa.git</connection>
+		<developerConnection>scm:git:ssh://github.com:FilipChrzescijanek/gifa.git</developerConnection>
+		<url>https://github.com/FilipChrzescijanek/gifa</url>
+	</scm>
 
 	<dependencies>
 		<dependency>
-			<groupId>pwr.chrzescijanek.filip</groupId>
+			<groupId>pwr.chrzescijanek.filip.gifa</groupId>
 			<artifactId>gifa-core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.inject</groupId>
@@ -39,6 +67,29 @@
 							<mainClass>pwr.chrzescijanek.filip.gifa.Main</mainClass>
 						</manifest>
 					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>ru.yaal.maven</groupId>
+				<artifactId>write-text-files-maven-plugin</artifactId>
+				<version>1.1</version>
+				<configuration>
+					<charset>UTF-8</charset>
+					<files>
+						<file>
+							<path>${build.directory}/gifa/README.txt</path>
+							<lines>
+								<line>Use gifa.bat to start the app.</line>
+								<line>You can specify the path to the folder containing native OpenCV libraries or add
+									any other JVM arguments by changing the gifa.ini file (each line represents one
+									argument).
+								</line>
+								<line>----</line>
+								<line>GitHub repository: ${scm.url}</line>
+								<line>Copyright © 2016 Filip Chrześcijanek</line>
+							</lines>
+						</file>
+					</files>
 				</configuration>
 			</plugin>
 		</plugins>
