@@ -15,6 +15,15 @@ a {
   a:hover {
     text-decoration: underline; }
 
+#images {
+	text-align: center;
+}	
+
+#images img {
+	padding-left: 15vh;
+	padding-right: 15vh;
+}
+	
 .btn {
   display: inline-block;
   margin-bottom: 1rem;
