@@ -17,11 +17,17 @@ a {
 
 #images {
 	text-align: center;
-}	
+}
 
-#images img {
-	padding-left: 15vh;
-	padding-right: 15vh;
+#images .btn {
+	background-color: rgba(3, 154, 170, 0.2);
+    border-color: rgba(3, 154, 170, 0.3);
+	padding: 3vh 3vh 3vh 3vh;
+}
+
+#images .btn:hover {
+	background-color: rgba(3, 154, 170, 0.4);
+    border-color: rgba(3, 154, 170, 0.5);
 }
 	
 .btn {
